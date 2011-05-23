@@ -1,0 +1,7 @@
+! -----------------------------------------
+! Emacs resources
+
+Emacs*menuBar:			off
+Emacs*verticalScrollBars:	off
+Emacs*toolBar:			-1
+Emacs*font 			terminus
