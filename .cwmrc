@@ -1,0 +1,72 @@
+# Set default Xft(3) font
+fontname "sans-serif:pixelsize=14:bold"
+
+# Turn on sticky-group mode
+sticky yes
+
+# Any entry here is shown in the application menu
+command firefox         firefox
+command xmms            xmms
+command top             "xterm -e top"
+
+# Autogroup definitions
+autogroup 3 "aterm,XTerm"
+autogroup 3 "xterm,XTerm"
+autogroup 1 "firefox,We"
+
+# Ignore programs by that name by not drawing borders around them.
+ignore XMMS
+ignore xwi
+ignore xapm
+ignore xclock
+
+# Keybindings
+
+bind 4-r	reload
+bind 4S-q	quit
+bind 4-Return	terminal
+bind 4S-l	lock
+bind 4-/	search
+bind C-/	menusearch
+bind 4-p	exec
+bind 4S-w	exec_wm
+bind 4-.	ssh
+bind 4-1	group1
+bind 4-2	group2
+bind 4-3	group3
+bind 4-4	group4
+bind 4-5	group5
+bind 4C-1	grouponly1
+bind 4C-2	grouponly2
+bind 4C-3	grouponly3
+bind 4C-4	grouponly4
+bind 4C-5	grouponly5
+bind 4C-0	nogroup
+bind 4C-g	grouptoggle
+bind 4S-1	movetogroup1
+bind 4S-2	movetogroup2
+bind 4S-3	movetogroup3
+bind 4S-4	movetogroup4
+bind 4S-5	movetogroup5
+bind 4-Right	cyclegroup
+bind 4-Left	rcyclegroup
+bind 4-Tab	cycle
+bind 4S-Tab	rcycle
+bind 4C-x	delete
+bind 4C-f	maximize
+bind 4C-v	vmaximize
+bind 4-h	bigmoveleft
+bind 4-t	bigmoveup
+bind 4-n	bigmovedown
+bind 4-s	bigmoveright
+bind 4-H	bigresizeleft
+bind 4-T	bigresizeup
+bind 4-N	bigresizedown
+bind 4-S	bigresizeleft
+
+# Mousebindings
+mousebind 4-M1	window_move
+mousebind 4C-M1	window_grouptoggle
+mousebind 4-M2	window_resize
+mousebind 4-M3	window_lower
+mousebind 4S-M3 window_hide
