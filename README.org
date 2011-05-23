@@ -1,0 +1,3 @@
+* Dotfiles
+
+Collection of my personal settings for easy access when changing hosts.
