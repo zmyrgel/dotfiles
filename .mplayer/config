@@ -1,0 +1,60 @@
+# =====================
+# VobSubs
+# =====================
+spualign = -1
+spuaa = 4
+slang = fi,fin,en,eng
+nofontconfig = 1
+
+# =====================
+# Text-based subtitles
+# =====================
+sub-fuzziness = 1
+font=/usr/X11/lib64/X11/fonts/TTF/Vera.ttf
+subfont-encoding = unicode
+utf8 = yes
+ffactor = 10
+subpos = 95
+subalign = 2
+subfont-autoscale = 2
+subfont-blur = 1.0
+subfont-outline = 1.0
+subfont-text-scale = 3.0
+
+# =====================
+# OSD
+# =====================
+subfont-osd-scale = 4.2
+
+# =====================
+# Audio settings
+# =====================
+ao = alsa
+#af = volnorm
+#autosync = 0 # 20
+
+# =====================
+# Video settings
+# =====================
+vo = xv
+#monitoraspect = 16:9
+double = yes
+framedrop = yes
+#hardframedrop = no
+# Use all spare cpu to improve quality
+#autoq = 100 # 80
+#vf=pp=de,hqdn3d
+#vf=pp
+
+# =====================
+# Misc
+# =====================
+#cache = 8192
+#cache-min = 10
+lirc = no
+joystick = no
+ar = no
+stop-xscreensaver = yes
+#dvd-device=/dev/rcd0c
+#cdda:device=/dev/rcd0c
+#cdrom-device=/dev/rcd0c
