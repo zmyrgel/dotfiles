@@ -1,0 +1,62 @@
+# Aliases  -*- mode: sh; coding: utf-8-unix; -*-
+# ----------------------------------------------
+
+# For convenience
+alias 'dus=du -ms * | sort -n'
+
+# Typing errors...
+alias 'cd..=cd ..'
+
+# Base command REPLACES (possible dangerous)
+alias su='su -l'
+alias df='df -h'
+alias du='du -h'
+alias man='LC_ALL=C man'
+alias ls='/bin/ls -F'
+alias mkdir='mkdir -p'
+
+# New aliases
+alias ll='ls -l'
+alias l.='ls -d .[^.]*'
+alias la='ls -a'
+alias lsd='ls -ld *(-/DN)'
+alias md='mkdir -p'
+alias rd='rmdir'
+alias ff='find . -name $*'
+alias msgs='tail -f /var/log/messages'
+alias topcpu='ps aux | sort -n +2 | tail -10'
+alias topmem='ps aux | sort -n +3 | tail -10'
+#alias ps\?='ps ax | grep '
+
+# Quick keys
+alias p='print'
+alias q='exit'
+alias c='tput clear'
+alias s='sudo'
+alias j='jobs'
+
+# Command aliases
+alias em="emacsclient -t"
+alias mg='mg -n'
+
+# Music shortcuts
+alias add='mpc add'
+alias addall='mpc clear && mpc ls | mpc add && mpc --no-status play'
+alias np='mpc --format "  %title% by %artist% #[%album%#]" | head -n1'
+alias play='mpc --no-status toggle; np'
+alias next='mpc --no-status next; np'
+alias prev='mpc --no-status prev; np'
+alias stop='mpc --no-status stop '
+
+alias playiso='mplayer dvd://1 -dvd-device '
+alias playdvd='mplayer dvdnav:// /dev/sr0'
+alias myip='lynx -dump http://tnx.nl/ip'
+alias sizeof='du -sh'
+alias vncup='x11vnc -nopw -ncache 10 -display :0 -localhost'
+alias xp='xprop | grep "WM_WINDOW_ROLE\|WM_CLASS"'
+
+# generate password
+alias genpass="< /dev/urandom tr -dc A-Za-z0-9_ | head -c8"
+
+# Capture desktop movie
+alias xcap="ffmpeg -f x11grab -s wxga -r 25 -i :0.0 -sameq /tmp/out.mpg"

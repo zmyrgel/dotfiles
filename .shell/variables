@@ -1,0 +1,39 @@
+# Variables -*- mode: sh; coding: utf-8-unix; -*-
+
+# Set less options
+if [[ -x $(which less) ]]; then
+    export PAGER="less"
+    export LESS="-i -M -q -S -Sm -F -g --no-init"
+fi
+
+export HISTTIMEFORMAT="[%Y-%m-%d - %H:%M:%S] "
+export HISTIGNORE="&:ls:[bf]g:exit:reset:clear:cd:cd ..:cd.."
+export HISTSIZE=10000
+export EDITOR='emacsclient -a ""'
+export VISUAL=$EDITOR
+export PAGER=less
+export CVS_RSH=ssh
+
+### PATH ###
+
+# Path components
+HOME_PATH=$HOME/bin
+SYSTEM_PATH=/sbin:/usr/sbin:/bin:/usr/bin
+RUBY_PATH=$HOME/
+X_PATH=/usr/X11R6/bin
+CONTRIB_PATH=/usr/local/sbin:/usr/local/bin
+
+export PATH=$HOME_PATH:$SYSTEM_PATH:$X_PATH:$CONTRIB_PATH:.
+
+# Path additions
+if [[ -x $HOME/.gem/ruby/1.9.1/bin ]]; then
+   export PATH=$PATH:/home/zmyrgel/.gem/ruby/1.9.1/bin
+fi
+
+if [[ -x $HOME/.cabal/bin ]]; then
+   export PATH=$PATH:$HOME/.cabal/bin
+fi
+
+if [ -x /usr/games ]; then
+    export PATH=$PATH:/usr/games
+fi

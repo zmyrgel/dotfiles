@@ -1,0 +1,122 @@
+# Functions -*- mode: sh; coding: utf-8-unix; -*-
+# ---------------------------------------------
+
+function clamscan {
+    mkdir -p /tmp/virus
+    nice -n 19 clamscan --verbose --max-recursion=20 -m -i --detect-pua --move=/tmp/virus -r
+    cd /tmp/virus
+    echo -n "Viruses:"
+    ls
+}
+
+function qemiso {
+    qemu -boot d -m 384 -smp 2 -localtime \
+    -net nic \
+    -net user \
+    -no-fd-bootchk -no-acpi -cdrom $1
+}
+
+function qemimg {
+    qemu-img create -f qcow2 $i.qcow 10G
+}
+
+function qeminst {
+    echo "Supply disk.img and path to iso or drive for installing from"
+        qemu -boot d -m 384 -smp 2 -localtime \
+        -net nic \
+        -net user \
+        -no-fd-bootchk -no-acpi \
+        -hda /media/nfs/qemu/$1.qcow -cdrom $2
+}
+
+function qemrun {
+    echo "Supply drive image to boot from"
+    qemu -boot c -m 512 -smp 2 -localtime \
+    -net nic \
+    -net user \
+    -no-fd-bootchk -no-acpi -hda /media/nfs/qemu/$1.qcow
+}
+
+function spell {
+    echo "$@" | aspell -a
+}
+
+function calc {
+    echo "$*" | bc;
+}
+
+function open {
+    if [[ -f "$1" ]]; then
+        case "$1" in
+            (*.tar.bz2)     tar -xvjf "$1" ;;
+            (*.tar.gz)      tar -xvzf "$1" ;;
+            (*.ace)         unace e "$1" ;;
+            (*.rar)         unrar x "$1" ;;
+            (*.deb)         ar -x "$1" ;;
+            (*.bz2)         bzip2 -d "$1" ;;
+            (*.lzh)         lha x "$1" ;;
+            (*.gz)          gunzip -d "$1" ;;
+            (*.tar)         tar -xvf "$1" ;;
+            (*.rpm)         extractrar "$1" ;;
+            (*.lzma)        extractlzma "$1" ;;
+            (*.tgz)         gunzip -d "$1" ;;
+            (*.tbz2)        tar -jxvf "$1" ;;
+            (*.zip)         unzip "$1" ;;
+            (*.Z)           uncompress "$1" ;;
+            (*.7z)          7z x "$1" ;;
+            (*.shar)        sh "$1" ;;
+            (*)             echo "'"$1"' Error. Please go away" ;;
+        esac
+    else
+        echo "'"$1"' is not a valid file"
+    fi
+}
+
+#  https://dgl.cx/wikipedia-dns
+function wiki {
+    if [ -x /usr/sbin/host ]; then
+        host -t txt "$1".wp.dg.cx | cut -f 3
+    elif [ -x /usr/bin/host-woods ]; then
+        host-woods -t txt "$1".wp.dg.cx | cut -f 3
+    fi
+
+}
+
+# Quick find
+function f {
+    echo "find . -iname \"*$1*\""
+    find . -iname "*$1*"
+}
+
+# add by artist to mpc
+function addartist {
+  if [ $# -lt 1 ]; then
+    echo "usage: addartist [artist]"
+  else
+    mpc clear
+    mpc search artist "$*" | mpc add
+    mpc --no-status play
+  fi
+}
+
+# pull a single file out of a .tar.gz, stops on first match
+function pullout {
+  if [ $# -ne 2 ]; then
+    echo "usage: pullout [file] [archive{.tar.gz,.tgz}]"
+  else
+    case $2 in
+      *.tar.gz|*.tgz) gunzip < $2 | bsdtar -qxf - $1     ;;
+      *)              echo "$2: not a valid archive" ;;
+    esac
+  fi
+}
+
+# recursively fix dir/file permissions on a given directory
+function fix {
+  if [ -d "$1" ]; then
+    find "$1" -type d -exec chmod 755 {} \;
+    find "$1" -type f -exec chmod 644 {} \;
+  else
+    echo "usage: fix [directory]"
+  fi
+}
