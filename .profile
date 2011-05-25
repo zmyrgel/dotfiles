@@ -9,7 +9,7 @@ export ENV=$HOME/.kshrc
 case $(uname -r) in
     OpenBSD) [[ -r $HOME/.shell/openbsd ]] && . $HOME/.shell/openbsd ;;
     NetBSD)  [[ -r $HOME/.shell/netbsd ]]  && . $HOME/.shell/netbsd  ;;
-    OpenBSD) [[ -r $HOME/.shell/linux ]]   && . $HOME/.shell/linux   ;;
+    Linux)   [[ -r $HOME/.shell/linux ]]   && . $HOME/.shell/linux   ;;
     SunOS)   [[ -r $HOME/.shell/sunos ]]   && . $HOME/.shell/sunos   ;;
 esac
 
