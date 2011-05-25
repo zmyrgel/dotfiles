@@ -46,7 +46,7 @@ if [[ -r /etc/debian_version ]] ; then
 fi
 
 # Slackware
-if [ -r /etc/slackware_release ]; then
+if [ -r /etc/slackware-version ]; then
     if [ $(uname -m) == "x86_64" ]; then
 	export ARCH=x86_64
         export PATH=$PATH:/usr/lib64/java/bin:/usr/lib64/kde4/libexec:/usr/lib64/qt/bin
