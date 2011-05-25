@@ -6,7 +6,7 @@ export ENV=$HOME/.kshrc
 [[ -r $HOME/.shell/aliases ]]   && . $HOME/.shell/aliases
 [[ -r $HOME/.shell/functions ]] && . $HOME/.shell/functions
 
-case $(uname -r) in
+case $(uname) in
     OpenBSD) [[ -r $HOME/.shell/openbsd ]] && . $HOME/.shell/openbsd ;;
     NetBSD)  [[ -r $HOME/.shell/netbsd ]]  && . $HOME/.shell/netbsd  ;;
     Linux)   [[ -r $HOME/.shell/linux ]]   && . $HOME/.shell/linux   ;;
