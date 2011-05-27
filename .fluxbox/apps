@@ -1,0 +1,31 @@
+[app] (name=fbrun)
+  [Position] (WINCENTER) {0 0}
+  [Layer] {2}
+[end]
+
+[app] (name=emacs)
+  [Workspace] {0}
+[end]
+
+[app] (class=Navigator)
+  [Workspace] {0}
+  [Head]{1}
+  [Sticky]{yes}
+  [Fullscreen]{true}
+  [IconHidden]{yes}
+[end]
+
+[app] (class=xterm)
+  [Workspace]{1}
+  [Fullscreen]{true}
+[end]
+
+[app] (class=sun-awt-X11-XFramePeer)
+  [Workspace]{2}
+  [Fullscreen]{true}
+[end]
+
+[app] (class=skype)
+  [Workspace]{3}
+  [Fullscreen]{true}
+[end]

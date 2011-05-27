@@ -1,0 +1,131 @@
+# click on the desktop to get menus
+OnDesktop Mouse1 :HideMenus
+OnDesktop Mouse2 :WorkspaceMenu
+OnDesktop Mouse3 :RootMenu
+
+# scroll on the desktop to change workspaces
+OnDesktop Mouse4 :PrevWorkspace
+OnDesktop Mouse5 :NextWorkspace
+
+# scroll on the toolbar to change current window
+OnToolbar Mouse4 :PrevWindow {static groups} (iconhidden=no)
+OnToolbar Mouse5 :NextWindow {static groups} (iconhidden=no)
+
+# alt + left/right click to move/resize a window
+OnWindow Mod1 Mouse1 :MacroCmd {Raise} {Focus} {StartMoving}
+OnWindowBorder Move1 :StartMoving
+
+OnWindow Mod1 Mouse3 :MacroCmd {Raise} {Focus} {StartResizing NearestCorner}
+OnLeftGrip Move1 :StartResizing bottomleft
+OnRightGrip Move1 :StartResizing bottomright
+
+# alt + middle click to lower the window
+OnWindow Mod1 Mouse2 :Lower
+
+# control-click a window's titlebar and drag to attach windows
+OnTitlebar Control Mouse1 :StartTabbing
+
+# double click on the titlebar to shade
+OnTitlebar Double Mouse1 :Shade
+
+# left click on the titlebar to move the window
+OnTitlebar Mouse1 :MacroCmd {Raise} {Focus} {ActivateTab}
+OnTitlebar Move1  :StartMoving
+
+# middle click on the titlebar to lower
+OnTitlebar Mouse2 :Lower
+
+# right click on the titlebar for a menu of options
+OnTitlebar Mouse3 :WindowMenu
+
+# alt-tab
+Mod1 Tab :NextWindow {groups} (workspace=[current])
+Mod1 Shift Tab :PrevWindow {groups} (workspace=[current])
+
+# Tab commands
+Mod4 Tab :NextTab
+Mod4 Shift Tab :PrevTab
+Mod1 1 :Tab 1
+Mod1 2 :Tab 2
+Mod1 3 :Tab 3
+Mod1 4 :Tab 4
+Mod1 5 :Tab 5
+Mod1 6 :Tab 6
+Mod1 7 :Tab 7
+Mod1 8 :Tab 8
+Mod1 9 :Tab 9
+
+# current window commands
+Mod4 k :Close
+Mod4 Shift k :Kill
+Mod4 - :Minimize
+Mod4 + :Maximize
+Mod4 Shift f :Fullscreen
+
+# open the window menu
+Mod4 space :RootMenu
+
+# exit fluxbox
+Control Mod4 x :Exit
+
+### Workspace commands ###
+Control Mod1 Left :PrevWorkspace
+Control Mod1 Right :NextWorkspace
+Mod4 Left :SendToPrevWorkspace
+Mod4 Right :SendToNextWorkspace
+Control Mod4 Left :TakeToPrevWorkspace
+Control Mod4 Right :TakeToNextWorkspace
+
+Mod4 1 :Workspace 1
+Mod4 2 :Workspace 2
+Mod4 3 :Workspace 3
+Mod4 4 :Workspace 4
+Mod4 5 :Workspace 5
+Mod4 6 :Workspace 6
+Mod4 7 :Workspace 7
+Mod4 8 :Workspace 8
+Mod4 9 :Workspace 9
+Mod4 10 :Workspace 10
+Mod4 11 :Workspace 11
+Mod4 12 :Workspace 12
+
+Mod4 Shift 1 :SendToWorkspace 1
+Mod4 Shift 2 :SendToWorkspace 2
+Mod4 Shift 3 :SendToWorkspace 3
+Mod4 Shift 4 :SendToWorkspace 4
+Mod4 Shift 5 :SendToWorkspace 5
+Mod4 Shift 6 :SendToWorkspace 6
+Mod4 Shift 7 :SendToWorkspace 7
+Mod4 Shift 8 :SendToWorkspace 8
+Mod4 Shift 9 :SendToWorkspace 9
+Mod4 Shift 10 :SendToWorkspace 10
+Mod4 Shift 11 :SendToWorkspace 11
+Mod4 Shift 12 :SendToWorkspace 12
+
+Control Shift Mod4 1 :TakeToWorkspace 1
+Control Shift Mod4 2 :TakeToWorkspace 2
+Control Shift Mod4 3 :TakeToWorkspace 3
+Control Shift Mod4 4 :TakeToWorkspace 4
+Control Shift Mod4 5 :TakeToWorkspace 5
+Control Shift Mod4 6 :TakeToWorkspace 6
+Control Shift Mod4 7 :TakeToWorkspace 7
+Control Shift Mod4 8 :TakeToWorkspace 8
+Control Shift Mod4 9 :TakeToWorkspace 9
+Control Shift Mod4 10 :TakeToWorkspace 10
+Control Shift Mod4 11 :TakeToWorkspace 11
+Control Shift Mod4 12 :TakeToWorkspace 12
+
+#### New stuff ####
+# if not open, open one; else, focus/cycle through programs of that type
+Mod4 t :If {Some Matches (xterm) (workspace=[current])} {NextWindow (xterm)} {Exec xterm}
+Mod4 g :If {Some Matches (gimp)} {NextWindow (gimp)} {Exec gimp}
+Mod4 f :If {Some Matches (name=Navigator)} {NextWindow (name=Navigator)} {Exec firefox}
+Mod4 e :If {Some Matches (emacs)} {NextWindow (emacs)} {Exec emacs}
+Mod4 l :Exec xlock
+Mod4 p :Exec fbrun -font terminus
+Mod4 h :Exec fbrun -font terminus -hf ~/.fluxbox/ssh_history -text "ssh "
+
+# volume settings
+XF86AudioRaiseVolume :Exec amixer sset Master,0 1+
+XF86AudioLowerVolume :Exec amixer sset Master,0 1-
+XF86AudioMute :Exec amixer sset Master,0 toggle
