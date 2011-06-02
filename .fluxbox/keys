@@ -58,8 +58,8 @@ Mod1 9 :Tab 9
 # current window commands
 Mod4 k :Close
 Mod4 Shift k :Kill
-#Mod4 - :Minimize
-#Mod4 + :Maximize
+Mod4 h :Minimize
+Mod4 m :Maximize
 Mod4 Shift f :Fullscreen
 
 # open the window menu
@@ -114,7 +114,7 @@ Mod4 f :If {Some Matches (name=Navigator)} {NextWindow (name=Navigator)} {Exec f
 Mod4 e :If {Some Matches (emacs)} {NextWindow (emacs)} {Exec emacs}
 Mod4 l :Exec xlock
 Mod4 p :Exec fbrun -font terminus
-Mod4 h :Exec fbrun -font terminus -hf ~/.fluxbox/ssh_history -text "ssh "
+Mod4 s :Exec fbrun -font terminus -hf ~/.fluxbox/ssh_history -text "ssh "
 
 # volume settings
 XF86AudioRaiseVolume :Exec amixer sset Master,0 1+
