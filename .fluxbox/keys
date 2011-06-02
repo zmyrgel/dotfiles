@@ -58,8 +58,8 @@ Mod1 9 :Tab 9
 # current window commands
 Mod4 k :Close
 Mod4 Shift k :Kill
-Mod4 - :Minimize
-Mod4 + :Maximize
+#Mod4 - :Minimize
+#Mod4 + :Maximize
 Mod4 Shift f :Fullscreen
 
 # open the window menu
@@ -85,9 +85,6 @@ Mod4 6 :Workspace 6
 Mod4 7 :Workspace 7
 Mod4 8 :Workspace 8
 Mod4 9 :Workspace 9
-Mod4 10 :Workspace 10
-Mod4 11 :Workspace 11
-Mod4 12 :Workspace 12
 
 Mod4 Shift 1 :SendToWorkspace 1
 Mod4 Shift 2 :SendToWorkspace 2
@@ -98,9 +95,6 @@ Mod4 Shift 6 :SendToWorkspace 6
 Mod4 Shift 7 :SendToWorkspace 7
 Mod4 Shift 8 :SendToWorkspace 8
 Mod4 Shift 9 :SendToWorkspace 9
-Mod4 Shift 10 :SendToWorkspace 10
-Mod4 Shift 11 :SendToWorkspace 11
-Mod4 Shift 12 :SendToWorkspace 12
 
 Control Shift Mod4 1 :TakeToWorkspace 1
 Control Shift Mod4 2 :TakeToWorkspace 2
@@ -111,9 +105,6 @@ Control Shift Mod4 6 :TakeToWorkspace 6
 Control Shift Mod4 7 :TakeToWorkspace 7
 Control Shift Mod4 8 :TakeToWorkspace 8
 Control Shift Mod4 9 :TakeToWorkspace 9
-Control Shift Mod4 10 :TakeToWorkspace 10
-Control Shift Mod4 11 :TakeToWorkspace 11
-Control Shift Mod4 12 :TakeToWorkspace 12
 
 #### New stuff ####
 # if not open, open one; else, focus/cycle through programs of that type
