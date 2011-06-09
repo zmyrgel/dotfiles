@@ -42,7 +42,7 @@ session.screen0.maxDisableMove:	false
 session.screen0.workspaceNames:	Workspace 1,Workspace 2,Workspace 3,Workspace 4,
 session.screen0.windowPlacement:	RowMinOverlapPlacement
 session.screen0.defaultDeco:	NORMAL
-session.screen0.windowMenu:	/home/zmyrgel/.fluxbox/windowmenu
+session.screen0.windowMenu:	~/.fluxbox/windowmenu
 session.screen0.focusModel:	ClickFocus
 session.screen0.workspacewarping:	true
 session.screen0.tooltipDelay:	500
@@ -57,17 +57,17 @@ session.screen0.strftimeFormat:	%k:%M
 session.screen0.allowRemoteActions:	false
 session.screen0.menuDelay:	200
 session.screen0.tabFocusModel:	ClickToTabFocus
-session.styleFile:	/home/zmyrgel/.fluxbox/styles/Tin_black(modded)
+session.styleFile:	~/.fluxbox/styles/Tin_black(modded)
 session.menuFile:	~/.fluxbox/menu
 session.keyFile:	~/.fluxbox/keys
 session.forcePseudoTransparency:	false
 session.colorsPerChannel:	4
-session.styleOverlay:	/home/zmyrgel/.fluxbox/overlay
+session.styleOverlay:	~/.fluxbox/overlay
 session.autoRaiseDelay:	250
 session.doubleClickInterval:	250
-session.appsFile:	/home/zmyrgel/.fluxbox/apps
+session.appsFile:	~/.fluxbox/apps
 session.cacheLife:	5
-session.slitlistFile:	/home/zmyrgel/.fluxbox/slitlist
+session.slitlistFile:	~/.fluxbox/slitlist
 session.tabPadding:	0
 session.tabsAttachArea:	Window
 session.cacheMax:	200
