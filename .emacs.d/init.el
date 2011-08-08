@@ -3,7 +3,7 @@
 ;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;;
 ;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;; Time-stamp: <2011-08-08 11:04:46 (zmyrgel)>
+;; Time-stamp: <2011-08-08 15:00:28 (zmyrgel)>
 ;; URL: http://www.wickedbsd.net/dotfiles/
 ;; Compatibility: GNU Emacs 24.0.x (may work with earlier versions)
 ;;
@@ -846,6 +846,12 @@
 ;; ------------------------------
 ;; Functions
 ;; ------------------------------
+
+(defun ssh ()
+  "Simple command to open remote shell through SSH."
+  (interactive)
+  (cd (read-string "Path:" "/ssh:"))
+  (shell))
 
 (defun rename-current-file-or-buffer ()
   "Rename current buffer"
