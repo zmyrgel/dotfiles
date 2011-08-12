@@ -26,9 +26,6 @@
 (setq custom-file (concat emacs-dir "/custom.el"))
 (load custom-file 'noerror)
 
-(when (string= system-type "berkeley-unix")
-  (setenv "AUTOCONF_VERSION" "2.62"))
-
 (when (file-exists-p (concat emacs-dir "/init-local.el"))
   (load (concat emacs-dir "/init-local.el")))
 
