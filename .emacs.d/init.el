@@ -3,7 +3,7 @@
 ;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;;
 ;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;; Time-stamp: <2011-08-08 15:00:28 (zmyrgel)>
+;; Time-stamp: <2011-08-12 10:55:14 (zmyrgel)>
 ;; URL: http://www.wickedbsd.net/dotfiles/
 ;; Compatibility: GNU Emacs 24.0.x (may work with earlier versions)
 ;;
@@ -44,243 +44,288 @@
 ;; (add-to-list 'Info-default-directory-list
 ;;             (expand-file-name (concat emacs-root-dir "libs/scm/dvc/texinfo")) t)
 
-(add-to-list 'load-path (concat emacs-dir "/el-get/el-get"))
-(require 'el-get)
-(add-to-list 'el-get-recipe-path (concat emacs-dir "/el-get/my-recipies"))
+(add-to-list 'load-path elisp-dir)
 
-(setq el-get-sources
-      '(el-get yasnippet autopair apel flim suomalainen-kalenteri mingus paredit geiser
-	       (:name org-mode :after (lambda ()
-                                        (add-to-list 'load-path "~/.emacs.d/el-get/org-mode")
-                                        (setq org-directory (concat dropbox-dir "/org")
-                                              org-agenda-files (list org-directory)
-                                              org-agenda-include-diary t
-                                              org-default-notes-file (concat org-directory "/notes.org")
-                                              org-completion-use-ido t
-                                              org-outline-path-complete-in-steps nil
-                                              org-insert-mode-line-in-empty-file t
-                                              org-mobile-inbox-for-pull (concat org-directory "/flagged.org")
-                                              org-mobile-directory (concat dropbox-dir "/MobileOrg")
-                                              org-enforce-todo-checkbox-dependencies t
-                                              org-enforce-todo-dependencies t
-                                              org-log-done 'note
-                                              org-todo-keywords '((sequence "TODO(t)" "WIP(w!)" "|" "DONE(d!)")
-                                                                  (sequence "|" "CANCELED(c@/!)")
-                                                                  (sequence "|" "STALLED(s@/!)")
-                                                                  (sequence "PENDING(p@/!)" "|")))
+;; yasnippet
+(add-to-list 'load-path (concat elisp-dir "/yasnippet/"))
+(require 'yasnippet)
 
-                                        (defun org-summary-todo (n-done n-not-done)
-                                          "Switch entry to DONE when all subentries are done, to TODO otherwise."
-                                          (let (org-log-done org-log-states)   ; turn off logging
-                                            (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
-                                        (add-hook 'org-after-todo-statistics-hook 'org-summary-todo)
+;; autopair
+(add-to-list 'load-path (concat elisp-dir "/autopair"))
+(require 'autopair)
 
-                                        (setq org-capture-templates
-                                              '(("m" "Meeting" entry (file+headline (concat org-directory "/meetings.org") "Tapaamiset")
-                                                 "* TODO %?\n  %i\n  %a")
-                                                ("a" "Task" entry (file+headline (concat org-directory "/work.org") "Työt")
-                                                 "* TODO %?\n  %i\n  %a")
-                                                ("f" "Defect" entry (file+headline (concat org-directory "/work.org") "Viat")
-                                                 "* TODO %?\n  %i\n  %a")
-                                                ("e" "Enhancement" entry (file+headline (concat org-directory "/work.org") "Parantelut")
-                                                 "* TODO %?\n  %i\n  %a")
-                                                ("u" "System update" entry (file+headline (concat org-directory "/work.org") "Järjestelmän päivitykset")
-                                                 "* TODO %?\n  %i\n  %a")
-                                                ("t" "TODO entry" entry (file+headline (concat org-directory "/gtd.org") "Sekalaiset")
-                                                 "* TODO %?\n  %i\n  %a")))
+;; apel
+(add-to-list 'load-path (concat elisp-dir "/apel"))
 
-					(global-set-key (kbd "C-c l") 'org-store-link)
-					(global-set-key (kbd "C-c c") 'org-capture)
-					(global-set-key (kbd "C-c a") 'org-agenda)
+;; flim
+(add-to-list 'load-path (concat elisp-dir "/flim"))
 
-					(add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
+;; suomalainen-kalenteri
+(load (concat elisp-dir "/suomalainen-kalenteri/suomalainen-kalenteri.el"))
 
-					(setq org-publish-project-alist
-					      '(("personal"
-						 :base-directory "~/web/"
-						 :publishing-directory "~/public_html"
-						 :section-numbers nil
-						 :table-of-contents nil
-						 :style "<link rel=\"stylesheet\" href=\"./css/style.css\" type=\"text/css\"/>")
-                                                ("work"
-                                                 :base-directory "~/Dropbox/org"
-                                                 :exclude "contacts\\.org\\|gtd\\.org\\|index\\.org\\|notes\\.org"
-                                                 :section-numbers nil
-                                                 :table-of-contents t
-                                                 :style "<link rel=\"stylesheet\" href=\"./css/style.css\" type=\"text/css\"/>")
-                                                ))
-                                        (add-hook 'message-mode-hook 'turn-on-orgstruct)
-                                        (add-hook 'message-mode-hook 'turn-on-orgstruct++)
-                                        (add-hook 'message-mode-hook 'turn-on-orgtbl)
+;; mingus
+(add-to-list 'load-path (concat elisp-dir "/mingus"))
+(require 'mingus)
 
-                                        ;; Contacts / replace with BBDB
-                                        (require 'org-contacts)
-                                        (setq org-contacts-files (list (concat org-directory "/contacts.org")))
-                                        ))
-	       (:name slime :after (lambda ()
-				     (setq slime-description-autofocus t
-                                           slime-repl-history-trim-whitespaces t
-                                           slime-repl-wrap-history t
-                                           slime-repl-history-file (concat emacs-dir "/slime-history.eld")
-                                           slime-repl-history-remove-duplicates t
-                                           slime-ed-use-dedicated-frame t
-                                           slime-kill-without-query-p t
-                                           slime-startup-animation t
-                                           slime-net-coding-system 'utf-8-unix
-                                           ;;common-lisp-hyperspec-root "file:/home/zmyrgel/lisp/docs/HyperSpec/"
-                                           ;;common-lisp-hyperspec-symbol-table
-                                           ;; (concat common-lisp-hyperspec-root "Data/Map_Sym.txt")
-                                           slime-lisp-implementations
-					   '((sbcl  ("sbcl"))
-					     (clisp ("clisp" "-K full -ansi"))))
+;; paredit
+(add-to-list 'load-path (concat elisp-dir "/paredit"))
+(require 'paredit)
 
-                                     ;; conflicts with clojure swank in newer Slime CVS (later than 2009-10-01)
-				     (setq slime-use-autodoc-mode nil)
+;;; Org-mode
+(setq org-directory (concat dropbox-dir "/org")
+      org-agenda-files (list org-directory)
+      org-agenda-include-diary t
+      org-default-notes-file (concat org-directory "/notes.org")
+      org-completion-use-ido t
+      org-outline-path-complete-in-steps nil
+      org-insert-mode-line-in-empty-file t
+      org-mobile-inbox-for-pull (concat org-directory "/flagged.org")
+      org-mobile-directory (concat dropbox-dir "/MobileOrg")
+      org-enforce-todo-checkbox-dependencies t
+      org-enforce-todo-dependencies t
+      org-log-done 'note
+      org-todo-keywords '((sequence "TODO(t)" "WIP(w!)" "|" "DONE(d!)")
+                          (sequence "|" "CANCELED(c@/!)")
+                          (sequence "|" "STALLED(s@/!)")
+                          (sequence "PENDING(p@/!)" "|")))
 
-				     (require 'slime)
-				     (slime-setup
-				      '(slime-repl
-					slime-fancy
-					slime-asdf
-					slime-tramp))
+(defun org-summary-todo (n-done n-not-done)
+  "Switch entry to DONE when all subentries are done, to TODO otherwise."
+  (let (org-log-done org-log-states)   ; turn off logging
+    (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
+(add-hook 'org-after-todo-statistics-hook 'org-summary-todo)
 
-                                     (setq slime-complete-symbol-function 'slime-fuzzy-complete-symbol)
+(setq org-capture-templates
+      '(("m" "Meeting" entry (file+headline (concat org-directory "/meetings.org") "Tapaamiset")
+         "* TODO %?\n  %i\n  %a")
+        ("a" "Task" entry (file+headline (concat org-directory "/work.org") "Työt")
+         "* TODO %?\n  %i\n  %a")
+        ("f" "Defect" entry (file+headline (concat org-directory "/work.org") "Viat")
+         "* TODO %?\n  %i\n  %a")
+        ("e" "Enhancement" entry (file+headline (concat org-directory "/work.org") "Parantelut")
+         "* TODO %?\n  %i\n  %a")
+        ("u" "System update" entry (file+headline (concat org-directory "/work.org") "Järjestelmän päivitykset")
+         "* TODO %?\n  %i\n  %a")
+        ("t" "TODO entry" entry (file+headline (concat org-directory "/gtd.org") "Sekalaiset")
+         "* TODO %?\n  %i\n  %a")))
 
-                                     (global-set-key (kbd "C-c s") 'slime-selector)
-				     (def-slime-selector-method ?l
-				       "most recently visited lisp-mode buffer."
-				       (slime-recently-visited-buffer 'lisp-mode))
-                                     (def-slime-selector-method ?c
-                                       "most recently visited scheme-mode buffer."
-				       (slime-recently-visited-buffer 'scheme-mode))
-				     (def-slime-selector-method ?j
-				       "most recently visited clojure-mode buffer."
-				       (slime-recently-visited-buffer 'clojure-mode))))
-	       (:name magit :after (lambda ()
-				     (global-set-key (kbd "C-x v /") 'magit-status)))
-               (:name emacs-w3m :after (lambda ()
-                                         (require 'w3m-load)
-                                         (require 'w3m)
-                                         (require 'mime-w3m)
-                                         (require 'w3m-session)
+(global-set-key (kbd "C-c l") 'org-store-link)
+(global-set-key (kbd "C-c c") 'org-capture)
+(global-set-key (kbd "C-c a") 'org-agenda)
 
-                                         (setq w3m-session-file (concat emacs-dir "/w3m-session")
-                                               w3m-session-save-always t
-                                               w3m-session-load-always t
-                                               w3m-session-show-titles t
-                                               w3m-session-duplicate-tabs 'never)
+(add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
 
-                                         (setq browse-url-browser-function 'w3m-browse-url
-                                               browse-url-new-window-flag t
-                                               browse-url-firefox-new-window-is-tab t
-                                               w3m-use-form t
-                                               w3m-default-display-inline-images t
-                                               w3m-use-cookies t
-                                               w3m-use-tab nil
-                                               url-keep-history t
-                                               w3m-profile-directory emacs-dir
-                                               w3m-default-save-directory "~/Downloads"
-                                               w3m-coding-system 'utf-8
-                                               w3m-file-coding-system 'utf-8
-                                               w3m-file-name-coding-system 'utf-8
-                                               w3m-output-coding-system 'utf-8
-                                               w3m-terminal-coding-system 'utf-8
-                                               w3m-home-page "http://www.openbsd.org")
+(setq org-publish-project-alist
+      '(("personal"
+         :base-directory "~/web/"
+         :publishing-directory "~/public_html"
+         :section-numbers nil
+         :table-of-contents nil
+         :style "<link rel=\"stylesheet\" href=\"./css/style.css\" type=\"text/css\"/>")
+        ("work"
+         :base-directory "~/Dropbox/org"
+         :exclude "contacts\\.org\\|gtd\\.org\\|index\\.org\\|notes\\.org"
+         :section-numbers nil
+         :table-of-contents t
+         :style "<link rel=\"stylesheet\" href=\"./css/style.css\" type=\"text/css\"/>")
+        ))
+(add-hook 'message-mode-hook 'turn-on-orgstruct)
+(add-hook 'message-mode-hook 'turn-on-orgstruct++)
+(add-hook 'message-mode-hook 'turn-on-orgtbl)
 
-                                         (defun my-w3m-mode-init ()
-                                           (define-key w3m-mode-map "q" 'w3m-previous-buffer)
-                                           (define-key w3m-mode-map "w" 'w3m-next-buffer)
-                                           (define-key w3m-mode-map "x" 'w3m-close-window))
-                                         (add-hook 'w3m-mode-hook 'my-w3m-mode-init)
+;; Slime
+(add-to-list 'load-path (concat elisp-dir "/slime"))
+(add-to-list 'load-path (concat elisp-dir "/slime/contrib"))
 
-                                         (defun my-w3m-rename-buffer (url)
-                                           "base buffer name on title"
-                                           (let* ((size 32)
-                                                  (title w3m-current-title)
-                                                  (name (truncate-string-to-width
-                                                         (replace-regexp-in-string " " "_" title)
-                                                         size)))
-                                             (rename-buffer name t)))
+(setq slime-description-autofocus t
+      slime-repl-history-trim-whitespaces t
+      slime-repl-wrap-history t
+      slime-repl-history-file (concat emacs-dir "/slime-history.eld")
+      slime-repl-history-remove-duplicates t
+      slime-ed-use-dedicated-frame t
+      slime-kill-without-query-p t
+      slime-startup-animation t
+      slime-net-coding-system 'utf-8-unix
+      ;;common-lisp-hyperspec-root "file:/home/zmyrgel/lisp/docs/HyperSpec/"
+      ;;common-lisp-hyperspec-symbol-table
+      ;; (concat common-lisp-hyperspec-root "Data/Map_Sym.txt")
+      slime-lisp-implementations
+      '((sbcl  ("sbcl"))
+        (clisp ("clisp" "-K full -ansi"))))
 
-                                         (add-hook 'w3m-display-hook 'my-w3m-rename-buffer)
+;; conflicts with clojure swank in newer Slime CVS (later than 2009-10-01)
+(setq slime-use-autodoc-mode nil)
 
-                                         (defadvice w3m-modeline-title (around my-w3m-modeline-title)
-                                           "prevent original function from running; cleanup remnants"
-                                           (setq w3m-modeline-separator ""
-                                                 w3m-modeline-title-string ""))
-                                         (ad-activate 'w3m-modeline-title)))
-	       (:name auctex :after (lambda ()
-                                      (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
-				      (setq TeX-auto-save t
-					    TeX-parse-self t
-                                            TeX-insert-braces nil
-                                            TeX-electric-escape t
-                                            TeX-electric-macro t
-                                            TeX-newline-function 'reindent-then-newline-and-indent)))
-	       (:name multi-term :after (lambda ()
-                                          ;;; Add better check here, windows PC?
-                                          (if (string= system-type "gnu/linux")
-                                              (setq multi-term-program "/bin/bash")
-                                            (setq multi-term-program "/bin/ksh"))
-					  (add-hook 'term-mode-hook (lambda () (setq autopair-dont-activate t)))
-					  (global-set-key (kbd "C-c t") 'multi-term-next)
-					  (global-set-key (kbd "C-c T") 'multi-term)))
-	       (:name smex :after (lambda ()
-				    (global-set-key (kbd "M-x") 'smex)
-				    (global-set-key (kbd "C-x C-m") 'smex)
-				    (global-set-key (kbd "M-X") 'smex-major-mode-commands)
-				    (global-set-key (kbd "C-c M-x") 'smex-update-and-run)
-				    (setq smex-save-file (concat emacs-dir "/smex-items"))))
-	       (:name clojure-mode :after (lambda ()
-					    (autoload 'clojure-mode "clojure-mode" "A major mode for Clojure" t)
-					    (add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
-					    (add-hook 'clojure-mode-hook 'my-lisp-hook)))
-	       (:name auto-complete :after (lambda ()
-					     (define-key ac-mode-map (kbd "M-TAB") 'auto-complete)))
-	       (:name undo-tree :after (lambda ()
-					 (global-undo-tree-mode)))
-               (:name quack :after (lambda ()
-                                     (setq quack-default-program "csi"
-                                           quack-dir "~/.emacs.d/quack"
-                                           quack-fontify-style nil
-                                           quack-newline-behavior 'indent-newline-indent
-                                           quack-pretty-lambda-p nil
-                                           quack-remap-find-file-bindings-p nil
-                                           quack-run-scheme-always-prompts-p nil
-                                           quack-run-scheme-prompt-defaults-to-last-p t
-                                           quack-smart-open-paren-p t
-                                           quack-switch-to-scheme-method 'other-window)))
-               (:name nognus :after (lambda ()
-                                      (require 'gnus-load)
-                                      (setq gnus-select-method '(nntp "news.gmane.org")
-                                            mm-inline-text-html-with-images t
-                                            mm-discouraged-alternatives '("text/html" "text/richtext"))
+(require 'slime)
+;;(slime-setup
+;; '(slime-fancy slime-repl slime-asdf slime-tramp))
 
-                                      ;;(setq gnus-summary-line-format "%U%R│%B%(%s%80=%) │ %f %110=│ %6&user-date;\n")
-                                      (setq gnus-treat-hide-citation t
-                                            gnus-cited-lines-visible '(0 . 5))
+(setq slime-complete-symbol-function 'slime-fuzzy-complete-symbol)
 
-                                      ;; XXX: test
-                                      ;; (defun my-save-all-jpeg-parts (handle)
-                                      ;;   (when (equal (car (mm-handle-type handle)) "image/jpeg")
-                                      ;;     (with-temp-buffer
-                                      ;;       (insert (mm-get-part handle))
-                                      ;;       (write-region (point-min) (point-max)
-                                      ;;                     (read-file-name "Save jpeg to: ")))))
-                                      ;; (setq gnus-article-mime-part-function
-                                      ;;       'my-save-all-jpeg-parts)
+(global-set-key (kbd "C-c s") 'slime-selector)
+(def-slime-selector-method ?l
+  "most recently visited lisp-mode buffer."
+  (slime-recently-visited-buffer 'lisp-mode))
+(def-slime-selector-method ?c
+  "most recently visited scheme-mode buffer."
+  (slime-recently-visited-buffer 'scheme-mode))
+(def-slime-selector-method ?j
+  "most recently visited clojure-mode buffer."
+  (slime-recently-visited-buffer 'clojure-mode))
+
+;;; magit
+(add-to-list 'load-path (concat elisp-dir "/magit"))
+(require 'magit)
+(global-set-key (kbd "C-x v /") 'magit-status)
+
+;;;; w3m
+(add-to-list 'load-path (concat elisp-dir "/emacs-w3m"))
+(require 'w3m-load)
+(require 'w3m)
+(require 'mime-w3m)
+(require 'w3m-session)
+
+(setq w3m-session-file (concat emacs-dir "/w3m-session")
+      w3m-session-save-always t
+      w3m-session-load-always t
+      w3m-session-show-titles t
+      w3m-session-duplicate-tabs 'never)
+
+(setq browse-url-browser-function 'w3m-browse-url
+      browse-url-new-window-flag t
+      browse-url-firefox-new-window-is-tab t
+      w3m-use-form t
+      w3m-default-display-inline-images t
+      w3m-use-cookies t
+      w3m-use-tab nil
+      url-keep-history t
+      w3m-profile-directory emacs-dir
+      w3m-default-save-directory "~/Downloads"
+      w3m-coding-system 'utf-8
+      w3m-file-coding-system 'utf-8
+      w3m-file-name-coding-system 'utf-8
+      w3m-output-coding-system 'utf-8
+      w3m-terminal-coding-system 'utf-8
+      w3m-home-page "http://www.openbsd.org")
+
+(defun my-w3m-mode-init ()
+  (define-key w3m-mode-map "q" 'w3m-previous-buffer)
+  (define-key w3m-mode-map "w" 'w3m-next-buffer)
+  (define-key w3m-mode-map "x" 'w3m-close-window))
+(add-hook 'w3m-mode-hook 'my-w3m-mode-init)
+
+(defun my-w3m-rename-buffer (url)
+  "base buffer name on title"
+  (let* ((size 32)
+         (title w3m-current-title)
+         (name (truncate-string-to-width
+                (replace-regexp-in-string " " "_" title)
+                size)))
+    (rename-buffer name t)))
+
+(add-hook 'w3m-display-hook 'my-w3m-rename-buffer)
+
+(defadvice w3m-modeline-title (around my-w3m-modeline-title)
+  "prevent original function from running; cleanup remnants"
+  (setq w3m-modeline-separator ""
+        w3m-modeline-title-string ""))
+(ad-activate 'w3m-modeline-title)
+
+;;; Auctex
+(add-to-list 'load-path (concat elisp-dir "/auctex"))
+(load (concat elisp-dir "/auctex/auctex.el") nil t t)
+(load (concat elisp-dir "/auctex/preview/preview-latex.el") nil t t)
+(add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
+(setq TeX-auto-save t
+      TeX-parse-self t
+      TeX-insert-braces nil
+      TeX-electric-escape t
+      TeX-electric-macro t
+      TeX-newline-function 'reindent-then-newline-and-indent)
+
+;;; multiterm
+(add-to-list 'load-path (concat elisp-dir "/multi-term"))
+(require 'multi-term)
+(if (string= system-type "gnu/linux") ;; Add better check here, windows PC?
+    (setq multi-term-program "/bin/bash")
+  (setq multi-term-program "/bin/ksh"))
+(add-hook 'term-mode-hook (lambda () (setq autopair-dont-activate t)))
+(global-set-key (kbd "C-c t") 'multi-term-next)
+(global-set-key (kbd "C-c T") 'multi-term)
 
 
-                                      ;; check for new messages every 10 mins
-                                      (require 'gnus-demon)
-                                      (gnus-demon-add-handler 'gnus-demon-scan-news 10 t)
+;;;; smex
+(add-to-list 'load-path (concat elisp-dir "/smex"))
+(require 'smex)
+(smex-initialize)
+(global-set-key (kbd "M-x") 'smex)
+(global-set-key (kbd "C-x C-m") 'smex)
+(global-set-key (kbd "M-X") 'smex-major-mode-commands)
+(global-set-key (kbd "C-c M-x") 'smex-update-and-run)
+(setq smex-save-file (concat emacs-dir "/smex-items"))
 
-                                      ;; use w3m to render HTML messages
-                                      (if (featurep 'w3m)
-                                          (setq mm-text-html-renderer 'w3m)
-                                        (setq mm-text-html-renderer 'shr))
-                                      ))
-               ))
+;;; clojure
+(add-to-list 'load-path (concat elisp-dir "/clojure-mode"))
+(autoload 'clojure-mode "clojure-mode" "A major mode for Clojure" t)
+(add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
+(add-hook 'clojure-mode-hook 'my-lisp-hook)
+
+;;; auto-complete
+(add-to-list 'load-path (concat elisp-dir "/auto-complete"))
+;;(add-to-list 'ac-dictionary-directories (concat emacs-dir "/dict"))
+(require 'auto-complete-config)
+(ac-config-default)
+(define-key ac-mode-map (kbd "M-TAB") 'auto-complete)
+
+;;; undo-tree
+(add-to-list 'load-path (concat elisp-dir "/undo-tree"))
+(require 'undo-tree)
+(global-undo-tree-mode)
+
+;;; quack
+(add-to-list 'load-path (concat elisp-dir "/quack"))
+(require 'quack)
+(setq quack-default-program "csi"
+      quack-dir "~/.emacs.d/quack"
+      quack-fontify-style nil
+      quack-newline-behavior 'indent-newline-indent
+      quack-pretty-lambda-p nil
+      quack-remap-find-file-bindings-p nil
+      quack-run-scheme-always-prompts-p nil
+      quack-run-scheme-prompt-defaults-to-last-p t
+      quack-smart-open-paren-p t
+      quack-switch-to-scheme-method 'other-window)
+
+;;; gnus
+
+(require 'gnus)
+(load "~/share/emacs/24.0.50/lisp/gnus/mailcap.el") ;; XXX: how to skip this???
+(setq gnus-select-method '(nntp "news.gmane.org")
+      mm-inline-text-html-with-images t
+      mm-discouraged-alternatives '("text/html" "text/richtext"))
+
+;;(setq gnus-summary-line-format "%U%R│%B%(%s%80=%) │ %f %110=│ %6&user-date;\n")
+(setq gnus-treat-hide-citation t
+      gnus-cited-lines-visible '(0 . 5))
+
+;; XXX: test
+;; (defun my-save-all-jpeg-parts (handle)
+;;   (when (equal (car (mm-handle-type handle)) "image/jpeg")
+;;     (with-temp-buffer
+;;       (insert (mm-get-part handle))
+;;       (write-region (point-min) (point-max)
+;;                     (read-file-name "Save jpeg to: ")))))
+;; (setq gnus-article-mime-part-function
+;;       'my-save-all-jpeg-parts)
+
+
+;; check for new messages every 10 mins
+(require 'gnus-demon)
+(gnus-demon-add-handler 'gnus-demon-scan-news 10 t)
+
+;; use w3m to render HTML messages
+(when (featurep 'w3m)
+  (setq mm-text-html-renderer 'w3m))
 
 ;; Extra settings to handle older emacsen
 
@@ -313,8 +358,6 @@
           global-semantic-stickyfunc-mode))
   (semantic-mode 1)
   (global-ede-mode 1))
-
-(el-get)
 
 ;; bytecompile... XXX: does all .el-files, fixit
 (defun auto-recompile-emacs-file ()
