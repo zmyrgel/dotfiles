@@ -154,8 +154,12 @@
 (setq slime-use-autodoc-mode nil)
 
 (require 'slime)
-;;(slime-setup
-;; '(slime-fancy slime-repl slime-asdf slime-tramp))
+(slime-setup
+ '(slime-repl
+   slime-fancy
+   slime-asdf
+   slime-tramp
+   slime-indentation))
 
 (setq slime-complete-symbol-function 'slime-fuzzy-complete-symbol)
 
