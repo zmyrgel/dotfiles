@@ -75,7 +75,7 @@
       org-enforce-todo-checkbox-dependencies t
       org-enforce-todo-dependencies t
       org-log-done 'note
-      org-todo-keywords '((sequence "TODO(t)" "WIP(w!)" "|" "DONE(d!)")
+      org-todo-keywords '((sequence "TODO(t)" "WIP(w!)" "|" "DONE(d@!)")
                           (sequence "|" "CANCELED(c@/!)")
                           (sequence "|" "STALLED(s@/!)")
                           (sequence "PENDING(p@/!)" "|")))
