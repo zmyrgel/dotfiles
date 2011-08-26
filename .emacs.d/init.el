@@ -185,6 +185,7 @@
 (require 'w3m)
 (require 'mime-w3m)
 (require 'w3m-session)
+(require 'w3m-search)
 
 (setq w3m-session-file (concat emacs-dir "/w3m-session")
       w3m-session-save-always t
@@ -212,7 +213,10 @@
 (defun my-w3m-mode-init ()
   (define-key w3m-mode-map "q" 'w3m-previous-buffer)
   (define-key w3m-mode-map "w" 'w3m-next-buffer)
-  (define-key w3m-mode-map "x" 'w3m-close-window))
+  (define-key w3m-mode-map "x" 'w3m-close-window)
+  (add-to-list 'w3m-search-engine-alist '("duckduckgo" "https://duckduckgo.com/?q=%s"))
+  (add-to-list 'w3m-search-engine-alist '("fi.wikipedia" "http://fi.wikipedia.org/wiki/Spezial:Search?search=%s" utf-8))
+  (setq w3m-search-default-engine "duckduckgo"))
 (add-hook 'w3m-mode-hook 'my-w3m-mode-init)
 
 (defun my-w3m-rename-buffer (url)
