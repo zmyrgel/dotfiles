@@ -3,21 +3,15 @@
 ;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;;
 ;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;; Time-stamp: <2011-08-12 10:55:14 (zmyrgel)>
+;; Time-stamp: <2011-08-26 22:48:00 (zmyrgel)>
 ;; URL: http://www.wickedbsd.net/dotfiles/
 ;; Compatibility: GNU Emacs 24.0.x (may work with earlier versions)
 ;;
 ;; ----------------------------------------------------------------------------
-;; Todo:
+;; Commentary:
+;; - Just my emacs init file
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Install el-get if not already available
-;;(url-retrieve
-;; "https://github.com/dimitri/el-get/raw/master/el-get-install.el"
-;; (lambda (s)
-;;   (end-of-buffer)
-;;   (eval-print-last-sexp)))
 
 ;; Provide few defaults
 (defconst emacs-dir (expand-file-name "~/.emacs.d"))
