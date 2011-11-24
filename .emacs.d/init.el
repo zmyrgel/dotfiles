@@ -2,7 +2,7 @@
 ;;
 ;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;; Time-stamp: <2011-11-24 13:04:12 (tmy)>
+;; Time-stamp: <2011-11-24 13:16:47 (tmy)>
 ;; URL: http://github.com/zmyrgel/dotfiles
 ;; Compatibility: GNU Emacs 24.1 (may work with earlier versions)
 ;;
@@ -199,6 +199,7 @@
 (require 'w3m)
 (require 'mime-w3m)
 (require 'w3m-session)
+(require 'w3m-search)
 
 (setq w3m-session-file (concat emacs-dir "/w3m-session")
       w3m-session-save-always t
@@ -226,6 +227,9 @@
 (defun my-w3m-mode-init ()
   (define-key w3m-mode-map "z" 'w3m-previous-buffer)
   (define-key w3m-mode-map "x" 'w3m-next-buffer))
+  (add-to-list 'w3m-search-engine-alist '("duckduckgo" "https://duckduckgo.com/?q=%s"))
+  (add-to-list 'w3m-search-engine-alist '("fi.wikipedia" "http://fi.wikipedia.org/wiki/Spezial:Search?search=%s" utf-8))
+  (setq w3m-search-default-engine "duckduckgo"))
 (add-hook 'w3m-mode-hook 'my-w3m-mode-init)
 
 (defun my-w3m-rename-buffer (url)
