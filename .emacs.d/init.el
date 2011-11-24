@@ -1,23 +1,16 @@
 ;; -*- mode: emacs-lisp; coding: utf-8-unix; indent-tabs-mode: nil -*-
 ;;
 ;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
-;;
 ;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;; Time-stamp: <2011-08-12 10:55:14 (zmyrgel)>
-;; URL: http://www.wickedbsd.net/dotfiles/
-;; Compatibility: GNU Emacs 24.0.x (may work with earlier versions)
+;; Time-stamp: <2011-11-24 13:04:12 (tmy)>
+;; URL: http://github.com/zmyrgel/dotfiles
+;; Compatibility: GNU Emacs 24.1 (may work with earlier versions)
 ;;
-;; ----------------------------------------------------------------------------
-;; Todo:
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Install el-get if not already available
-;;(url-retrieve
-;; "https://github.com/dimitri/el-get/raw/master/el-get-install.el"
-;; (lambda (s)
-;;   (end-of-buffer)
-;;   (eval-print-last-sexp)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; TODO:
+;; - Slime autoload error: void symbol: slime-fuzzy-init
+;; - Autoloads for w3m,gnus,erc
+;; - Add to marmalade: ace-jump-mode, no-word, boxquote, mingus, quack
 
 ;; Provide few defaults
 (defconst emacs-dir (expand-file-name "~/.emacs.d"))
@@ -29,10 +22,7 @@
 (when (file-exists-p (concat emacs-dir "/init-local.el"))
   (load (concat emacs-dir "/init-local.el")))
 
-;; Testing
 (add-to-list 'load-path elisp-dir)
-(autoload 'no-word "no-word" "word to txt")
-(add-to-list 'auto-mode-alist '("\\.doc\\'" . no-word))
 
 (require 'ace-jump-mode)
 (define-key global-map (kbd "C-c SPC") 'ace-jump-mode)
@@ -43,45 +33,76 @@
 
 (add-to-list 'load-path elisp-dir)
 
+;; Use package.el
+(require 'package)
+(setq package-archives '(("GNU" . "http://elpa.gnu.org/packages/")
+                         ("Marmalade" . "http://marmalade-repo.org/packages/")
+                         ("ELPA" . "http://tromey.com/elpa/")))
+(package-initialize)
+
+;; only for fresh install
+(unless package-archive-contents
+  (package-refresh-contents))
+
+(defun ensure-installed (packages)
+  "Ensures given packages are installed using package.el"
+  (dolist (package packages)
+    (when (not (package-installed-p package))
+      (package-install package))))
+
+ ;; packages I use
+(ensure-installed '(clojure-mode
+                    magit
+                    smex
+                    slime
+                    slime-repl
+                    slime-fuzzy
+                    undo-tree
+                    paredit
+                    yasnippet
+                    suomalainen-kalenteri))
+
+(autoload 'yas/hippie-try-expand "yasnippet")
+
+;; nXhtml
+;;(add-to-list 'load-path (concat elisp-dir "/nxhtml"))
+;; (load (concat elisp-dir "/nxhtml/autostart.el"))
+
+(load (concat elisp-dir "/nxhtml/related/php-mode.el"))
+(load (concat elisp-dir "/nxhtml/related/php-imenu.el"))
+
 ;; yasnippet
-(add-to-list 'load-path (concat elisp-dir "/yasnippet/"))
-(require 'yasnippet)
+;;(add-to-list 'load-path (concat elisp-dir "/yasnippet"))
+;;(require 'yasnippet)
 
-;; autopair
-(add-to-list 'load-path (concat elisp-dir "/autopair"))
-(require 'autopair)
-
-;; apel
+;; Additional libraries
 (add-to-list 'load-path (concat elisp-dir "/apel"))
-
-;; flim
 (add-to-list 'load-path (concat elisp-dir "/flim"))
-
-;; suomalainen-kalenteri
-(load (concat elisp-dir "/suomalainen-kalenteri/suomalainen-kalenteri.el"))
 
 ;; mingus
 (add-to-list 'load-path (concat elisp-dir "/mingus"))
 (require 'mingus)
 
-;; paredit
-(add-to-list 'load-path (concat elisp-dir "/paredit"))
-(require 'paredit)
+;;org-agenda-todo-ignore-scheduled
+;;org-agenda-todo-ignore-deadlines
+;;org-agenda-todo-ignore-timestamp
 
 ;;; Org-mode
-(setq org-directory (concat dropbox-dir "/org")
+(setq org-directory (concat emacs-dir "/org")
       org-agenda-files (list org-directory)
+      org-agenda-include-all-todo t ;; deprecated, find better way
       org-agenda-include-diary t
+      org-agenda-todo-ignore-with-date t
       org-default-notes-file (concat org-directory "/notes.org")
       org-completion-use-ido t
       org-outline-path-complete-in-steps nil
       org-insert-mode-line-in-empty-file t
       org-mobile-inbox-for-pull (concat org-directory "/flagged.org")
-      org-mobile-directory (concat dropbox-dir "/MobileOrg")
+      org-mobile-directory (concat org-directory "/MobileOrg")
       org-enforce-todo-checkbox-dependencies t
       org-enforce-todo-dependencies t
       org-log-done 'note
-      org-todo-keywords '((sequence "TODO(t)" "WIP(w!)" "|" "DONE(d!)")
+      org-todo-keywords '((sequence "TODO(t)" "WIP(w!)" "|" "DONE(d@!)")
                           (sequence "|" "CANCELED(c@/!)")
                           (sequence "|" "STALLED(s@/!)")
                           (sequence "PENDING(p@/!)" "|")))
@@ -93,18 +114,22 @@
 (add-hook 'org-after-todo-statistics-hook 'org-summary-todo)
 
 (setq org-capture-templates
-      '(("m" "Meeting" entry (file+headline (concat org-directory "/meetings.org") "Tapaamiset")
-         "* TODO %?\n  %i\n  %a")
-        ("a" "Task" entry (file+headline (concat org-directory "/work.org") "Työt")
-         "* TODO %?\n  %i\n  %a")
-        ("f" "Defect" entry (file+headline (concat org-directory "/work.org") "Viat")
-         "* TODO %?\n  %i\n  %a")
-        ("e" "Enhancement" entry (file+headline (concat org-directory "/work.org") "Parantelut")
-         "* TODO %?\n  %i\n  %a")
-        ("u" "System update" entry (file+headline (concat org-directory "/work.org") "Järjestelmän päivitykset")
-         "* TODO %?\n  %i\n  %a")
-        ("t" "TODO entry" entry (file+headline (concat org-directory "/gtd.org") "Sekalaiset")
-         "* TODO %?\n  %i\n  %a")))
+      '(("m" "Meeting" entry (file (concat org-directory "/meetings.org"))
+         "* TODO %?\t:work:meeting:\n  %i\n  %a")
+        ("a" "Task" entry (file (concat org-directory "/work.org"))
+         "* TODO %?\t:work:task:\n  %i\n  %a")
+        ("f" "Defect" entry (file (concat org-directory "/work.org"))
+         "* TODO %?\t:work:defect:\n  %i\n  %a")
+        ("e" "Enhancement" entry (file (concat org-directory "/work.org"))
+         "* TODO %?\t:work:enchancement:\n  %i\n  %a")
+        ("u" "System update" entry (file (concat org-directory "/work.org"))
+         "* TODO %?\t:work:update:\n  %i\n  %a")
+        ("p" "Project" entry (file (concat org-directory "/work.org"))
+         "* TODO %?\t:project:\n  %i\n  %a")
+        ("s" "Study" entry (file (concat org-directory "/work.org"))
+         "* TODO %?\t:work:study:\n  %i\n  %a")
+        ("t" "TODO entry" entry (file (concat org-directory "/gtd.org"))
+         "* TODO %?\t:misc:\n  %i\n  %a")))
 
 (global-set-key (kbd "C-c l") 'org-store-link)
 (global-set-key (kbd "C-c c") 'org-capture)
@@ -112,28 +137,14 @@
 
 (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
 
-(setq org-publish-project-alist
-      '(("personal"
-         :base-directory "~/web/"
-         :publishing-directory "~/public_html"
-         :section-numbers nil
-         :table-of-contents nil
-         :style "<link rel=\"stylesheet\" href=\"./css/style.css\" type=\"text/css\"/>")
-        ("work"
-         :base-directory "~/Dropbox/org"
-         :exclude "contacts\\.org\\|gtd\\.org\\|index\\.org\\|notes\\.org"
-         :section-numbers nil
-         :table-of-contents t
-         :style "<link rel=\"stylesheet\" href=\"./css/style.css\" type=\"text/css\"/>")
-        ))
 (add-hook 'message-mode-hook 'turn-on-orgstruct)
 (add-hook 'message-mode-hook 'turn-on-orgstruct++)
 (add-hook 'message-mode-hook 'turn-on-orgtbl)
 
 ;; Slime
-(add-to-list 'load-path (concat elisp-dir "/slime"))
-(add-to-list 'load-path (concat elisp-dir "/slime/contrib"))
 
+;;(add-to-list 'load-path (concat elisp-dir "/slime/contrib"))
+;;(add-to-list 'load-path (concat elisp-dir "/slime"))
 (setq slime-description-autofocus t
       slime-repl-history-trim-whitespaces t
       slime-repl-wrap-history t
@@ -153,30 +164,37 @@
 ;; conflicts with clojure swank in newer Slime CVS (later than 2009-10-01)
 (setq slime-use-autodoc-mode nil)
 
-(require 'slime)
-;;(slime-setup
-;; '(slime-fancy slime-repl slime-asdf slime-tramp))
+;;(require 'slime) ; autoload here
+;; (slime-setup '(slime-asdf
+;;                slime-indentation
+;;                slime-mdot-fu
+;;                slime-tramp
+;;                slime-fancy
+;;                slime-sbcl-exts
+;;                slime-xref-browser))
 
-(setq slime-complete-symbol-function 'slime-fuzzy-complete-symbol)
+(eval-after-load 'slime
+  '(progn
+     (slime-autodoc-mode)
+     (setq slime-complete-symbol*-fancy t
+           slime-complete-symbol-function 'slime-fuzzy-complete-symbol)
+     (add-hook 'lisp-mode-hook (lambda ()
+                                 (slime-mode t)))))
 
-(global-set-key (kbd "C-c s") 'slime-selector)
-(def-slime-selector-method ?l
-  "most recently visited lisp-mode buffer."
-  (slime-recently-visited-buffer 'lisp-mode))
-(def-slime-selector-method ?c
-  "most recently visited scheme-mode buffer."
-  (slime-recently-visited-buffer 'scheme-mode))
-(def-slime-selector-method ?j
-  "most recently visited clojure-mode buffer."
-  (slime-recently-visited-buffer 'clojure-mode))
-
-;;; magit
-(add-to-list 'load-path (concat elisp-dir "/magit"))
-(require 'magit)
-(global-set-key (kbd "C-x v /") 'magit-status)
+;; (global-set-key (kbd "C-c s") 'slime-selector)
+;; (def-slime-selector-method ?l
+;;   "most recently visited lisp-mode buffer."
+;;   (slime-recently-visited-buffer 'lisp-mode))
+;; (def-slime-selector-method ?c
+;;   "most recently visited scheme-mode buffer."
+;;   (slime-recently-visited-buffer 'scheme-mode))
+;; (def-slime-selector-method ?j
+;;   "most recently visited clojure-mode buffer."
+;;   (slime-recently-visited-buffer 'clojure-mode))
 
 ;;;; w3m
 (add-to-list 'load-path (concat elisp-dir "/emacs-w3m"))
+(autoload 'w3m "w3m" "W3M browser")
 (require 'w3m-load)
 (require 'w3m)
 (require 'mime-w3m)
@@ -206,9 +224,8 @@
       w3m-home-page "http://www.openbsd.org")
 
 (defun my-w3m-mode-init ()
-  (define-key w3m-mode-map "q" 'w3m-previous-buffer)
-  (define-key w3m-mode-map "w" 'w3m-next-buffer)
-  (define-key w3m-mode-map "x" 'w3m-close-window))
+  (define-key w3m-mode-map "z" 'w3m-previous-buffer)
+  (define-key w3m-mode-map "x" 'w3m-next-buffer))
 (add-hook 'w3m-mode-hook 'my-w3m-mode-init)
 
 (defun my-w3m-rename-buffer (url)
@@ -229,9 +246,8 @@
 (ad-activate 'w3m-modeline-title)
 
 ;;; Auctex
-(add-to-list 'load-path (concat elisp-dir "/auctex"))
-(load (concat elisp-dir "/auctex/auctex.el") nil t t)
-(load (concat elisp-dir "/auctex/preview/preview-latex.el") nil t t)
+;;(load (concat elisp-dir "/auctex/auctex.el") nil t t)
+;;(load (concat elisp-dir "/auctex/preview/preview-latex.el") nil t t)
 (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
 (setq TeX-auto-save t
       TeX-parse-self t
@@ -241,19 +257,14 @@
       TeX-newline-function 'reindent-then-newline-and-indent)
 
 ;;; multiterm
-(add-to-list 'load-path (concat elisp-dir "/multi-term"))
-(require 'multi-term)
+(autoload 'multi-term-next "multi-term")
 (if (string= system-type "gnu/linux") ;; Add better check here, windows PC?
     (setq multi-term-program "/bin/bash")
   (setq multi-term-program "/bin/ksh"))
-(add-hook 'term-mode-hook (lambda () (setq autopair-dont-activate t)))
 (global-set-key (kbd "C-c t") 'multi-term-next)
 (global-set-key (kbd "C-c T") 'multi-term)
 
-
 ;;;; smex
-(add-to-list 'load-path (concat elisp-dir "/smex"))
-(require 'smex)
 (smex-initialize)
 (global-set-key (kbd "M-x") 'smex)
 (global-set-key (kbd "C-x C-m") 'smex)
@@ -262,24 +273,15 @@
 (setq smex-save-file (concat emacs-dir "/smex-items"))
 
 ;;; clojure
-(add-to-list 'load-path (concat elisp-dir "/clojure-mode"))
 (autoload 'clojure-mode "clojure-mode" "A major mode for Clojure" t)
 (add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
 (add-hook 'clojure-mode-hook 'my-lisp-hook)
 
-;;; auto-complete
-(add-to-list 'load-path (concat elisp-dir "/auto-complete"))
-;;(add-to-list 'ac-dictionary-directories (concat emacs-dir "/dict"))
-(require 'auto-complete-config)
-(ac-config-default)
-(define-key ac-mode-map (kbd "M-TAB") 'auto-complete)
-
 ;;; undo-tree
-(add-to-list 'load-path (concat elisp-dir "/undo-tree"))
-(require 'undo-tree)
+(autoload 'global-undo-tree-mode "undo-tree")
 (global-undo-tree-mode)
 
-;;; quack
+;; quack
 (add-to-list 'load-path (concat elisp-dir "/quack"))
 (require 'quack)
 (setq quack-default-program "csi"
@@ -293,10 +295,15 @@
       quack-smart-open-paren-p t
       quack-switch-to-scheme-method 'other-window)
 
+;;(add-to-list 'load-path (concat elisp-dir "/geiser/elisp"))
+;;(load-file (concat elisp-dir "/geiser/elisp/geiser.el"))
+;;(load (concat elisp-dir "/geiser/elisp/geiser-load"))
+;;(require 'geiser-install)
+
 ;;; gnus
 
 (require 'gnus)
-(load "~/share/emacs/24.0.50/lisp/gnus/mailcap.el") ;; XXX: how to skip this???
+(load "/usr/share/emacs/24.0.91/lisp/gnus/mailcap.el") ;; XXX: how to skip this???
 (setq gnus-select-method '(nntp "news.gmane.org")
       mm-inline-text-html-with-images t
       mm-discouraged-alternatives '("text/html" "text/richtext"))
@@ -304,17 +311,6 @@
 ;;(setq gnus-summary-line-format "%U%R│%B%(%s%80=%) │ %f %110=│ %6&user-date;\n")
 (setq gnus-treat-hide-citation t
       gnus-cited-lines-visible '(0 . 5))
-
-;; XXX: test
-;; (defun my-save-all-jpeg-parts (handle)
-;;   (when (equal (car (mm-handle-type handle)) "image/jpeg")
-;;     (with-temp-buffer
-;;       (insert (mm-get-part handle))
-;;       (write-region (point-min) (point-max)
-;;                     (read-file-name "Save jpeg to: ")))))
-;; (setq gnus-article-mime-part-function
-;;       'my-save-all-jpeg-parts)
-
 
 ;; check for new messages every 10 mins
 (require 'gnus-demon)
@@ -324,18 +320,13 @@
 (when (featurep 'w3m)
   (setq mm-text-html-renderer 'w3m))
 
-;; Extra settings to handle older emacsen
-
 ;;  Use color-theme package on older than 24.1
- (if (< emacs-major-version 24)
-     (progn
-       (add-to-list 'el-get-sources 'color-theme)
-       (add-to-list 'el-get-sources 'color-theme-twilight))
-   (setq custom-enabled-themes '(wombat))
-   (load-theme 'wombat))
+(when (>= emacs-major-version 23)
+  (setq custom-enabled-themes '(deeper-blue))
+  (load-theme 'deeper-blue))
 
 (setq default-frame-alist '((font-backend . "xft")
-                            (font . "Dina-10")
+                            (font . "terminus-10")
                             (left-fringe . -1)
                             (right-fringe . -1)
                             (fullscreen . fullboth)
@@ -343,17 +334,14 @@
                             (tool-bar-lines . 0)))
 
 ;; Use external cedet on older than 23.2
-(if (or (< emacs-major-version 23)
-        (and (= emacs-major-version 23)
-             (= emacs-minor-version 1)))
-    (add-to-list 'el-get-sources 'cedet)
+(when (>= emacs-major-version 23)
   (setq semantic-default-submodes
         '(global-semantic-idle-scheduler-mode
           global-semanticdb-minor-mode
           global-semantic-idle-summary-mode
           global-semantic-mru-bookmark-mode
           global-semantic-stickyfunc-mode))
-  (semantic-mode 1)
+  (semantic-mode 0)
   (global-ede-mode 1))
 
 ;; bytecompile... XXX: does all .el-files, fixit
@@ -364,6 +352,18 @@
       (if (or (not (file-exists-p byte-file))
               (file-newer-than-file-p buffer-file-name byte-file))
           (byte-compile-file buffer-file-name)))))
+
+;; (setq compiled-dot-emacs (byte-compile-dest-file dot-emacs))
+
+;; (if (or (not (file-exists-p compiled-dot-emacs))
+;;         (file-newer-than-file-p dot-emacs compiled-dot-emacs)
+;;         (equal (nth 4 (file-attributes dot-emacs)) (list 0 0)))
+;;     (load dot-emacs)
+;;   (load compiled-dot-emacs))
+
+;; (add-hook 'kill-emacs-hook
+;;           '(lambda () (and (file-newer-than-file-p dot-emacs compiled-dot-emacs)
+;;                            (byte-compile-file dot-emacs))))
 
 ;(add-hook 'after-save-hook 'auto-recompile-emacs-file)
 
@@ -569,11 +569,10 @@
 ;; Buffer management
 ;; ------------------------------
 
-(when (require 'uniquify nil 'noerror)
-  (setq uniquify-buffer-name-style 'post-forward
-        uniquify-separator ":"
-        uniquify-after-kill-buffer-p t
-        uniquify-ignore-buffers-re "^\\*"))
+(setq uniquify-buffer-name-style 'post-forward
+      uniquify-separator ":"
+      uniquify-after-kill-buffer-p t
+      uniquify-ignore-buffers-re "^\\*")
 
 (when (fboundp 'ibuffer)
   (setq ibuffer-default-sorting-mode 'major-mode)
@@ -673,8 +672,6 @@
 (setq compilation-window-height 12
       gdb-many-windows t)
 
-(require 'cc-mode nil t)
-
 (defun new-c-lineup-arglist (langelem)
   (save-excursion
     (goto-char (cdr langelem))
@@ -710,7 +707,7 @@
 (defun my-c-mode-common ()
   (interactive)
   (hs-minor-mode t)
-  (autopair-mode)
+  (electric-pair-mode 1)
   (which-function-mode t)
   (cwarn-mode 1)
   (subword-mode 1)
@@ -753,8 +750,7 @@
   (defalias 'perl-mode 'cperl-mode))
 (add-hook 'cperl-mode-hook
           (lambda ()
-            (when (require 'flymake nil t)
-              (flymake-mode 1))
+            (flymake-mode 1)
             (setq cperl-fontlock t
                   cperl-electric-lbrace-space t
                   cperl-electric-parens t
@@ -775,18 +771,6 @@
   (c-set-offset 'arglist-intro '+)
   (c-set-style "java"))
 (add-hook 'java-mode-hook 'my-java-mode-hook)
-
-(when (file-exists-p (concat elisp-dir "malabar"))
-  (setq load-path (cons (concat elisp-dir "malabar/lisp") load-path))
-  (require 'malabar-mode)
-  (add-hook 'malabar-mode-hook 'my-java-mode-hook)
-  (setq malabar-groovy-lib-dir
-        (concat elisp-dir "malabar-1.5-SNAPSHOT/lib"))
-  (add-to-list 'auto-mode-alist '("\\.java\\'" . malabar-mode))
-  (add-hook 'malabar-mode-hook
-            (lambda ()
-              (add-hook 'after-save-hook 'malabar-compile-file-silently
-                        nil t))))
 
 (defun my-lisp-hook ()
   "Shared lisp settings"
@@ -836,6 +820,7 @@
             (lambda ()
               (local-set-key (kbd "C-x C-f") 'ido-find-file)))
   (ido-mode t)
+  (ido-everywhere)
   (setq ido-save-directory-list-file (concat emacs-dir "/ido.last")
         ido-ignore-buffers
         '("\\` " "^\*Mess" "^\*Back" ".*Completion" "^\*Ido")
@@ -880,8 +865,8 @@
 (autoload 'dired-jump-other-window "dired-x"
   "Like \\[dired-jump] (dired-jump) but in other window." t)
 
-(define-key global-map "\C-x\C-j" 'dired-jump)
-(define-key global-map "\C-x4\C-j" 'dired-jump-other-window)
+(define-key global-map (kbd "C-x C-j") 'dired-jump)
+(define-key global-map (kbd "C-x 4 C-j") 'dired-jump-other-window)
 
 ;; ------------------------------
 ;; Functions
@@ -921,8 +906,8 @@
 (defun quit-prompt ()
   "Prompts before exiting emacs."
   (interactive)
-  (cond ((y-or-n-p "Quit terminal? ")
-         (save-buffers-kill-terminal))))
+  (when (y-or-n-p "Quit terminal? ")
+    (save-buffers-kill-terminal)))
 
 ;; ------------------------------
 ;; Keybindings
@@ -931,6 +916,7 @@
 (windmove-default-keybindings 'meta)
 (global-set-key (kbd "C-x C-k") 'kill-region)
 (global-set-key (kbd "C-w") 'backward-kill-word)
-(global-set-key (kbd "C-x C-j") 'join-line)
+(global-set-key (kbd "C-c C-j") 'join-line)
 (global-set-key (kbd "C-^") 'repeat)
 (global-set-key (kbd "C-x C-c") 'quit-prompt)
+(global-set-key (kbd "C-x v /") 'magit-status)
