@@ -64,13 +64,6 @@
 
 (autoload 'yas/hippie-try-expand "yasnippet")
 
-;; nXhtml
-;;(add-to-list 'load-path (concat elisp-dir "/nxhtml"))
-;; (load (concat elisp-dir "/nxhtml/autostart.el"))
-
-(load (concat elisp-dir "/nxhtml/related/php-mode.el"))
-(load (concat elisp-dir "/nxhtml/related/php-imenu.el"))
-
 ;; yasnippet
 ;;(add-to-list 'load-path (concat elisp-dir "/yasnippet"))
 ;;(require 'yasnippet)
