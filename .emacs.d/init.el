@@ -2,15 +2,14 @@
 ;;
 ;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;; Time-stamp: <2011-11-24 13:16:47 (tmy)>
+;; Time-stamp: <2011-11-29 15:49:36 (tmy)>
 ;; URL: http://github.com/zmyrgel/dotfiles
 ;; Compatibility: GNU Emacs 24.1 (may work with earlier versions)
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO:
-;; - Slime autoload error: void symbol: slime-fuzzy-init
 ;; - Autoloads for w3m,gnus,erc
-;; - Add to marmalade: ace-jump-mode, no-word, boxquote, mingus, quack
+;; - Add to marmalade: ace-jump-mode, no-word, boxquote, mingus, quack, w3m, slimep
 
 ;; Provide few defaults
 (defconst emacs-dir (expand-file-name "~/.emacs.d"))
@@ -19,9 +18,13 @@
 (setq custom-file (concat emacs-dir "/custom.el"))
 (load custom-file 'noerror)
 
-(when (file-exists-p (concat emacs-dir "/init-local.el"))
-  (load (concat emacs-dir "/init-local.el")))
+(defun load-when-exists (file)
+  (when (file-exists-p file)
+    (load file)))
 
+(load-when-exists (concat emacs-dir "/init-local.el"))
+
+;; Add elisp dir to load path
 (add-to-list 'load-path elisp-dir)
 
 (require 'ace-jump-mode)
@@ -126,15 +129,15 @@
 (global-set-key (kbd "C-c a") 'org-agenda)
 
 (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
-
-(add-hook 'message-mode-hook 'turn-on-orgstruct)
-(add-hook 'message-mode-hook 'turn-on-orgstruct++)
-(add-hook 'message-mode-hook 'turn-on-orgtbl)
+(add-hook 'message-mode-hook
+          (lambda ()
+            (turn-on-orgstruct)
+            (turn-on-orgstruct++)
+            (turn-on-orgtbl)))
 
 ;; Slime
-
-;;(add-to-list 'load-path (concat elisp-dir "/slime/contrib"))
-;;(add-to-list 'load-path (concat elisp-dir "/slime"))
+(add-to-list 'load-path (concat elisp-dir "/slime"))
+(add-to-list 'load-path (concat elisp-dir "/slime/contrib"))
 (setq slime-description-autofocus t
       slime-repl-history-trim-whitespaces t
       slime-repl-wrap-history t
@@ -154,14 +157,14 @@
 ;; conflicts with clojure swank in newer Slime CVS (later than 2009-10-01)
 (setq slime-use-autodoc-mode nil)
 
-;;(require 'slime) ; autoload here
-;; (slime-setup '(slime-asdf
-;;                slime-indentation
-;;                slime-mdot-fu
-;;                slime-tramp
-;;                slime-fancy
-;;                slime-sbcl-exts
-;;                slime-xref-browser))
+(require 'slime) ; autoload here
+ (slime-setup '(slime-asdf
+                slime-indentation
+                slime-mdot-fu
+                slime-tramp
+                slime-fancy
+                slime-sbcl-exts
+                slime-xref-browser))
 
 (eval-after-load 'slime
   '(progn
@@ -171,16 +174,16 @@
      (add-hook 'lisp-mode-hook (lambda ()
                                  (slime-mode t)))))
 
-;; (global-set-key (kbd "C-c s") 'slime-selector)
-;; (def-slime-selector-method ?l
-;;   "most recently visited lisp-mode buffer."
-;;   (slime-recently-visited-buffer 'lisp-mode))
-;; (def-slime-selector-method ?c
-;;   "most recently visited scheme-mode buffer."
-;;   (slime-recently-visited-buffer 'scheme-mode))
-;; (def-slime-selector-method ?j
-;;   "most recently visited clojure-mode buffer."
-;;   (slime-recently-visited-buffer 'clojure-mode))
+ (global-set-key (kbd "C-c s") 'slime-selector)
+ (def-slime-selector-method ?l
+   "most recently visited lisp-mode buffer."
+   (slime-recently-visited-buffer 'lisp-mode))
+ (def-slime-selector-method ?c
+   "most recently visited scheme-mode buffer."
+   (slime-recently-visited-buffer 'scheme-mode))
+ (def-slime-selector-method ?j
+   "most recently visited clojure-mode buffer."
+   (slime-recently-visited-buffer 'clojure-mode))
 
 ;;;; w3m
 (add-to-list 'load-path (concat elisp-dir "/emacs-w3m"))
@@ -297,7 +300,6 @@
 ;;; gnus
 
 (require 'gnus)
-(load "/usr/share/emacs/24.0.91/lisp/gnus/mailcap.el") ;; XXX: how to skip this???
 (setq gnus-select-method '(nntp "news.gmane.org")
       mm-inline-text-html-with-images t
       mm-discouraged-alternatives '("text/html" "text/richtext"))
@@ -766,26 +768,39 @@
   (c-set-style "java"))
 (add-hook 'java-mode-hook 'my-java-mode-hook)
 
-(defun my-lisp-hook ()
-  "Shared lisp settings"
+;; PHP settings
+(load-when-exists (concat elisp-dir "/nxhtml/related/php-mode.el"))
+(load-when-exists (concat elisp-dir "/nxhtml/related/php-imenu.el"))
+
+(add-hook 'php-mode-hook
+          '(lambda ()
+             (setq indent-tabs-mode nil
+                   fill-column 80
+                   tab-width 2)
+             (setq whitespace-line-column 80
+                   whitespace-style '(face lines-tail))
+             ))
+
+
+;;; Lisp settings
+
+(defun my-shared-lisp-hook ()
+  (setq whitespace-line-column 80
+        whitespace-style '(face lines-tail))
   (paredit-mode +1)
-  (turn-on-eldoc-mode)
-  (c-toggle-hungry-state 1)
-  (font-lock-add-keywords nil '(("^[^\n]\\{80\\}\\(.*\\)$"
-                                 1 font-lock-warning-face prepend)))
-  (font-lock-add-keywords nil
-                          '(("\\<\\(FIXME\\|TODO\\|XXX+\\|BUG\\)"
-                             1 font-lock-warning-face prepend))))
+  (c-toggle-hungry-state 1))
 
-(add-hook 'emacs-lisp-mode-hook 'my-lisp-hook)
-(add-hook 'lisp-mode-hook 'my-lisp-hook)
+(add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
+(add-hook 'emacs-lisp-mode-hook 'my-shared-lisp-hook)
 
+(add-hook 'lisp-mode-hook 'slime-mode)
+(add-hook 'lisp-mode-hook 'my-shared-lisp-hook)
+
+;; Scheme settings
+(add-hook 'scheme-mode-hook 'my-shared-lisp-hook)
 (setq scheme-program-name "csi")
 (add-to-list 'load-path "/var/lib/chicken/5/")
 (autoload 'chicken-slime "chicken-slime" "SWANK backend for Chicken" t)
-(add-hook 'scheme-mode-hook 'my-lisp-hook)
-(add-hook 'scheme-mode-hook (lambda ()
-                              (slime-mode t)))
 
 ;; ------------------------------
 ;; Completion
