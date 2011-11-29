@@ -54,9 +54,6 @@
 (ensure-installed '(clojure-mode
                     magit
                     smex
-                    slime
-                    slime-repl
-                    slime-fuzzy
                     undo-tree
                     paredit
                     yasnippet
