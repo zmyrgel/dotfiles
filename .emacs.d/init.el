@@ -736,15 +736,15 @@
 
 (defun my-c-mode ()
   (c-set-style "openbsd")
-  (font-lock-add-keywords 'c-mode '(("^[^\n]\\{80\\}\\(.*\\)$"
-                                     1 font-lock-warning-face prepend))))
+  (setq whitespace-line-column 80
+        whitespace-style '(face lines-tail)))
 
 (defun my-c++-mode ()
   (setq fill-column 100)
   (c-set-style "stroustrup")
   (local-set-key (kbd "C-c e") #'expand-member-functions)
-  (font-lock-add-keywords 'c++-mode '(("^[^\n]\\{100\\}\\(.*\\)$"
-                                       1 font-lock-warning-face prepend))))
+  (setq whitespace-line-column 100
+        whitespace-style '(face lines-tail)))
 
 (add-hook 'c-mode-common-hook 'my-c-mode-common)
 (add-hook 'c-mode-hook 'my-c-mode)
