@@ -224,13 +224,13 @@
       w3m-terminal-coding-system 'utf-8
       w3m-home-page "http://www.openbsd.org")
 
-(defun my-w3m-mode-init ()
-  (define-key w3m-mode-map "z" 'w3m-previous-buffer)
-  (define-key w3m-mode-map "x" 'w3m-next-buffer))
-  (add-to-list 'w3m-search-engine-alist '("duckduckgo" "https://duckduckgo.com/?q=%s"))
-  (add-to-list 'w3m-search-engine-alist '("fi.wikipedia" "http://fi.wikipedia.org/wiki/Spezial:Search?search=%s" utf-8))
-  (setq w3m-search-default-engine "duckduckgo"))
-(add-hook 'w3m-mode-hook 'my-w3m-mode-init)
+(add-hook 'w3m-mode-hook
+          '(lambda ()
+             (define-key w3m-mode-map "z" 'w3m-previous-buffer)
+             (define-key w3m-mode-map "x" 'w3m-next-buffer)
+             (add-to-list 'w3m-search-engine-alist '("duckduckgo" "https://duckduckgo.com/?q=%s"))
+             (add-to-list 'w3m-search-engine-alist '("fi.wikipedia" "http://fi.wikipedia.org/wiki/Spezial:Search?search=%s" utf-8))
+             (setq w3m-search-default-engine "duckduckgo")))
 
 (defun my-w3m-rename-buffer (url)
   "base buffer name on title"
