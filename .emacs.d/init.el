@@ -257,9 +257,12 @@
 
 ;;; multiterm
 (autoload 'multi-term-next "multi-term")
-(if (string= system-type "gnu/linux") ;; Add better check here, windows PC?
-    (setq multi-term-program "/bin/bash")
-  (setq multi-term-program "/bin/ksh"))
+(setq multi-term-program (case system-type
+                           (gnu/linux "/bin/bash")
+                           (windows-nt "C:\\bin\\cmd.exe")
+                           (berkeley-unix "/bin/ksh")
+                           (usg-unix-v "/bin/ksh")
+                           (t nil)))
 (global-set-key (kbd "C-c t") 'multi-term-next)
 (global-set-key (kbd "C-c T") 'multi-term)
 
