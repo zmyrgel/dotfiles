@@ -772,15 +772,13 @@
 (load-when-exists (concat elisp-dir "/nxhtml/related/php-mode.el"))
 (load-when-exists (concat elisp-dir "/nxhtml/related/php-imenu.el"))
 
-(add-hook 'php-mode-hook
-          '(lambda ()
-             (setq indent-tabs-mode nil
-                   fill-column 80
-                   tab-width 2)
-             (setq whitespace-line-column 80
-                   whitespace-style '(face lines-tail))
-             ))
-
+(defun my-php-mode-hook ()
+  (setq indent-tabs-mode nil
+        fill-column 80
+        tab-width 2)
+  (setq whitespace-line-column 80
+        whitespace-style '(face lines-tail)))
+(add-hook 'php-mode-hook 'my-php-mode-hook)
 
 ;;; Lisp settings
 
