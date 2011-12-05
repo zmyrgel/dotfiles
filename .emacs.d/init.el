@@ -297,14 +297,9 @@
       quack-smart-open-paren-p t
       quack-switch-to-scheme-method 'other-window)
 
-;;(add-to-list 'load-path (concat elisp-dir "/geiser/elisp"))
-;;(load-file (concat elisp-dir "/geiser/elisp/geiser.el"))
-;;(load (concat elisp-dir "/geiser/elisp/geiser-load"))
-;;(require 'geiser-install)
-
 ;;; gnus
-
 (require 'gnus)
+(load "/usr/share/emacs/24.0.92/lisp/gnus/mailcap.el")
 (setq gnus-select-method '(nntp "news.gmane.org")
       mm-inline-text-html-with-images t
       mm-discouraged-alternatives '("text/html" "text/richtext"))
