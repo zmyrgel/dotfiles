@@ -898,17 +898,23 @@
   nil)
 (global-set-key (kbd "C-c R") 'rename-current-file-or-buffer)
 
-(defun find-alternative-file-with-sudo ()
-  (interactive)
-  (let ((fname (or buffer-file-name
-		   dired-directory)))
-    (when fname
-      (if (string-match "^/sudo:root@localhost:" fname)
-	  (setq fname (replace-regexp-in-string
-		       "^/sudo:root@localhost:" ""
-		       fname))
-	(setq fname (concat "/sudo:root@localhost:" fname)))
-      (find-alternate-file fname))))
+;; (defmacro when-let (varlist &rest body)
+;;   "Evaluate each value in VARLIST and if the result is non-nil bind it to var.
+;;     If all the values are non-nil evaluate BODY with bindings."
+;;   `(let (,@varlist)
+;;      (when ,(cons 'and (mapcar #'car varlist))
+;;        ,@body)))
+
+;; (defun find-alternative-file-with-sudo ()
+;;   (interactive)
+;;   (when-let ((fname (or buffer-file-name
+;;                         dired-directory)))
+;;     (if (string-match "^/sudo:root@localhost:" fname)
+;;         (setq fname (replace-regexp-in-string
+;;                      "^/sudo:root@localhost:" ""
+;;                      fname))
+;;       (setq fname (concat "/sudo:root@localhost:" fname)))
+;;     (find-alternate-file fname)))
 
 (defun quit-prompt ()
   "Prompts before exiting emacs."
