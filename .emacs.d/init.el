@@ -164,6 +164,10 @@
                 slime-sbcl-exts
                 slime-xref-browser))
 
+(add-hook 'slime-repl-mode-hook
+          #'(lambda ()
+              (paredit-mode 1)))
+
 (eval-after-load 'slime
   '(progn
      (slime-autodoc-mode)
