@@ -153,7 +153,7 @@
         (clisp ("clisp" "-K full -ansi"))))
 
 ;; conflicts with clojure swank in newer Slime CVS (later than 2009-10-01)
-(setq slime-use-autodoc-mode nil)
+(setq slime-use-autodoc-mode t)
 
 (require 'slime) ; autoload here
  (slime-setup '(slime-asdf
