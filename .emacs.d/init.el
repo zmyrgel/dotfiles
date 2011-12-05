@@ -129,11 +129,9 @@
 (global-set-key (kbd "C-c a") 'org-agenda)
 
 (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
-(add-hook 'message-mode-hook
-          (lambda ()
-            (turn-on-orgstruct)
-            (turn-on-orgstruct++)
-            (turn-on-orgtbl)))
+(add-hook 'message-mode-hook 'turn-on-orgstruct)
+(add-hook 'message-mode-hook 'turn-on-orgstruct++)
+(add-hook 'message-mode-hook 'turn-on-orgtbl)
 
 ;; Slime
 (add-to-list 'load-path (concat elisp-dir "/slime"))
