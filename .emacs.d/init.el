@@ -329,7 +329,7 @@
                             (menu-bar-lines . 0)
                             (tool-bar-lines . 0)))
 
-;; Use external cedet on older than 23.2
+;; Use CEDET
 (when (>= emacs-major-version 23)
   (setq semantic-default-submodes
         '(global-semantic-idle-scheduler-mode
