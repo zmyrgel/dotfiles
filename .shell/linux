@@ -1,7 +1,7 @@
 # Linux specific shell configs -*- mode: sh; coding: utf-8-unix; -*-
 
 # ArchLinux
-if [[ -f /etc/arch-release ]]; then
+if [ -f /etc/arch-release ]; then
     alias pacu='sudo pacman -Syu'
     alias paci='sudo pacman -S'
     alias pacs='sudo pacman -Ss'
@@ -13,7 +13,7 @@ if [[ -f /etc/arch-release ]]; then
 fi
 
 # debian stuff
-if [[ -r /etc/debian_version ]] ; then
+if [ -r /etc/debian_version ]; then
     alias acs='apt-cache search'
     alias acsh='apt-cache show'
     alias acp='apt-cache policy'
@@ -28,7 +28,7 @@ if [[ -r /etc/debian_version ]] ; then
 
     # debian upgrade
     upgrade() {
-        if [[ -z "$1" ]] ; then
+        if [ -z "$1" ] ; then
             $SUDO apt-get update
             $SUDO apt-get -u upgrade
         else
@@ -38,7 +38,7 @@ if [[ -r /etc/debian_version ]] ; then
             ssh $1 $SUDO apt-get --no-act upgrade
             echo -n 'Process the upgrade?'
             read -q dummy
-            if [[ $dummy == "y" ]] ; then
+            if [ $dummy == "y" ] ; then
                 ssh $1 $SUDO apt-get -u upgrade --yes
             fi
         fi
@@ -48,11 +48,12 @@ fi
 # Slackware
 if [ -r /etc/slackware-version ]; then
     if [ $(uname -m) == "x86_64" ]; then
-	export ARCH=x86_64
-        export PATH=$PATH:/usr/lib64/java/bin:/usr/lib64/kde4/libexec:/usr/lib64/qt/bin
+	ARCH=x86_64
+        PATH=$PATH:/usr/lib64/java/bin:/usr/lib64/kde4/libexec:/usr/lib64/qt/bin
     else
-	export ARCH=i386
-        export PATH=$PATH:/usr/lib/java/bin:/usr/lib/kde4/libexec:/usr/lib/qt/bin
+	ARCH=i386
+        PATH=$PATH:/usr/lib/java/bin:/usr/lib/kde4/libexec:/usr/lib/qt/bin
     fi
-    export PATH=$PATH:/usr/share/texmf/bin
+    PATH=$PATH:/usr/share/texmf/bin
+    export ARCH PATH
 fi

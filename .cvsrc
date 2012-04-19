@@ -1,4 +1,4 @@
-diff -u
-cvs -z4
-update -d -P
+cvs -q -d anoncvs@anoncvs.eu.openbsd.org:/cvs
+diff -up
+update -Pd
 checkout -P

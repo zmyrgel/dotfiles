@@ -65,12 +65,7 @@
                     php-mode
                     suomalainen-kalenteri
                     quack
-                    boxquote
-                    mediawiki))
-
-(require 'mediawiki)
-(push '("KehitysWiki" "http://kehitys.edita.fi/wiki/" "tmy" "pahToo3i" "Etusivu") mediawiki-site-alist)
-(setq mediawiki-site-default "KehitysWiki")
+                    boxquote))
 
 (autoload 'yas/hippie-try-expand "yasnippet")
 

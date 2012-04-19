@@ -25,9 +25,4 @@ export QT_XFT=true
 cd $HOME
 
 # Start WM
-#exec /usr/bin/ssh-agent dwm
-#exec /usr/bin/ssh-agent startfluxbox
-#exec /usr/bin/ssh-agent $HOME/bin/stumpwm
-#exec /usr/bin/ssh-agent scrotwm
-exec /usr/bin/ssh-agent wmii
-
+exec /usr/bin/ssh-agent scrotwm

@@ -1,6 +1,8 @@
 # NetBSD options -*- mode: sh; coding: utf-8-unix; -*-
 
-export CVSROOT="anoncvs@anoncvs.netbsd.se:/cvs"
+CVSROOT="anoncvs@anoncvs.netbsd.se:/cvs"
+
+export CVSROOT
 
 alias killall='pkill'
 alias shred='rm -P'
@@ -8,14 +10,16 @@ alias sshut='sudo /sbin/halt -p'
 alias flav='make show-options'
 
 # Add super user pkg dir to PATH
-export PATH=$PATH:/usr/pkg/sbin
+PATH=$PATH:/usr/pkg/sbin
 
 # Append X to PATH if it exists
 if [ -x /usr/X11R7/bin ]; then
-    export PATH=$PATH:/usr/X11R7/bin
+    PATH=$PATH:/usr/X11R7/bin
 fi
 
 # Append Java JDK dir to PATH
 if [ -x /usr/pkg/java/openjdk7-bin/bin ]; then
-    export PATH=$PATH:/usr/pkg/java/openjdk7-bin/bin
+    PATH=$PATH:/usr/pkg/java/openjdk7-bin/bin
 fi
+
+export PATH

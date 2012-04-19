@@ -2,10 +2,10 @@
 # KSH startup file
 
 # skip remaining setup if shell non-interactive
-[[ -o interactive ]] || return 0
+[ -o interactive ] || return 0
 
 # Base Korn Shell environment
-[[ -r /etc/ksh.kshrc ]] && . /etc/ksh.kshrc
+[ -r /etc/ksh.kshrc ] && . /etc/ksh.kshrc
 
 # Disable flow control on terminal
 stty -ixon
@@ -19,11 +19,12 @@ set +o markdirs		# Add / to all directory names generated from wildcard expansio
 set -o noclobber	# Don't allow > redirection to existing files.
 set -o trackall		# Substitute full pathnames for commands in alias expansions.
 
-export TTY=$(tty|cut -f3-4 -d/)
-export HISTFILE=$HOME/.sh_hist$(echo ${TTY} | tr -d '/')
-export HOLD="$(hostname |cut -f1 -d.)"
-export PS1=$USER@$HOLD:'$PWD-> '
+TTY=$(tty|cut -f3-4 -d/)
+HISTFILE=$HOME/.sh_hist$(echo ${TTY} | tr -d '/')
+HOLD="$(hostname |cut -f1 -d.)"
+PS1=$USER@$HOLD:'$PWD-> '
 
+export TTY HISTFILE PS1
 
 ## Completion stuff
 #bind "^I=complete"      # Complete to next unmatch with tab key
@@ -34,6 +35,3 @@ export PS1=$USER@$HOLD:'$PWD-> '
 #alias __B="^N" # arrow key for the next command
 #alias __C="^F" # arrow key for one character forwards
 #alias __D="^B" # arrow key for one character backwards
-
-
-
