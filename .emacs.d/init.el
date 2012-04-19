@@ -2,33 +2,32 @@
 ;;
 ;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;; Time-stamp: <2011-11-29 15:49:36 (tmy)>
+;; Time-stamp: <2012-04-19 11:37:35 (tmy)>
 ;; URL: http://github.com/zmyrgel/dotfiles
 ;; Compatibility: GNU Emacs 24.1 (may work with earlier versions)
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO:
 ;; - Autoloads for w3m,gnus,erc
-;; - Add to marmalade: ace-jump-mode, no-word, boxquote, mingus, quack, w3m, slimep
+;; - Add to marmalade: no-word, mingus, w3m, slime
 
 ;; Provide few defaults
-(defconst emacs-dir (expand-file-name "~/.emacs.d"))
-(defconst elisp-dir (concat emacs-dir "/elisp"))
-(defconst dropbox-dir (expand-file-name "~/Dropbox"))
-(setq custom-file (concat emacs-dir "/custom.el"))
+(defconst emacs-dir (file-name-as-directory (expand-file-name "~/.emacs.d")))
+(defconst elisp-dir (concat emacs-dir (file-name-as-directory "elisp")))
+(defconst elpa-dir (concat emacs-dir (file-name-as-directory "elpa")))
+(defconst dropbox-dir (file-name-as-directory (expand-file-name "~/Dropbox")))
+(setq custom-file (concat emacs-dir "custom.el"))
 (load custom-file 'noerror)
 
 (defun load-when-exists (file)
+  "Simple utility to load my emacs files"
   (when (file-exists-p file)
     (load file)))
 
-(load-when-exists (concat emacs-dir "/init-local.el"))
+(load-when-exists (concat emacs-dir "init-local.el"))
 
 ;; Add elisp dir to load path
 (add-to-list 'load-path elisp-dir)
-
-(require 'ace-jump-mode)
-(define-key global-map (kbd "C-c SPC") 'ace-jump-mode)
 
 ;; XXX: Add info's to proper place
 ;; (add-to-list 'Info-default-directory-list
@@ -54,31 +53,30 @@
       (package-install package))))
 
  ;; packages I use
-(ensure-installed '(clojure-mode
+(ensure-installed '(auto-complete
+                    ac-slime
+                    clojure-mode
                     magit
                     smex
                     undo-tree
                     paredit
                     yasnippet
-                    suomalainen-kalenteri))
+                    ace-jump-mode
+                    php-mode
+                    suomalainen-kalenteri
+                    quack
+                    boxquote
+                    mediawiki))
+
+(require 'mediawiki)
+(push '("KehitysWiki" "http://kehitys.edita.fi/wiki/" "tmy" "pahToo3i" "Etusivu") mediawiki-site-alist)
+(setq mediawiki-site-default "KehitysWiki")
 
 (autoload 'yas/hippie-try-expand "yasnippet")
 
-;; yasnippet
-;;(add-to-list 'load-path (concat elisp-dir "/yasnippet"))
-;;(require 'yasnippet)
-
 ;; Additional libraries
-(add-to-list 'load-path (concat elisp-dir "/apel"))
-(add-to-list 'load-path (concat elisp-dir "/flim"))
-
-;; mingus
-(add-to-list 'load-path (concat elisp-dir "/mingus"))
-(require 'mingus)
-
-;;org-agenda-todo-ignore-scheduled
-;;org-agenda-todo-ignore-deadlines
-;;org-agenda-todo-ignore-timestamp
+(add-to-list 'load-path (concat elisp-dir (file-name-as-directory "apel")))
+(add-to-list 'load-path (concat elisp-dir (file-name-as-directory "flim")))
 
 ;;; Org-mode
 (setq org-directory (concat emacs-dir "/org")
@@ -97,7 +95,7 @@
       org-log-done 'note
       org-todo-keywords '((sequence "TODO(t)" "WIP(w!)" "|" "DONE(d@!)")
                           (sequence "|" "CANCELED(c@/!)")
-                          (sequence "|" "STALLED(s@/!)")
+                          (sequence "STALLED(s@/!)" "|")
                           (sequence "PENDING(p@/!)" "|")))
 
 (defun org-summary-todo (n-done n-not-done)
@@ -133,62 +131,8 @@
 (add-hook 'message-mode-hook 'turn-on-orgstruct++)
 (add-hook 'message-mode-hook 'turn-on-orgtbl)
 
-;; Slime
-(add-to-list 'load-path (concat elisp-dir "/slime"))
-(add-to-list 'load-path (concat elisp-dir "/slime/contrib"))
-(setq slime-description-autofocus t
-      slime-repl-history-trim-whitespaces t
-      slime-repl-wrap-history t
-      slime-repl-history-file (concat emacs-dir "/slime-history.eld")
-      slime-repl-history-remove-duplicates t
-      slime-ed-use-dedicated-frame t
-      slime-kill-without-query-p t
-      slime-startup-animation t
-      slime-net-coding-system 'utf-8-unix
-      ;;common-lisp-hyperspec-root "file:/home/zmyrgel/lisp/docs/HyperSpec/"
-      ;;common-lisp-hyperspec-symbol-table
-      ;; (concat common-lisp-hyperspec-root "Data/Map_Sym.txt")
-      slime-lisp-implementations
-      '((sbcl  ("sbcl"))
-        (clisp ("clisp" "-K full -ansi"))))
-
-;; conflicts with clojure swank in newer Slime CVS (later than 2009-10-01)
-(setq slime-use-autodoc-mode t)
-
-(require 'slime) ; autoload here
- (slime-setup '(slime-asdf
-                slime-indentation
-                slime-mdot-fu
-                slime-tramp
-                slime-fancy
-                slime-sbcl-exts
-                slime-xref-browser))
-
-(add-hook 'slime-repl-mode-hook
-          #'(lambda ()
-              (paredit-mode 1)))
-
-(eval-after-load 'slime
-  '(progn
-     (slime-autodoc-mode)
-     (setq slime-complete-symbol*-fancy t
-           slime-complete-symbol-function 'slime-fuzzy-complete-symbol)
-     (add-hook 'lisp-mode-hook (lambda ()
-                                 (slime-mode t)))))
-
- (global-set-key (kbd "C-c s") 'slime-selector)
- (def-slime-selector-method ?l
-   "most recently visited lisp-mode buffer."
-   (slime-recently-visited-buffer 'lisp-mode))
- (def-slime-selector-method ?c
-   "most recently visited scheme-mode buffer."
-   (slime-recently-visited-buffer 'scheme-mode))
- (def-slime-selector-method ?j
-   "most recently visited clojure-mode buffer."
-   (slime-recently-visited-buffer 'clojure-mode))
-
 ;;;; w3m
-(add-to-list 'load-path (concat elisp-dir "/emacs-w3m"))
+(add-to-list 'load-path (concat elisp-dir (file-name-as-directory "emacs-w3m")))
 (autoload 'w3m "w3m" "W3M browser")
 (require 'w3m-load)
 (require 'w3m)
@@ -196,7 +140,7 @@
 (require 'w3m-session)
 (require 'w3m-search)
 
-(setq w3m-session-file (concat emacs-dir "/w3m-session")
+(setq w3m-session-file (concat emacs-dir "w3m-session")
       w3m-session-save-always t
       w3m-session-load-always t
       w3m-session-show-titles t
@@ -274,37 +218,31 @@
 (global-set-key (kbd "C-c M-x") 'smex-update-and-run)
 (setq smex-save-file (concat emacs-dir "/smex-items"))
 
-;;; clojure
-(autoload 'clojure-mode "clojure-mode" "A major mode for Clojure" t)
-(add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
-(add-hook 'clojure-mode-hook 'my-lisp-hook)
-
 ;;; undo-tree
 (autoload 'global-undo-tree-mode "undo-tree")
 (global-undo-tree-mode)
 
 ;; quack
-(add-to-list 'load-path (concat elisp-dir "/quack"))
-(require 'quack)
-(setq quack-default-program "csi"
-      quack-dir "~/.emacs.d/quack"
-      quack-fontify-style nil
-      quack-newline-behavior 'indent-newline-indent
-      quack-pretty-lambda-p nil
-      quack-remap-find-file-bindings-p nil
-      quack-run-scheme-always-prompts-p nil
-      quack-run-scheme-prompt-defaults-to-last-p t
-      quack-smart-open-paren-p t
-      quack-switch-to-scheme-method 'other-window)
+(when (require 'quack nil 'noerror)
+  (setq quack-default-program "csi"
+        quack-dir (concat emacs-dir (file-name-as-directory "quack"))
+        quack-fontify-style nil
+        quack-newline-behavior 'indent-newline-indent
+        quack-pretty-lambda-p nil
+        quack-remap-find-file-bindings-p nil
+        quack-run-scheme-always-prompts-p nil
+        quack-run-scheme-prompt-defaults-to-last-p t
+        quack-smart-open-paren-p t
+        quack-switch-to-scheme-method 'other-window))
+
 
 ;;; gnus
 (require 'gnus)
-(load "/usr/share/emacs/24.0.92/lisp/gnus/mailcap.el")
+(load "/usr/share/emacs/24.0.95/lisp/gnus/mailcap.el")
 (setq gnus-select-method '(nntp "news.gmane.org")
       mm-inline-text-html-with-images t
       mm-discouraged-alternatives '("text/html" "text/richtext"))
 
-;;(setq gnus-summary-line-format "%U%R│%B%(%s%80=%) │ %f %110=│ %6&user-date;\n")
 (setq gnus-treat-hide-citation t
       gnus-cited-lines-visible '(0 . 5))
 
@@ -318,8 +256,8 @@
 
 ;;  Use color-theme package on older than 24.1
 (when (>= emacs-major-version 23)
-  (setq custom-enabled-themes '(deeper-blue))
-  (load-theme 'deeper-blue))
+  (setq custom-enabled-themes '(pastels-on-dark))
+  (load-theme 'pastels-on-dark))
 
 (setq default-frame-alist '((font-backend . "xft")
                             (font . "terminus-10")
@@ -328,40 +266,6 @@
                             (fullscreen . fullboth)
                             (menu-bar-lines . 0)
                             (tool-bar-lines . 0)))
-
-;; Use CEDET
-(when (>= emacs-major-version 23)
-  (setq semantic-default-submodes
-        '(global-semantic-idle-scheduler-mode
-          global-semanticdb-minor-mode
-          global-semantic-idle-summary-mode
-          global-semantic-mru-bookmark-mode
-          global-semantic-stickyfunc-mode))
-  (semantic-mode 0)
-  (global-ede-mode 1))
-
-;; bytecompile... XXX: does all .el-files, fixit
-(defun auto-recompile-emacs-file ()
-  (interactive)
-  (when (and buffer-file-name (string-match "\\.emacs" buffer-file-name))
-    (let ((byte-file (concat buffer-file-name "\\.elc")))
-      (if (or (not (file-exists-p byte-file))
-              (file-newer-than-file-p buffer-file-name byte-file))
-          (byte-compile-file buffer-file-name)))))
-
-;; (setq compiled-dot-emacs (byte-compile-dest-file dot-emacs))
-
-;; (if (or (not (file-exists-p compiled-dot-emacs))
-;;         (file-newer-than-file-p dot-emacs compiled-dot-emacs)
-;;         (equal (nth 4 (file-attributes dot-emacs)) (list 0 0)))
-;;     (load dot-emacs)
-;;   (load compiled-dot-emacs))
-
-;; (add-hook 'kill-emacs-hook
-;;           '(lambda () (and (file-newer-than-file-p dot-emacs compiled-dot-emacs)
-;;                            (byte-compile-file dot-emacs))))
-
-;(add-hook 'after-save-hook 'auto-recompile-emacs-file)
 
 ;; ------------------------------
 ;; General
@@ -380,7 +284,8 @@
       case-fold-search t)
 
 ;; Startup
-(setq inhibit-startup-message t
+(setq ;initial-scratch-message ""
+      inhibit-startup-message t
       inhibit-startup-echo-area-message t)
 
 ;; Misc options
@@ -431,14 +336,13 @@
 
 (show-paren-mode t)
 (setq visible-bell 1)
-
+(blink-cursor-mode -1)
 (scroll-bar-mode -1)
 
 ;; Setup clipboard options if running in X
 (if (not window-system)
     (menu-bar-mode nil)
-  (setq x-select-enable-clipboard t
-        interprogram-paste-function 'x-cut-buffer-or-selection-value))
+  (setq interprogram-paste-function 'x-cut-buffer-or-selection-value))
 
 ;; disable dialog boxes
 (setq use-file-dialog nil
@@ -497,23 +401,23 @@
 ;; Session
 ;; ------------------------------
 
-(setq bookmark-default-file (concat emacs-dir "/emacks.bmk")
+(setq bookmark-default-file (concat emacs-dir "emacks.bmk")
       bookmark-save-flag 1)
 
 (setq savehist-additional-variables
       '(search ring regexp-search-ring)
       savehist-autosave-interval 60
-      savehist-file (concat emacs-dir "/savehist"))
+      savehist-file (concat emacs-dir "savehist"))
 (savehist-mode t)
 
-(setq abbrev-file-name (concat emacs-dir "/abbrev_defs")
+(setq abbrev-file-name (concat emacs-dir "abbrev_defs")
       abbrev-mode t
       save-abbrevs t)
 (abbrev-mode 1)
 (when (file-exists-p abbrev-file-name)
   (quietly-read-abbrev-file))
 
-(setq backup-directory-alist '(("." . "~/.emacs.d/backups"))
+(setq backup-directory-alist (list (cons "." (concat emacs-dir (file-name-as-directory "backups"))))
       make-backup-files t
       backup-by-copying t
       auto-save-timeout 600
@@ -531,10 +435,7 @@
       explicit-shell-file-name shell-file-name
       explicit-sh-args '("-login" "-i"))
 
-(when (or (< emacs-major-version 23)
-          (and (= emacs-major-version 23)
-               (= emacs-minor-version 1)))
-  (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on))
+(add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
 
 (setq comint-scroll-to-bottom-on-input t
       comint-scroll-to-bottom-on-output t
@@ -587,7 +488,8 @@
                               (mode . c-mode)
                               (mode . c++-mode)
                               (mode . clojure-mode)
-                              (mode . lisp-mode)))
+                              (mode . lisp-mode)
+                              (mode . php-mode)))
            ("Shell" (or (mode . shell-mode)
                         (mode . term-mode)
                         (mode . eshell-mode)))
@@ -668,6 +570,23 @@
 (setq compilation-window-height 12
       gdb-many-windows t)
 
+;; Use CEDET
+(when (>= emacs-major-version 23)
+  (setq semantic-default-submodes
+        '(global-semantic-idle-scheduler-mode
+          global-semanticdb-minor-mode
+          global-semantic-idle-summary-mode
+          global-semantic-mru-bookmark-mode
+          global-semantic-stickyfunc-mode))
+  (semantic-mode 0)
+  (global-ede-mode 1))
+
+;; ;; Semantic
+;; (global-semantic-idle-completions-mode t)
+;; (global-semantic-decoration-mode t)
+;; (global-semantic-highlight-func-mode t)
+;; (global-semantic-show-unmatched-syntax-mode t)
+
 (defun new-c-lineup-arglist (langelem)
   (save-excursion
     (goto-char (cdr langelem))
@@ -709,6 +628,7 @@
   (subword-mode 1)
   (c-toggle-hungry-state 1)
   (semantic-mode 1)
+
   (font-lock-add-keywords nil '(("\\<\\(FIXME\\|TODO\\|XXX+\\|BUG\\):"
                                  1 font-lock-warning-face prepend)))
   (setq which-func-unknown "TOP LEVEL"
@@ -717,11 +637,14 @@
         c-hungry-delete-key t
         tab-width 8
         indent-tabs-mode t
-        fill-column 80)
+        fill-column 80
+        ac-sources (append '(ac-source-semantic) ac-sources))
+
 
   (local-set-key (kbd "C-c m") 'man-follow)
   (local-set-key (kbd "C-c C-c") 'compile)
   (local-set-key (kbd "C-c C-d") 'gdb)
+  (local-set-key (kbd "RET") 'newline-and-indent)
   (local-set-key (kbd "RET") 'c-context-line-break)
   (local-set-key (kbd "C-c o") 'ff-find-other-file)
   (local-set-key (kbd "C-M-i") 'semantic-ia-complete-symbol))
@@ -768,25 +691,85 @@
   (c-set-style "java"))
 (add-hook 'java-mode-hook 'my-java-mode-hook)
 
-;; PHP settings
-(load-when-exists (concat elisp-dir "/nxhtml/related/php-mode.el"))
-(load-when-exists (concat elisp-dir "/nxhtml/related/php-imenu.el"))
+
+;; Zf-mode
+(add-to-list 'load-path (concat elisp-dir (file-name-as-directory "zf-mode")))
+(add-to-list 'load-path (concat elisp-dir (file-name-as-directory "zf-mode/bundled")))
+(setq zf-html-basic-offset 4)
+(require 'zf-mode)
+(zf-mode-setup)
 
 (defun my-php-mode-hook ()
-  (setq indent-tabs-mode nil
-        fill-column 80
-        tab-width 2)
+  (set (make-local-variable 'tab-width) 2)
+  (set (make-local-variable 'c-basic-offset) 2)
+  (set (make-local-variable 'indent-tabs-mode) nil)
+  (set (make-local-variable 'fill-column) 80)
+  (setq php-manual-url "http://www.fi.php.net/manual/en"
+        php-search-url "http://www.fi.php.net/")
   (setq whitespace-line-column 80
         whitespace-style '(face lines-tail)))
 (add-hook 'php-mode-hook 'my-php-mode-hook)
 
 ;;; Lisp settings
 
+;; Slime
+(add-to-list 'load-path (concat elisp-dir (file-name-as-directory "slime")))
+(add-to-list 'load-path (concat elisp-dir (file-name-as-directory "slime/contrib")))
+(setq slime-description-autofocus t
+      slime-repl-history-trim-whitespaces t
+      slime-repl-wrap-history t
+      slime-repl-history-file (concat emacs-dir "slime-history.eld")
+      slime-repl-history-remove-duplicates t
+      slime-ed-use-dedicated-frame t
+      slime-kill-without-query-p t
+      slime-startup-animation t
+      slime-net-coding-system 'utf-8-unix
+      ;;common-lisp-hyperspec-root "file:/home/zmyrgel/lisp/docs/HyperSpec/"
+      ;;common-lisp-hyperspec-symbol-table
+      ;; (concat common-lisp-hyperspec-root "Data/Map_Sym.txt")
+      slime-lisp-implementations
+      '((sbcl  ("sbcl"))
+        (clisp ("clisp" "-ansi"))))
+
+;; conflicts with clojure swank in newer Slime CVS (later than 2009-10-01)
+(setq slime-use-autodoc-mode t)
+
+(require 'slime) ; autoload here
+ (slime-setup '(slime-asdf
+                slime-indentation
+                slime-mdot-fu
+                slime-tramp
+                slime-fancy
+                slime-sbcl-exts
+                slime-xref-browser))
+
+(add-hook 'slime-repl-mode-hook
+          #'(lambda ()
+              (paredit-mode 1)))
+
+(eval-after-load 'slime
+  '(progn
+     (slime-autodoc-mode)
+     (setq slime-complete-symbol*-fancy t
+           slime-complete-symbol-function 'slime-fuzzy-complete-symbol)
+     (add-hook 'lisp-mode-hook (lambda ()
+                                 (slime-mode t)))))
+
+ (global-set-key (kbd "C-c s") 'slime-selector)
+ (def-slime-selector-method ?l
+   "most recently visited lisp-mode buffer."
+   (slime-recently-visited-buffer 'lisp-mode))
+ (def-slime-selector-method ?c
+   "most recently visited scheme-mode buffer."
+   (slime-recently-visited-buffer 'scheme-mode))
+ (def-slime-selector-method ?j
+   "most recently visited clojure-mode buffer."
+   (slime-recently-visited-buffer 'clojure-mode))
+
 (defun my-shared-lisp-hook ()
   (setq whitespace-line-column 80
         whitespace-style '(face lines-tail))
-  (paredit-mode +1)
-  (c-toggle-hungry-state 1))
+  (paredit-mode +1))
 
 (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
 (add-hook 'emacs-lisp-mode-hook 'my-shared-lisp-hook)
@@ -800,9 +783,24 @@
 (add-to-list 'load-path "/var/lib/chicken/5/")
 (autoload 'chicken-slime "chicken-slime" "SWANK backend for Chicken" t)
 
+;; Spell-check comments and strings
+;;(add-hook 'prog-mode-hook 'flyspell-prog-mode)
+
+;;; clojure
+(autoload 'clojure-mode "clojure-mode" "A major mode for Clojure" t)
+(add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
+(add-hook 'clojure-mode-hook 'my-shared-lisp-hook)
+
 ;; ------------------------------
 ;; Completion
 ;; ------------------------------
+
+;; auto-complete mode
+(require 'auto-complete-config)
+(add-to-list 'ac-dictionary-directories
+             (concat elpa-dir (file-name-as-directory "dict")))
+(ac-config-default)
+(setq ac-comphist-file (concat emacs-dir "ac-comphist.dat"))
 
 (icomplete-mode t)
 (setq icomplete-prospects-height 2
@@ -821,6 +819,10 @@
           try-complete-file-name
           try-expand-all-abbrevs))
   (global-set-key (kbd "M-/") 'hippie-expand))
+
+(require 'hippie-expand-slime)
+(add-hook 'slime-mode-hook 'set-up-slime-hippie-expand)
+(add-hook 'slime-repl-mode-hook 'set-up-slime-hippie-expand)
 
 (when (featurep 'ido)
   (add-hook 'ibuffer-mode-hook
@@ -898,23 +900,24 @@
   nil)
 (global-set-key (kbd "C-c R") 'rename-current-file-or-buffer)
 
-;; (defmacro when-let (varlist &rest body)
-;;   "Evaluate each value in VARLIST and if the result is non-nil bind it to var.
-;;     If all the values are non-nil evaluate BODY with bindings."
-;;   `(let (,@varlist)
-;;      (when ,(cons 'and (mapcar #'car varlist))
-;;        ,@body)))
+(defmacro zmg/when-let (varlist &rest body)
+  "Evaluate each value in VARLIST and if the result is non-nil bind it to var.
+     If all the values are non-nil evaluate BODY with bindings."
+  `(let (,@varlist)
+     (when ,(cons 'and (mapcar #'car varlist))
+       ,@body)))
 
-;; (defun find-alternative-file-with-sudo ()
-;;   (interactive)
-;;   (when-let ((fname (or buffer-file-name
-;;                         dired-directory)))
-;;     (if (string-match "^/sudo:root@localhost:" fname)
-;;         (setq fname (replace-regexp-in-string
-;;                      "^/sudo:root@localhost:" ""
-;;                      fname))
-;;       (setq fname (concat "/sudo:root@localhost:" fname)))
-;;     (find-alternate-file fname)))
+(defun find-alternative-file-with-sudo ()
+  (interactive)
+  (let ((fname (or buffer-file-name
+                   dired-directory)))
+    (when fname
+      (if (string-match "^/sudo:root@localhost:" fname)
+          (setq fname (replace-regexp-in-string
+                       "^/sudo:root@localhost:" ""
+                       fname))
+        (setq fname (concat "/sudo:root@localhost:" fname)))
+      (find-alternate-file fname))))
 
 (defun quit-prompt ()
   "Prompts before exiting emacs."
@@ -933,3 +936,4 @@
 (global-set-key (kbd "C-^") 'repeat)
 (global-set-key (kbd "C-x C-c") 'quit-prompt)
 (global-set-key (kbd "C-x v /") 'magit-status)
+(global-set-key (kbd "C-c SPC") 'ace-jump-mode)
