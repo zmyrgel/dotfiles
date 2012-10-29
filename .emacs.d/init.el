@@ -2,7 +2,7 @@
 ;;
 ;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;; Time-stamp: <2012-08-02 14:09:34 (tmy)>
+;; Time-stamp: <2012-10-24 16:11:33 (tmy)>
 ;; URL: http://github.com/zmyrgel/dotfiles
 ;; Compatibility: GNU Emacs 24.1 (may work with earlier versions)
 ;;
@@ -11,35 +11,41 @@
 ;; - Autoloads for w3m,gnus,erc
 ;; - Add to marmalade: no-word, mingus, w3m, slime
 
-;; Provide few defaults
-(defconst emacs-dir (file-name-as-directory (expand-file-name "~/.emacs.d")))
-(defconst elisp-dir (concat emacs-dir (file-name-as-directory "elisp")))
-(defconst elpa-dir (concat emacs-dir (file-name-as-directory "elpa")))
-(setq custom-file (concat emacs-dir "custom.el"))
-(load custom-file 'noerror)
+;; Define few utilities
+(defun concat-path (&rest parts)
+  "Utility to concatenate path"
+  (let ((result nil))
+    (dolist (path parts (directory-file-name (expand-file-name result)))
+      (if result
+          (setq result (concat result "/" path))
+        (setq result path)))))
 
-;; Add emacs dir to load path
-(when (file-exists-p emacs-dir)
-  (add-to-list 'load-path emacs-dir))
+(defun add-ext-dir (dir)
+  "Adds extension dir to load-path if it exists."
+  (when (file-exists-p dir)
+    (add-to-list 'load-path dir)))
 
-;; Add elisp dir to load path
-(when (file-exists-p elisp-dir)
-  (add-to-list 'load-path elisp-dir))
-
-(defun load-when-exists (file)
-  "Simple utility to load my emacs files"
+(defun add-ext-file (file)
+  "Adds extension dir to load-path if it exists."
   (when (file-exists-p file)
     (load file)))
 
-(defun concat-path (&rest parts)
-  (reduce (lambda (a b)
-            (expand-file-name b a)) parts))
+;; Provide few defaults
+(defconst emacs-dir (concat-path (getenv "HOME") ".emacs.d"))
+(defconst elisp-dir (concat-path emacs-dir "elisp"))
+(defconst elpa-dir (concat-path emacs-dir "elpa"))
+(setq custom-file (concat-path emacs-dir "custom.el"))
+(load custom-file 'noerror)
+
+;; Add emacs dir to load path
+(add-ext-dir emacs-dir)
+(add-ext-dir elisp-dir)
 
 ;; Load optional startup files
-(load-when-exists (concat emacs-dir (format "init-%d.el" emacs-major-version)))
-(load-when-exists (concat emacs-dir (format "init-%s.el" (symbol-name window-system))))
-(load-when-exists (concat emacs-dir "init-external.el"))
-(load-when-exists (concat emacs-dir "init-local.el"))
+(add-ext-file (concat-path emacs-dir (format "init-%d.el" emacs-major-version)))
+(add-ext-file (concat-path emacs-dir (format "init-%s.el" (symbol-name window-system))))
+(add-ext-file (concat-path emacs-dir "init-external.el"))
+(add-ext-file (concat-path emacs-dir "init-local.el"))
 
 ;; ------------------------------
 ;; General
@@ -49,7 +55,8 @@
                             (font . "terminus-10")
                             (left-fringe . -1)
                             (right-fringe . -1)
-                            (fullscreen . fullboth)
+                            ;;(fullscreen . fullboth)
+                            (fullscreen . 1)
                             (menu-bar-lines . 0)
                             (tool-bar-lines . 0)))
 
@@ -66,7 +73,8 @@
       case-fold-search t)
 
 ;; Startup
-(setq inhibit-startup-message t
+(setq ;initial-scratch-message ""
+      inhibit-startup-message t
       inhibit-startup-echo-area-message t)
 
 ;; Misc options
@@ -96,11 +104,8 @@
 	    (set-fill-column 80)
 	    (auto-fill-mode t)))
 
-(add-hook 'before-save-hook
-          (lambda ()
-            (time-stamp)
-            (delete-trailing-whitespace)))
-
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
+(add-hook 'before-save-hook 'time-stamp)
 (add-hook 'comint-output-filter-functions 'comint-watch-for-password-prompt)
 (add-hook 'kill-emacs-hook 'write-abbrev-file)
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
@@ -120,10 +125,10 @@
 (blink-cursor-mode -1)
 (scroll-bar-mode -1)
 
-;; Setup clipboard options
-(cond ((not window-system) (menu-bar-mode nil))
-      ((eq window-system 'x)
-       (setq interprogram-paste-function 'x-cut-buffer-or-selection-value)))
+;; Setup clipboard options if running in X
+(if (not window-system)
+    (menu-bar-mode nil)
+  (setq interprogram-paste-function 'x-cut-buffer-or-selection-value))
 
 ;; disable dialog boxes
 (setq use-file-dialog nil
@@ -165,6 +170,7 @@
       calendar-latitude 60.2
       calendar-longitude 25.0
       diary-display-function 'diary-fancy-display
+      ;; new entries
       diary-show-holidays-flag t
       calendar-mark-holidays-flag t
       calendar-view-diary-initially-flag t
@@ -407,7 +413,9 @@
       gdb-many-windows t)
 
 ;; Use CEDET
-(when (>= emacs-major-version 23)
+(when (or (> emacs-major-version 23)
+          (and (= emacs-major-version 23)
+               (>= emacs-minor-version 2)))
   (setq semantic-default-submodes
         '(global-semantic-idle-scheduler-mode
           global-semanticdb-minor-mode
@@ -546,7 +554,8 @@
 (defun my-shared-lisp-hook ()
   (setq whitespace-line-column 80
         whitespace-style '(face lines-tail))
-  (paredit-mode +1))
+  (when (require 'paredit nil 'noerror)
+    (paredit-mode 1)))
 
 (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
 (add-hook 'emacs-lisp-mode-hook 'my-shared-lisp-hook)
@@ -605,16 +614,16 @@
           try-expand-all-abbrevs))
   (global-set-key (kbd "M-/") 'hippie-expand))
 
-(require 'hippie-expand-slime)
-(add-hook 'slime-mode-hook 'set-up-slime-hippie-expand)
-(add-hook 'slime-repl-mode-hook 'set-up-slime-hippie-expand)
+(when (require 'hippie-expand-slime nil 'noerror)
+  (add-hook 'slime-mode-hook 'set-up-slime-hippie-expand)
+  (add-hook 'slime-repl-mode-hook 'set-up-slime-hippie-expand))
 
 (when (featurep 'ido)
   (add-hook 'ibuffer-mode-hook
             (lambda ()
               (local-set-key (kbd "C-x C-f") 'ido-find-file)))
-  (ido-mode t)
-  (ido-everywhere)
+  (ido-mode 1)
+  (ido-everywhere 1)
   (setq ido-save-directory-list-file (concat emacs-dir "/ido.last")
         ido-ignore-buffers
         '("\\` " "^\*Mess" "^\*Back" ".*Completion" "^\*Ido")
@@ -722,3 +731,11 @@
 (global-set-key (kbd "C-x C-c") 'quit-prompt)
 (global-set-key (kbd "C-x v /") 'magit-status)
 (global-set-key (kbd "C-c SPC") 'ace-jump-mode)
+
+
+;;; Oracle stuff
+(add-ext-file (concat-path elisp-dir "sqlplus.el"))
+(setq sql-oracle-program "/u01/app/oracle/product/11.2.0/xe/bin/sqlplus")
+
+;;; PL-SVN
+
