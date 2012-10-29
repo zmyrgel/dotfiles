@@ -2,7 +2,7 @@
 ;;
 ;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;; Time-stamp: <2012-10-24 16:11:33 (tmy)>
+;; Time-stamp: <2012-10-29 14:21:35 (zmyrgel)>
 ;; URL: http://github.com/zmyrgel/dotfiles
 ;; Compatibility: GNU Emacs 24.1 (may work with earlier versions)
 ;;
@@ -85,7 +85,6 @@
 
 ;; mouse options
 (setq mouse-yank-at-point t)
-(mouse-wheel-mode t)
 
 ;; Encoding
 (setq locale-coding-system 'utf-8)
@@ -123,12 +122,19 @@
 (show-paren-mode t)
 (setq visible-bell 1)
 (blink-cursor-mode -1)
-(scroll-bar-mode -1)
+
+(when (fboundp 'scroll-bar-mode)
+  (scroll-bar-mode -1))
+(when (fboundp 'menu-bar-mode)
+  (menu-bar-mode nil))
+
+(when (fboundp 'mouse-wheel-mode)
+  (mouse-wheel-mode t))
 
 ;; Setup clipboard options if running in X
-(if (not window-system)
-    (menu-bar-mode nil)
+(when window-system
   (setq interprogram-paste-function 'x-cut-buffer-or-selection-value))
+
 
 ;; disable dialog boxes
 (setq use-file-dialog nil
@@ -734,8 +740,9 @@
 
 
 ;;; Oracle stuff
-(add-ext-file (concat-path elisp-dir "sqlplus.el"))
-(setq sql-oracle-program "/u01/app/oracle/product/11.2.0/xe/bin/sqlplus")
+;;(add-ext-file (concat-path elisp-dir "sqlplus.el"))
+;;(setq sql-oracle-program "/u01/app/oracle/product/11.2.0/xe/bin/sqlplus")
+
 
 ;;; PL-SVN
 
