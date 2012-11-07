@@ -22,7 +22,7 @@ set -o trackall		# Substitute full pathnames for commands in alias expansions.
 TTY=$(tty|cut -f3-4 -d/)
 HISTFILE=$HOME/.sh_hist$(echo ${TTY} | tr -d '/')
 HOLD="$(hostname |cut -f1 -d.)"
-PS1=$USER@$HOLD:'$PWD-> '
+PS1='$ '
 
 export TTY HISTFILE PS1
 
