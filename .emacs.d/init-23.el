@@ -1,6 +1,11 @@
 (add-ext-dir (concat-path elisp-dir "apel"))
-(add-ext-dir (concat-path elisp-dir "flim"))
+(add-ext-dir (concat-path elisp-dir "auctex"))
+(add-ext-dir (concat-path elisp-dir "auctex" "preview"))
+(add-ext-dir (concat-path elisp-dir "auctex" "style"))
+(add-ext-dir (concat-path elisp-dir "auto-complete"))
 (add-ext-dir (concat-path elisp-dir "bbdb"))
+(add-ext-dir (concat-path elisp-dir "chicken-scheme"))
+(add-ext-dir (concat-path elisp-dir "flim"))
 (add-ext-dir (concat-path elisp-dir "emacs-w3m"))
 (add-ext-dir (concat-path elisp-dir "emacs-w3m" "shimbun"))
 (add-ext-dir (concat-path elisp-dir "gnus" "lisp"))
@@ -13,5 +18,3 @@
 (add-ext-dir (concat-path elisp-dir "yasnippet"))
 (add-ext-dir (concat-path elisp-dir "zf-mode"))
 (add-ext-dir (concat-path elisp-dir "zf-mode" "bundled"))
-
-(require 'magit)

@@ -2,14 +2,15 @@
 ;;
 ;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;; Time-stamp: <2012-10-29 14:21:35 (zmyrgel)>
+;; Time-stamp: <2012-11-28 15:46:58 (tmy)>
 ;; URL: http://github.com/zmyrgel/dotfiles
-;; Compatibility: GNU Emacs 24.1 (may work with earlier versions)
+;; Compatibility: GNU Emacs 23.1 (may work with other versions)
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO:
-;; - Autoloads for w3m,gnus,erc
-;; - Add to marmalade: no-word, mingus, w3m, slime
+;; - Autoloads for gnus
+;; - indentation of programming modes
+;; - ERC configuration, modules and such
 
 ;; Define few utilities
 (defun concat-path (&rest parts)
@@ -55,7 +56,6 @@
                             (font . "terminus-10")
                             (left-fringe . -1)
                             (right-fringe . -1)
-                            ;;(fullscreen . fullboth)
                             (fullscreen . 1)
                             (menu-bar-lines . 0)
                             (tool-bar-lines . 0)))
@@ -73,7 +73,7 @@
       case-fold-search t)
 
 ;; Startup
-(setq ;initial-scratch-message ""
+(setq initial-scratch-message ""
       inhibit-startup-message t
       inhibit-startup-echo-area-message t)
 
@@ -85,6 +85,7 @@
 
 ;; mouse options
 (setq mouse-yank-at-point t)
+(mouse-wheel-mode t)
 
 ;; Encoding
 (setq locale-coding-system 'utf-8)
@@ -93,20 +94,20 @@
 (set-language-environment "UTF-8")
 (set-locale-environment "en_US.UTF-8")
 
-;; spelling
-(setq ispell-program-name "aspell"
-      ispell-extra-args '("--sug-mode=ultra"))
+;; Add Spell-check for select modes
+(add-hook 'prog-mode-hook 'flyspell-prog-mode)
+(add-hook 'org-mode-hook 'flyspell-mode)
+(add-hook 'text-mode-hook 'flyspell-mode)
 
 ;; Hooks
 (add-hook 'text-mode-hook
 	  (lambda()
-	    (set-fill-column 80)
-	    (auto-fill-mode t)))
+	    (set-fill-column 80)))
 
+(add-hook 'text-mode-hook 'auto-fill-mode)
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 (add-hook 'before-save-hook 'time-stamp)
 (add-hook 'comint-output-filter-functions 'comint-watch-for-password-prompt)
-(add-hook 'kill-emacs-hook 'write-abbrev-file)
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
 
 ;; enable disabled features
@@ -122,19 +123,12 @@
 (show-paren-mode t)
 (setq visible-bell 1)
 (blink-cursor-mode -1)
-
-(when (fboundp 'scroll-bar-mode)
-  (scroll-bar-mode -1))
-(when (fboundp 'menu-bar-mode)
-  (menu-bar-mode nil))
-
-(when (fboundp 'mouse-wheel-mode)
-  (mouse-wheel-mode t))
+(scroll-bar-mode -1)
 
 ;; Setup clipboard options if running in X
-(when window-system
+(if (not window-system)
+    (menu-bar-mode nil)
   (setq interprogram-paste-function 'x-cut-buffer-or-selection-value))
-
 
 ;; disable dialog boxes
 (setq use-file-dialog nil
@@ -176,7 +170,6 @@
       calendar-latitude 60.2
       calendar-longitude 25.0
       diary-display-function 'diary-fancy-display
-      ;; new entries
       diary-show-holidays-flag t
       calendar-mark-holidays-flag t
       calendar-view-diary-initially-flag t
@@ -193,21 +186,22 @@
 ;; Session
 ;; ------------------------------
 
-(setq bookmark-default-file (concat emacs-dir "emacs.bmk")
+(setq bookmark-default-file (concat-path emacs-dir "emacs.bmk")
       bookmark-save-flag 1)
 
 (setq savehist-additional-variables
       '(search ring regexp-search-ring)
       savehist-autosave-interval 60
-      savehist-file (concat emacs-dir "savehist"))
+      savehist-file (concat-path emacs-dir "savehist"))
 (savehist-mode t)
 
-(setq abbrev-file-name (concat emacs-dir "abbrev_defs")
+(setq abbrev-file-name (concat-path emacs-dir "abbrev_defs")
       abbrev-mode t
       save-abbrevs t)
 (abbrev-mode 1)
 (when (file-exists-p abbrev-file-name)
   (quietly-read-abbrev-file))
+(add-hook 'kill-emacs-hook 'write-abbrev-file)
 
 (setq backup-directory-alist (list (cons "." (concat emacs-dir (file-name-as-directory "backups"))))
       make-backup-files t
@@ -222,9 +216,7 @@
 ;; Shell settings
 ;; ------------------------------
 
-(setq shell-file-name "bash"
-      shell-command-switch "-c"
-      explicit-shell-file-name shell-file-name
+(setq shell-command-switch "-c"
       explicit-sh-args '("-login" "-i"))
 
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
@@ -258,48 +250,50 @@
 ;; Org-mode
 ;; ------------------------------
 
-(setq org-directory (concat emacs-dir "/org")
-      org-agenda-files (list org-directory)
-      org-agenda-include-all-todo t ;; deprecated, find better way
-      org-agenda-include-diary t
-      org-agenda-todo-ignore-with-date t
-      org-default-notes-file (concat org-directory "/notes.org")
-      org-completion-use-ido t
-      org-outline-path-complete-in-steps nil
-      org-insert-mode-line-in-empty-file t
-      org-mobile-inbox-for-pull (concat org-directory "/flagged.org")
-      org-mobile-directory (concat org-directory "/MobileOrg")
-      org-enforce-todo-checkbox-dependencies t
-      org-enforce-todo-dependencies t
-      org-log-done 'note
-      org-todo-keywords '((sequence "TODO(t)" "WIP(w!)" "|" "DONE(d@!)")
-                          (sequence "|" "CANCELED(c@/!)")
-                          (sequence "STALLED(s@/!)" "|")
-                          (sequence "PENDING(p@/!)" "|")))
+(eval-after-load 'org-mode
+  '(progn
+     (setq org-directory (concat-path emacs-dir "/org")
+           org-agenda-files (list org-directory)
+           org-agenda-include-all-todo t ;; deprecated, find better way
+           org-agenda-include-diary t
+           org-agenda-todo-ignore-with-date t
+           org-default-notes-file (concat-path org-directory "/notes.org")
+           org-completion-use-ido t
+           org-outline-path-complete-in-steps nil
+           org-insert-mode-line-in-empty-file t
+           org-mobile-inbox-for-pull (concat-path org-directory "/flagged.org")
+           org-mobile-directory (concat-path org-directory "/MobileOrg")
+           org-enforce-todo-checkbox-dependencies t
+           org-enforce-todo-dependencies t
+           org-log-done 'note
+           org-todo-keywords '((sequence "TODO(t)" "WIP(w!)" "|" "DONE(d@!)")
+                               (sequence "|" "CANCELED(c@/!)")
+                               (sequence "STALLED(s@/!)" "|")
+                               (sequence "PENDING(p@/!)" "|")))
 
-(defun org-summary-todo (n-done n-not-done)
-  "Switch entry to DONE when all subentries are done, to TODO otherwise."
-  (let (org-log-done org-log-states)   ; turn off logging
-    (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
-(add-hook 'org-after-todo-statistics-hook 'org-summary-todo)
+     (defun org-summary-todo (n-done n-not-done)
+       "Switch entry to DONE when all subentries are done, to TODO otherwise."
+       (let (org-log-done org-log-states)   ; turn off logging
+         (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
+     (add-hook 'org-after-todo-statistics-hook 'org-summary-todo)
 
-(setq org-capture-templates
-      '(("m" "Meeting" entry (file (concat org-directory "/meetings.org"))
-         "* TODO %?\t:work:meeting:\n  %i\n  %a")
-        ("a" "Task" entry (file (concat org-directory "/work.org"))
-         "* TODO %?\t:work:task:\n  %i\n  %a")
-        ("f" "Defect" entry (file (concat org-directory "/work.org"))
-         "* TODO %?\t:work:defect:\n  %i\n  %a")
-        ("e" "Enhancement" entry (file (concat org-directory "/work.org"))
-         "* TODO %?\t:work:enchancement:\n  %i\n  %a")
-        ("u" "System update" entry (file (concat org-directory "/work.org"))
-         "* TODO %?\t:work:update:\n  %i\n  %a")
-        ("p" "Project" entry (file (concat org-directory "/work.org"))
-         "* TODO %?\t:project:\n  %i\n  %a")
-        ("s" "Study" entry (file (concat org-directory "/work.org"))
-         "* TODO %?\t:work:study:\n  %i\n  %a")
-        ("t" "TODO entry" entry (file (concat org-directory "/gtd.org"))
-         "* TODO %?\t:misc:\n  %i\n  %a")))
+     (setq org-capture-templates
+           '(("m" "Meeting" entry (file (concat org-directory "/meetings.org"))
+              "* TODO %?\t:work:meeting:\n  %i\n  %a")
+             ("a" "Task" entry (file (concat org-directory "/work.org"))
+              "* TODO %?\t:work:task:\n  %i\n  %a")
+             ("f" "Defect" entry (file (concat org-directory "/work.org"))
+              "* TODO %?\t:work:defect:\n  %i\n  %a")
+             ("e" "Enhancement" entry (file (concat org-directory "/work.org"))
+              "* TODO %?\t:work:enchancement:\n  %i\n  %a")
+             ("u" "System update" entry (file (concat org-directory "/work.org"))
+              "* TODO %?\t:work:update:\n  %i\n  %a")
+             ("p" "Project" entry (file (concat org-directory "/work.org"))
+              "* TODO %?\t:project:\n  %i\n  %a")
+             ("s" "Study" entry (file (concat org-directory "/work.org"))
+              "* TODO %?\t:work:study:\n  %i\n  %a")
+             ("t" "TODO entry" entry (file (concat org-directory "/gtd.org"))
+              "* TODO %?\t:misc:\n  %i\n  %a")))))
 
 (global-set-key (kbd "C-c l") 'org-store-link)
 (global-set-key (kbd "C-c c") 'org-capture)
@@ -368,48 +362,48 @@
 ;; ERC
 ;; ------------------------------
 
-(when (require 'erc nil t)
+(eval-after-load 'erc
+  '(progn
+     (setq erc-modules (append erc-modules '(services notify spelling log)))
+     (erc-update-modules)
 
-  (setq erc-modules (append erc-modules '(services notify spelling log pcomplete)))
-  (erc-update-modules)
+     (setq erc-prompt-for-password nil
+           erc-kill-buffer-on-part t
+           erc-kill-queries-on-quit nil
+           erc-kill-server-buffer-on-quit t
+           erc-auto-query 'window-noselect
+           erc-keywords '("zmyrgel"))
 
-  (setq erc-prompt-for-password nil
-        erc-kill-buffer-on-part t
-        erc-kill-queries-on-quit nil
-        erc-kill-server-buffer-on-quit t
-        erc-auto-query 'window-noselect
-        erc-keywords '("zmyrgel"))
-
-  (erc-services-mode 1)
-  (erc-autojoin-mode 1)
-  (erc-match-mode 1)
-  (erc-track-mode 1)
-  (erc-fill-mode 1)
-  (erc-ring-mode 1)
-  (erc-netsplit-mode 1)
-  (erc-timestamp-mode 1)
-  (erc-spelling-mode 1)
-  (erc-notify-mode 1)
-  (setq erc-track-enable-keybindings t
-        erc-track-remove-disconnected-buffers t
-        erc-track-exclude-server-buffer t
-        erc-track-exclude-types '("JOIN" "NICK" "PART" "QUIT" "MODE"
-                                  "324" "329" "332" "333" "353" "477"))
-  (setq erc-timestamp-format "[%R-%m/%d]"
-        erc-hide-timestamps nil)
-  (erc-pcomplete-mode 1)
-  (pcomplete-erc-setup)
-  (setq erc-pcomplete-order-nickname-completions t)
-  (erc-log-mode 1)
-  (setq erc-log-channels-directory "~/.irclogs/"
-        erc-log-insert-log-on-open nil
-        erc-log-file-coding-system 'utf-8-unix
-        erc-save-buffer-on-part t)
-  (add-hook 'erc-insert-post-hook 'erc-save-buffer-in-logs)
-  (setq erc-max-buffer-size 20000)
-  (defvar erc-insert-post-hook)
-  (add-hook 'erc-insert-post-hook 'erc-truncate-buffer)
-  (setq erc-truncate-buffer-on-save t))
+     (erc-services-mode 1)
+     (erc-autojoin-mode 1)
+     (erc-match-mode 1)
+     (erc-track-mode 1)
+     (erc-fill-mode 1)
+     (erc-ring-mode 1)
+     (erc-netsplit-mode 1)
+     (erc-timestamp-mode 1)
+     (erc-spelling-mode 1)
+     (erc-notify-mode 1)
+     (setq erc-track-enable-keybindings t
+           erc-track-remove-disconnected-buffers t
+           erc-track-exclude-server-buffer t
+           erc-track-exclude-types '("JOIN" "NICK" "PART" "QUIT" "MODE"
+                                     "324" "329" "332" "333" "353" "477"))
+     (setq erc-timestamp-format "[%R-%m/%d]"
+           erc-hide-timestamps nil)
+     (erc-pcomplete-mode 1)
+     (pcomplete-erc-setup)
+     (setq erc-pcomplete-order-nickname-completions t)
+     (erc-log-mode 1)
+     (setq erc-log-channels-directory "~/.irclogs/"
+           erc-log-insert-log-on-open nil
+           erc-log-file-coding-system 'utf-8-unix
+           erc-save-buffer-on-part t)
+     (add-hook 'erc-insert-post-hook 'erc-save-buffer-in-logs)
+     (setq erc-max-buffer-size 20000)
+     (defvar erc-insert-post-hook)
+     (add-hook 'erc-insert-post-hook 'erc-truncate-buffer)
+     (setq erc-truncate-buffer-on-save t)))
 
 ;; ------------------------------
 ;; Programming settings
@@ -431,11 +425,7 @@
   (semantic-mode 0)
   (global-ede-mode 1))
 
-;; ;; Semantic
-;; (global-semantic-idle-completions-mode t)
-;; (global-semantic-decoration-mode t)
-;; (global-semantic-highlight-func-mode t)
-;; (global-semantic-show-unmatched-syntax-mode t)
+;;; CC-mode styles
 
 (defun new-c-lineup-arglist (langelem)
   (save-excursion
@@ -453,7 +443,7 @@
 (c-add-style "openbsd"
 	     '("bsd"
 	       (c-ignore-auto-fill . '(string))
-	       (c-subword-mode . 0)
+	       (c-subword-mode . 1)
 	       (c-basic-offset . 8)
 	       (c-label-minimum-indentation . 0)
                (c-offsets-alist .
@@ -468,6 +458,28 @@
 	       (fill-column . 80)
                (tab-width . 8)
 	       (indent-tabs-mode . t)))
+
+(c-add-style "php" '("bsd"
+                     (c-subword-mode . 1)
+                     (c-basic-offset . 2)
+                     (fill-column . 80)
+                     (tab-width . 2)
+                     (indent-tabs-mode . nil)))
+
+(c-add-style "perl" '("bsd"
+                      (c-subword-mode . 1)
+                      (c-basic-offset . 2)
+                      (fill-column . 80)
+                      (tab-width . 4)
+                      (indent-tabs-mode . nil)))
+
+(setq c-default-style '((java-mode . "java")
+                        (c-mode . "openbsd")
+                        (c++-mode . "stroustrup")
+                        (cperl-mode . "perl")
+                        (php-mode . "php")))
+
+;; C programming
 
 (defun my-c-mode-common ()
   (interactive)
@@ -485,15 +497,11 @@
         compilation-scroll-output 'first-error
         compilation-read-command nil
         c-hungry-delete-key t
-        tab-width 8
-        indent-tabs-mode t
-        fill-column 80
         ac-sources (append '(ac-source-semantic) ac-sources))
 
   (local-set-key (kbd "C-c m") 'man-follow)
   (local-set-key (kbd "C-c C-c") 'compile)
   (local-set-key (kbd "C-c C-d") 'gdb)
-  (local-set-key (kbd "RET") 'newline-and-indent)
   (local-set-key (kbd "RET") 'c-context-line-break)
   (local-set-key (kbd "C-c o") 'ff-find-other-file)
   (local-set-key (kbd "C-M-i") 'semantic-ia-complete-symbol))
@@ -518,6 +526,7 @@
   (defalias 'perl-mode 'cperl-mode))
 (add-hook 'cperl-mode-hook
           (lambda ()
+            (c-set-style "perl")
             (flymake-mode 1)
             (electric-pair-mode 0)
             (setq cperl-fontlock t
@@ -534,10 +543,6 @@
             (local-set-key (kbd "C-h f") 'cperl-perldoc)))
 
 (defun my-java-mode-hook ()
-  (setq indent-tabs-mode nil
-        fill-column 80
-        tab-width 4)
-  (c-set-offset 'arglist-intro '+)
   (c-set-style "java"))
 (add-hook 'java-mode-hook 'my-java-mode-hook)
 
@@ -545,62 +550,47 @@
      	     '("\\.php[345]?\\'\\|\\.phtml\\'" . php-mode))
 
 (defun my-php-mode-hook ()
-  (set (make-local-variable 'tab-width) 2)
-  (set (make-local-variable 'c-basic-offset) 2)
-  (set (make-local-variable 'indent-tabs-mode) nil)
-  (set (make-local-variable 'fill-column) 80)
-  (setq php-manual-url "http://www.fi.php.net/manual/en"
-        php-search-url "http://www.fi.php.net/")
-  (setq whitespace-line-column 80
-        whitespace-style '(face lines-tail)))
+  (setq php-manual-url "http://www.php.net/manual/en"
+        php-search-url "http://www.php.net/"
+        whitespace-line-column 80
+        whitespace-style '(face lines-tail))
+  (c-set-style "php"))
 (add-hook 'php-mode-hook 'my-php-mode-hook)
 
 ;;; Lisp settings
+(autoload 'paredit-mode "paredit" "Paredit-mode" nil)
 
 (defun my-shared-lisp-hook ()
   (setq whitespace-line-column 80
-        whitespace-style '(face lines-tail))
-  (when (require 'paredit nil 'noerror)
-    (paredit-mode 1)))
+        whitespace-style '(face lines-tail)))
 
 (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
 (add-hook 'emacs-lisp-mode-hook 'my-shared-lisp-hook)
+(add-hook 'emacs-lisp-mode-hook 'paredit-mode)
 
 (add-hook 'lisp-mode-hook 'slime-mode)
 (add-hook 'lisp-mode-hook 'my-shared-lisp-hook)
+(add-hook 'lisp-mode-hook 'paredit-mode)
 
 ;; Scheme settings
+(autoload 'chicken-slime "chicken-slime" "SWANK backend for Chicken" t)
 (add-hook 'scheme-mode-hook 'my-shared-lisp-hook)
 (setq scheme-program-name "csi")
 (add-to-list 'load-path "/var/lib/chicken/5/")
-(autoload 'chicken-slime "chicken-slime" "SWANK backend for Chicken" t)
 
-;; Spell-check comments and strings
-;;(add-hook 'prog-mode-hook 'flyspell-prog-mode)
+;; (require 'chicken-scheme)
+;; (add-hook 'scheme-mode-hook 'enable-paredit-mode)
+;; (add-hook 'scheme-mode-hook 'rainbow-delimiters-mode-enable)
 
 ;;; clojure
 (autoload 'clojure-mode "clojure-mode" "A major mode for Clojure" t)
 (add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
 (add-hook 'clojure-mode-hook 'my-shared-lisp-hook)
+(add-hook 'clojure-mode-hook 'paredit-mode)
 
 ;; ------------------------------
 ;; Completion
 ;; ------------------------------
-
-;; auto-complete mode
-;; (require 'auto-complete-config)
-;; (add-to-list 'ac-dictionary-directories
-;;              (concat elpa-dir (file-name-as-directory "dict")))
-;; (ac-config-default)
-;; (setq ac-comphist-file (concat emacs-dir "ac-comphist.dat"))
-
-(setq company-idle-delay nil)
-
-;; company-complete-common
-;; company-complete-selection
-;; company-complete
-;; company-select-next
-;; company-select-previous
 
 (icomplete-mode t)
 (setq icomplete-prospects-height 2
@@ -619,10 +609,6 @@
           try-complete-file-name
           try-expand-all-abbrevs))
   (global-set-key (kbd "M-/") 'hippie-expand))
-
-(when (require 'hippie-expand-slime nil 'noerror)
-  (add-hook 'slime-mode-hook 'set-up-slime-hippie-expand)
-  (add-hook 'slime-repl-mode-hook 'set-up-slime-hippie-expand))
 
 (when (featurep 'ido)
   (add-hook 'ibuffer-mode-hook
@@ -700,13 +686,6 @@
   nil)
 (global-set-key (kbd "C-c R") 'rename-current-file-or-buffer)
 
-(defmacro zmg/when-let (varlist &rest body)
-  "Evaluate each value in VARLIST and if the result is non-nil bind it to var.
-     If all the values are non-nil evaluate BODY with bindings."
-  `(let (,@varlist)
-     (when ,(cons 'and (mapcar #'car varlist))
-       ,@body)))
-
 (defun find-alternative-file-with-sudo ()
   (interactive)
   (let ((fname (or buffer-file-name
@@ -735,14 +714,12 @@
 (global-set-key (kbd "C-c C-j") 'join-line)
 (global-set-key (kbd "C-^") 'repeat)
 (global-set-key (kbd "C-x C-c") 'quit-prompt)
+
+(autoload 'magit-status "magit" "Magit mode" t)
 (global-set-key (kbd "C-x v /") 'magit-status)
+
 (global-set-key (kbd "C-c SPC") 'ace-jump-mode)
 
-
 ;;; Oracle stuff
-;;(add-ext-file (concat-path elisp-dir "sqlplus.el"))
-;;(setq sql-oracle-program "/u01/app/oracle/product/11.2.0/xe/bin/sqlplus")
-
-
-;;; PL-SVN
-
+(add-ext-file (concat-path elisp-dir "sqlplus.el"))
+(setq sql-oracle-program "/u01/app/oracle/product/11.2.0/xe/bin/sqlplus")
