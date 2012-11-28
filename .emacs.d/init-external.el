@@ -194,12 +194,21 @@
       slime-kill-without-query-p t
       slime-startup-animation t
       slime-net-coding-system 'utf-8-unix
-      ;;common-lisp-hyperspec-root "file:/home/zmyrgel/lisp/docs/HyperSpec/"
-      ;;common-lisp-hyperspec-symbol-table
-      ;; (concat common-lisp-hyperspec-root "Data/Map_Sym.txt")
       slime-lisp-implementations
       '((sbcl  ("sbcl"))
         (clisp ("clisp" "-ansi"))))
+
+(setq common-lisp-hyperspec-root nil)
+(cond ((file-exists-p "/usr/local/share/doc/clisp-hyperspec")
+       (setq common-lisp-hyperspec-root
+             (concat "file:" "/usr/local/share/doc/clisp-hyperspec")))
+      ((file-exists-p "~/lisp/docs/HyperSpec")
+       (setq common-lisp-hyperspec-root
+             (concat "file:" "~/lisp/docs/HyperSpec"))))
+
+(when common-lisp-hyperspec-root
+  (setq common-lisp-hyperspec-symbol-table
+        (concat-path common-lisp-hyperspec-root "Data/Map_Sym.txt")))
 
 ;; conflicts with clojure swank in newer Slime CVS (later than 2009-10-01)
 (setq slime-use-autodoc-mode t)
