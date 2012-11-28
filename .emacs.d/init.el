@@ -2,7 +2,7 @@
 ;;
 ;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;; Time-stamp: <2012-11-28 15:46:58 (tmy)>
+;; Time-stamp: <2012-11-28 22:44:26 (zmyrgel)>
 ;; URL: http://github.com/zmyrgel/dotfiles
 ;; Compatibility: GNU Emacs 23.1 (may work with other versions)
 ;;
@@ -85,7 +85,6 @@
 
 ;; mouse options
 (setq mouse-yank-at-point t)
-(mouse-wheel-mode t)
 
 ;; Encoding
 (setq locale-coding-system 'utf-8)
@@ -123,12 +122,24 @@
 (show-paren-mode t)
 (setq visible-bell 1)
 (blink-cursor-mode -1)
-(scroll-bar-mode -1)
+
+(when (fboundp 'tool-bar-mode)
+  (tool-bar-mode -1))
+(when (fboundp 'scroll-bar-mode)
+  (scroll-bar-mode -1))
+(when (fboundp 'menu-bar-mode)
+  (menu-bar-mode nil))
+
+(when (fboundp 'mouse-wheel-mode)
+  (mouse-wheel-mode t))
 
 ;; Setup clipboard options if running in X
-(if (not window-system)
-    (menu-bar-mode nil)
-  (setq interprogram-paste-function 'x-cut-buffer-or-selection-value))
+(cond ((eq window-system 'x)
+       (setq x-select-enable-clipboard t
+             interprogram-paste-function 'x-cut-buffer-or-selection-value))
+      ((or (not window-system)
+           (fboundp 'menu-bar-mode))
+       (menu-bar-mode nil)))
 
 ;; disable dialog boxes
 (setq use-file-dialog nil
