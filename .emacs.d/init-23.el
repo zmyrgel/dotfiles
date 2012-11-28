@@ -11,6 +11,8 @@
 (add-ext-dir (concat-path elisp-dir "gnus" "lisp"))
 (add-ext-dir (concat-path elisp-dir "magit"))
 (add-ext-dir (concat-path elisp-dir "magit" "contrib"))
+(add-ext-dir (concat-path elisp-dir "org-mode" "lisp"))
+(add-ext-dir (concat-path elisp-dir "org-mode" "contrib" "lisp"))
 (add-ext-dir (concat-path elisp-dir "smex"))
 (add-ext-dir (concat-path elisp-dir "slime"))
 (add-ext-dir (concat-path elisp-dir "slime" "contrib"))
