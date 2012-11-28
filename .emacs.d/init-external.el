@@ -34,6 +34,10 @@
 
 (eval-after-load "w3m"
   '(progn
+
+     (when (featurep 'newsticker) ; wrong test
+       (setq newsticker-html-renderer 'w3m-region))
+
      (setq w3m-session-file (concat emacs-dir "w3m-session")
            w3m-session-save-always t
            w3m-session-load-always t
@@ -161,8 +165,9 @@
      (gnus-demon-add-handler 'gnus-demon-scan-news 10 t)))
 
 ;; use w3m to render HTML messages
-(when (featurep 'w3m)
-  (setq mm-text-html-renderer 'w3m))
+(if (featurep 'w3m)
+    (setq mm-text-html-renderer 'w3m)
+  (setq mm-text-html-renderer 'shr))
 
 ;; Set color-theme options
 (cond ((>= emacs-major-version 24)
