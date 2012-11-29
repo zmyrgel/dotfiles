@@ -2,7 +2,7 @@
 ;;
 ;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;; Time-stamp: <2012-11-29 09:04:58 (tmy)>
+;; Time-stamp: <2012-11-29 10:39:45 (tmy)>
 ;; URL: http://github.com/zmyrgel/dotfiles
 ;; Compatibility: GNU Emacs 23.1 (may work with other versions)
 ;;
@@ -214,7 +214,7 @@
   (quietly-read-abbrev-file))
 (add-hook 'kill-emacs-hook 'write-abbrev-file)
 
-(setq backup-directory-alist '(("." . (concat emacs-dir (file-name-as-directory "backups"))))
+(setq backup-directory-alist (list `("." . ,(concat-path emacs-dir "backups")))
       make-backup-files t
       backup-by-copying t
       auto-save-timeout 600
