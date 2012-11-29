@@ -181,41 +181,43 @@
   '(progn
      (setq zf-html-basic-offset 4)
      (zf-mode-setup)))
+
 (autoload 'zf-mode "zf-mode" "ZF-mode for PHP" t)
 (add-to-list 'auto-mode-alist '("\\.php\\'" . zf-mode))
 
 ;; Slime
-(setq slime-description-autofocus t
-      slime-repl-history-trim-whitespaces t
-      slime-repl-wrap-history t
-      slime-repl-history-file (concat emacs-dir "slime-history.eld")
-      slime-repl-history-remove-duplicates t
-      slime-ed-use-dedicated-frame t
-      slime-kill-without-query-p t
-      slime-startup-animation t
-      slime-net-coding-system 'utf-8-unix
-      slime-lisp-implementations
-      '((sbcl  ("sbcl"))
-        (clisp ("clisp" "-ansi"))))
-
-(setq common-lisp-hyperspec-root nil)
-(cond ((file-exists-p "/usr/local/share/doc/clisp-hyperspec")
-       (setq common-lisp-hyperspec-root
-             (concat "file:" "/usr/local/share/doc/clisp-hyperspec")))
-      ((file-exists-p "~/lisp/docs/HyperSpec")
-       (setq common-lisp-hyperspec-root
-             (concat "file:" "~/lisp/docs/HyperSpec"))))
-
-(when common-lisp-hyperspec-root
-  (setq common-lisp-hyperspec-symbol-table
-        (concat-path common-lisp-hyperspec-root "Data/Map_Sym.txt")))
-
-;; conflicts with clojure swank in newer Slime CVS (later than 2009-10-01)
-(setq slime-use-autodoc-mode t)
-
-(require 'slime) ; autoload here
+(load (concat-path elisp-dir "slime" "slime-autoloads.el") nil t)
 (eval-after-load 'slime
   '(progn
+     (setq slime-description-autofocus t
+           slime-repl-history-trim-whitespaces t
+           slime-repl-wrap-history t
+           slime-repl-history-file (concat emacs-dir "slime-history.eld")
+           slime-repl-history-remove-duplicates t
+           slime-ed-use-dedicated-frame t
+           slime-kill-without-query-p t
+           slime-startup-animation t
+           slime-net-coding-system 'utf-8-unix
+           slime-lisp-implementations
+           '((sbcl  ("sbcl"))
+             (clisp ("clisp" "-ansi"))))
+
+     (setq common-lisp-hyperspec-root nil)
+     (cond ((file-exists-p "/usr/local/share/doc/clisp-hyperspec")
+            (setq common-lisp-hyperspec-root
+                  (concat "file:" "/usr/local/share/doc/clisp-hyperspec")))
+           ((file-exists-p "~/lisp/docs/HyperSpec")
+            (setq common-lisp-hyperspec-root
+                  (concat "file:" "~/lisp/docs/HyperSpec"))))
+
+     (when common-lisp-hyperspec-root
+       (setq common-lisp-hyperspec-symbol-table
+             (concat-path common-lisp-hyperspec-root "Data/Map_Sym.txt")))
+
+     ;; conflicts with clojure swank in newer Slime CVS (later than 2009-10-01)
+     (setq slime-use-autodoc-mode t)
+
+     ;; Load contrib modules
      (slime-setup '(slime-asdf
                     slime-indentation
                     slime-mdot-fu
@@ -223,20 +225,18 @@
                     slime-fancy
                     slime-sbcl-exts
                     slime-xref-browser))
-
-     (slime-autodoc-mode)
+     (slime-autodoc-mode 1)
      (setq slime-complete-symbol*-fancy t
            slime-complete-symbol-function 'slime-fuzzy-complete-symbol)
      (add-hook 'lisp-mode-hook 'slime-mode)
-     (add-hook 'slime-repl-mode-hook 'paredit-mode)))
-
-(global-set-key (kbd "C-c s") 'slime-selector)
-(def-slime-selector-method ?l
-  "most recently visited lisp-mode buffer."
-  (slime-recently-visited-buffer 'lisp-mode))
-(def-slime-selector-method ?c
-  "most recently visited scheme-mode buffer."
-  (slime-recently-visited-buffer 'scheme-mode))
-(def-slime-selector-method ?j
-  "most recently visited clojure-mode buffer."
-  (slime-recently-visited-buffer 'clojure-mode))
+     (add-hook 'slime-repl-mode-hook 'paredit-mode)
+     (global-set-key (kbd "C-c s") 'slime-selector)
+     (def-slime-selector-method ?l
+       "most recently visited lisp-mode buffer."
+       (slime-recently-visited-buffer 'lisp-mode))
+     (def-slime-selector-method ?c
+       "most recently visited scheme-mode buffer."
+       (slime-recently-visited-buffer 'scheme-mode))
+     (def-slime-selector-method ?j
+       "most recently visited clojure-mode buffer."
+       (slime-recently-visited-buffer 'clojure-mode))))
