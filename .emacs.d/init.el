@@ -2,7 +2,7 @@
 ;;
 ;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;; Time-stamp: <2012-11-28 22:44:26 (zmyrgel)>
+;; Time-stamp: <2012-11-29 09:04:58 (tmy)>
 ;; URL: http://github.com/zmyrgel/dotfiles
 ;; Compatibility: GNU Emacs 23.1 (may work with other versions)
 ;;
@@ -214,7 +214,7 @@
   (quietly-read-abbrev-file))
 (add-hook 'kill-emacs-hook 'write-abbrev-file)
 
-(setq backup-directory-alist (list (cons "." (concat emacs-dir (file-name-as-directory "backups"))))
+(setq backup-directory-alist '(("." . (concat emacs-dir (file-name-as-directory "backups"))))
       make-backup-files t
       backup-by-copying t
       auto-save-timeout 600
@@ -621,27 +621,28 @@
           try-expand-all-abbrevs))
   (global-set-key (kbd "M-/") 'hippie-expand))
 
-(when (featurep 'ido)
-  (add-hook 'ibuffer-mode-hook
-            (lambda ()
-              (local-set-key (kbd "C-x C-f") 'ido-find-file)))
-  (ido-mode 1)
-  (ido-everywhere 1)
-  (setq ido-save-directory-list-file (concat emacs-dir "/ido.last")
-        ido-ignore-buffers
-        '("\\` " "^\*Mess" "^\*Back" ".*Completion" "^\*Ido")
-        ido-everywhere t
-        ido-case-fold  t
-        ido-enable-last-directory-history t
-        ido-max-work-directory-list 30
-        ido-max-work-file-list      50
-        ido-enable-flex-matching t
-        ido-max-prospects 4
-        ido-confirm-unique-completion t
-        ido-completion-buffer-all-completions nil
-        ido-create-new-buffer 'always
-        ido-use-filename-at-point nil
-        ido-use-url-at-point t))
+(eval-after-load 'ido
+  '(progn
+     (add-hook 'ibuffer-mode-hook
+               (lambda ()
+                 (local-set-key (kbd "C-x C-f") 'ido-find-file)))
+     (ido-mode 1)
+     (ido-everywhere 1)
+     (setq ido-save-directory-list-file (concat emacs-dir "/ido.last")
+           ido-ignore-buffers
+           '("\\` " "^\*Mess" "^\*Back" ".*Completion" "^\*Ido")
+           ido-everywhere t
+           ido-case-fold  t
+           ido-enable-last-directory-history t
+           ido-max-work-directory-list 30
+           ido-max-work-file-list      50
+           ido-enable-flex-matching t
+           ido-max-prospects 4
+           ido-confirm-unique-completion t
+           ido-completion-buffer-all-completions nil
+           ido-create-new-buffer 'always
+           ido-use-filename-at-point nil
+           ido-use-url-at-point t)))
 
 ;; ------------------------------
 ;; Dired options
