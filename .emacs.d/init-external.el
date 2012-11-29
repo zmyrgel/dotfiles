@@ -208,7 +208,9 @@
                   (concat "file:" "/usr/local/share/doc/clisp-hyperspec")))
            ((file-exists-p "~/lisp/docs/HyperSpec")
             (setq common-lisp-hyperspec-root
-                  (concat "file:" "~/lisp/docs/HyperSpec"))))
+                  (concat "file:" "~/lisp/docs/HyperSpec")))
+           (t (setq common-lisp-hyperspec-root
+                    "http://www.lispworks.com/documentation/HyperSpec/")))
 
      (when common-lisp-hyperspec-root
        (setq common-lisp-hyperspec-symbol-table
