@@ -111,20 +111,20 @@
 (global-set-key (kbd "C-c t") 'multi-term-next)
 (global-set-key (kbd "C-c T") 'multi-term)
 
-;;; smex
+;; smex
 (autoload 'smex "smex" "Smex" t)
 (autoload 'smex-major-mode-commands "smex" "Smex" t)
 (eval-after-load 'smex
   '(progn
-     (smex-initialize)))
+     (smex-initialize)
+     (setq smex-save-file (concat-path emacs-dir "/smex-items"))))
 
 (global-set-key (kbd "M-x") 'smex)
 (global-set-key (kbd "C-c C-m") 'smex)
 (global-set-key (kbd "M-X") 'smex-major-mode-commands)
 (global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
-(setq smex-save-file (concat-path emacs-dir "/smex-items"))
 
-;;; undo-tree
+;; undo-tree
 (autoload 'global-undo-tree-mode "undo-tree")
 (eval-after-load "undo-tree"
   '(progn
