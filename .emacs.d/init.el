@@ -742,3 +742,10 @@
 ;;; Oracle stuff
 (add-ext-file (concat-path elisp-dir "sqlplus.el"))
 (setq sql-oracle-program "/u01/app/oracle/product/11.2.0/xe/bin/sqlplus")
+
+;; Browser
+(setq browse-url-browser-function
+      (cond ((and (locate-library "w3m") (executable-find "w3m")) 'w3m-browse-url)
+            ((executable-find "firefox") 'browse-url-firefox)
+            ((executable-find "lynx") 'lynx)
+            (t nil)))
