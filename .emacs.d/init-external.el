@@ -152,22 +152,27 @@
          (add-to-list 'Info-directory-list (concat-path elisp-dir "gnus" "texi"))
        (add-to-list 'Info-default-directory-list (concat-path elisp-dir "gnus" "texi")))))
 
-(setq gnus-select-method '(nntp "news.gmane.org")
-      mm-inline-text-html-with-images t
-      mm-inline-large-images 'resize
-      mm-discouraged-alternatives '("text/html" "text/richtext")
-      gnus-treat-hide-citation t
-      gnus-cited-lines-visible '(0 . 5))
-
-;; check for new messages every 10 mins
-(eval-after-load 'gnus-daemon
+(eval-after-load 'gnus
   '(progn
-     (gnus-demon-add-handler 'gnus-demon-scan-news 10 t)))
+     (setq gnus-select-method '(nntp "news.gmane.org")
+           mm-inline-text-html-with-images t
+           mm-inline-large-images 'resize
+           mm-discouraged-alternatives '("text/html" "text/richtext")
+           gnus-treat-hide-citation t
+           gnus-cited-lines-visible '(0 . 5))
 
-;; use w3m to render HTML messages
-(if (featurep 'w3m)
-    (setq mm-text-html-renderer 'w3m)
-  (setq mm-text-html-renderer 'shr))
+     ;; check for new messages every 10 mins
+     (eval-after-load 'gnus-daemon
+       '(progn
+          (gnus-demon-add-handler 'gnus-demon-scan-news 10 t)))
+
+     ;; Set renderer for HTML
+     (setq mm-text-html-renderer
+           (cond ((and (locate-library "w3m") (executable-find "w3m")) 'w3m)
+                 ((fboundp 'libxml-parse-html-region) 'shr)
+                 ((executable-find "w3m") 'gnus-w3m)
+                 ((executable-find "lynx") 'lynx)
+                 (t nil)))))
 
 ;; Set color-theme options
 (cond ((>= emacs-major-version 24)
