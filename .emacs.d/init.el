@@ -2,7 +2,7 @@
 ;;
 ;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;; Time-stamp: <2012-11-29 10:39:45 (tmy)>
+;; Time-stamp: <2012-11-30 07:56:09 (tmy)>
 ;; URL: http://github.com/zmyrgel/dotfiles
 ;; Compatibility: GNU Emacs 23.1 (may work with other versions)
 ;;
@@ -495,20 +495,26 @@
 (defun my-c-mode-common ()
   (interactive)
   (hs-minor-mode t)
-  (electric-pair-mode 1)
+  (when (>= emacs-major-version 24)
+    (electric-pair-mode 1))
   (which-function-mode t)
   (cwarn-mode 1)
-  (subword-mode 1)
+  (c-subword-mode 1)
   (c-toggle-hungry-state 1)
-  (semantic-mode 1)
+  (when (or (>= emacs-major-version 24)
+            (and (= emacs-major-version 23)
+                 (>= emacs-minor-version 2)))
+    (semantic-mode 1))
 
   (font-lock-add-keywords nil '(("\\<\\(FIXME\\|TODO\\|XXX+\\|BUG\\):"
                                  1 font-lock-warning-face prepend)))
   (setq which-func-unknown "TOP LEVEL"
         compilation-scroll-output 'first-error
         compilation-read-command nil
-        c-hungry-delete-key t
-        ac-sources (append '(ac-source-semantic) ac-sources))
+        c-hungry-delete-key t)
+
+  (when (featurep 'auto-complete)
+    (setq ac-sources (append '(ac-source-semantic) ac-sources)))
 
   (local-set-key (kbd "C-c m") 'man-follow)
   (local-set-key (kbd "C-c C-c") 'compile)
@@ -537,9 +543,10 @@
   (defalias 'perl-mode 'cperl-mode))
 (add-hook 'cperl-mode-hook
           (lambda ()
-            (c-set-style "perl")
+            ;;(c-set-style "perl")
             (flymake-mode 1)
-            (electric-pair-mode 0)
+            (when (>= emacs-major-version 24)
+              (electric-pair-mode 0))
             (setq cperl-fontlock t
                   cperl-electric-lbrace-space t
                   cperl-electric-parens t
