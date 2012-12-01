@@ -2,7 +2,7 @@
 ;;
 ;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;; Time-stamp: <2012-11-30 15:16:36 (tmy)>
+;; Time-stamp: <2012-12-02 00:06:00 (zmyrgel)>
 ;; URL: http://github.com/zmyrgel/dotfiles
 ;; Compatibility: GNU Emacs 23.1 (may work with other versions)
 ;;
@@ -64,8 +64,7 @@
 
 (require 'package)
 (setq package-archives '(("GNU" . "http://elpa.gnu.org/packages/")
-                         ("Marmalade" . "http://marmalade-repo.org/packages/")
-                         ("ELPA" . "http://tromey.com/elpa/")
+                         ;;("Marmalade" . "http://marmalade-repo.org/packages/")
                          ("melpa" . "http://melpa.milkbox.net/packages/")
                          ))
 
@@ -820,10 +819,10 @@
 (eval-after-load "w3m"
   '(progn
 
-     (when (featurep 'newsticker) ; wrong test
+     (when (fboundp 'newsticker-treeview)
        (setq newsticker-html-renderer 'w3m-region))
 
-     (setq w3m-session-file (concat emacs-dir "w3m-session")
+     (setq w3m-session-file (concat-path emacs-dir "w3m-session")
            w3m-session-save-always t
            w3m-session-load-always t
            w3m-session-show-titles t
@@ -869,8 +868,6 @@
      (ad-activate 'w3m-modeline-title)))
 
 ;;; Auctex
-;; (load (concat-path elisp-dir "auctex/auctex.el") nil t t)
-;; (load (concat-path elisp-dir "auctex/preview/preview-latex.el") nil t t)
 (eval-after-load 'auctex
   '(progn
      (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
@@ -907,7 +904,7 @@
 
 ;; undo-tree
 (autoload 'global-undo-tree-mode "undo-tree")
-(eval-after-load "undo-tree"
+(eval-after-load 'undo-tree
   '(progn
      (global-undo-tree-mode)))
 
@@ -926,13 +923,6 @@
            quack-switch-to-scheme-method 'other-window)))
 
 ;;; gnus
-(autoload 'gnus "gnus" "news reader" t)
-(eval-after-load 'info
-  '(progn
-     (if (featurep 'xemacs)
-         (add-to-list 'Info-directory-list (concat-path elisp-dir "gnus" "texi"))
-       (add-to-list 'Info-default-directory-list (concat-path elisp-dir "gnus" "texi")))))
-
 (eval-after-load 'gnus
   '(progn
      (setq gnus-select-method '(nntp "news.gmane.org")
@@ -977,11 +967,9 @@
 
      (setq common-lisp-hyperspec-root nil)
      (cond ((file-exists-p "/usr/local/share/doc/clisp-hyperspec")
-            (setq common-lisp-hyperspec-root
-                  (concat "file:" "/usr/local/share/doc/clisp-hyperspec")))
+            (setq common-lisp-hyperspec-root "file:/usr/local/share/doc/clisp-hyperspec"))
            ((file-exists-p "~/lisp/docs/HyperSpec")
-            (setq common-lisp-hyperspec-root
-                  (concat "file:" "~/lisp/docs/HyperSpec")))
+            (setq common-lisp-hyperspec-root "file:~/lisp/docs/HyperSpec"))
            (t (setq common-lisp-hyperspec-root
                     "http://www.lispworks.com/documentation/HyperSpec/")))
 
