@@ -91,14 +91,10 @@
                     magit
                     org
                     paredit
+                    pastels-on-dark-theme
                     php-mode
                     quack
-                    rainbow-delimiters
                     redshank
-                    slime
-                    slime-clj
-                    slime-fuzzy
-                    slime-repl
                     smex
                     suomalainen-kalenteri
                     undo-tree
@@ -959,25 +955,12 @@
                  ((executable-find "lynx") 'lynx)
                  (t nil)))))
 
-;; Set color-theme options
-(cond ((>= emacs-major-version 24)
-       (setq custom-enabled-themes '(pastels-on-dark)))
-      ((>= emacs-major-version 23)
-       (setq custom-theme-load-path nil)
-       (load-theme 'pastels-on-dark)))
-
-;; Zf-mode for PHP
-(eval-after-load 'zf-mode
-  '(progn
-     (setq zf-html-basic-offset 4)
-     (zf-mode-setup)))
-
-(autoload 'zf-mode "zf-mode" "ZF-mode for PHP" t)
-(add-to-list 'auto-mode-alist '("\\.php\\'" . zf-mode))
-
 ;; Slime
-(load (concat-path elisp-dir "slime" "slime-autoloads.el") nil t)
-(eval-after-load 'slime
+(let ((slime-load (expand-file-name "~/quicklisp/slime-helper.el")))
+  (when (file-exists-p slime-load)
+    (load slime-load)))
+
+(eval-after-load "slime"
   '(progn
      (setq slime-description-autofocus t
            slime-repl-history-trim-whitespaces t
@@ -1006,22 +989,9 @@
        (setq common-lisp-hyperspec-symbol-table
              (concat-path common-lisp-hyperspec-root "Data/Map_Sym.txt")))
 
-     ;; conflicts with clojure swank in newer Slime CVS (later than 2009-10-01)
-     (setq slime-use-autodoc-mode t)
-
-     ;; Load contrib modules
-     (slime-setup '(slime-asdf
-                    slime-indentation
-                    slime-mdot-fu
-                    slime-tramp
-                    slime-fancy
-                    slime-sbcl-exts
-                    slime-xref-browser))
-     (slime-autodoc-mode 1)
-     (setq slime-complete-symbol*-fancy t
-           slime-complete-symbol-function 'slime-fuzzy-complete-symbol)
      (add-hook 'lisp-mode-hook 'slime-mode)
      (add-hook 'slime-repl-mode-hook 'paredit-mode)
+
      (global-set-key (kbd "C-c s") 'slime-selector)
      (def-slime-selector-method ?l
        "most recently visited lisp-mode buffer."
@@ -1031,4 +1001,18 @@
        (slime-recently-visited-buffer 'scheme-mode))
      (def-slime-selector-method ?j
        "most recently visited clojure-mode buffer."
-       (slime-recently-visited-buffer 'clojure-mode))))
+       (slime-recently-visited-buffer 'clojure-mode))
+
+     (setq slime-use-autodoc-mode t)
+     (slime-setup '(slime-asdf
+                    slime-indentation
+                    slime-mdot-fu
+                    slime-tramp
+                    slime-fancy
+                    slime-sbcl-exts
+                    slime-xref-browser))
+
+     (slime-autodoc-mode 1)
+
+     (setq slime-complete-symbol*-fancy t
+           slime-complete-symbol-function 'slime-fuzzy-complete-symbol)))
