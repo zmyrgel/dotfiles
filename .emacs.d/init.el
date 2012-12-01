@@ -489,19 +489,6 @@
 (setq compilation-window-height 12
       gdb-many-windows t)
 
-;; Use CEDET
-(when (or (> emacs-major-version 23)
-          (and (= emacs-major-version 23)
-               (>= emacs-minor-version 2)))
-  (setq semantic-default-submodes
-        '(global-semantic-idle-scheduler-mode
-          global-semanticdb-minor-mode
-          global-semantic-idle-summary-mode
-          global-semantic-mru-bookmark-mode
-          global-semantic-stickyfunc-mode))
-  (semantic-mode 0)
-  (global-ede-mode 1))
-
 ;;; CC-mode styles
 
 (defun new-c-lineup-arglist (langelem)
@@ -561,16 +548,15 @@
 (defun my-c-mode-common ()
   (interactive)
   (hs-minor-mode t)
-  (when (>= emacs-major-version 24)
+  (when (fboundp 'electric-pair-mode)
     (electric-pair-mode 1))
   (which-function-mode t)
   (cwarn-mode 1)
-  (c-subword-mode 1)
-  (c-toggle-hungry-state 1)
-  (when (or (>= emacs-major-version 24)
-            (and (= emacs-major-version 23)
-                 (>= emacs-minor-version 2)))
-    (semantic-mode 1))
+  (cond ((fboundp 'subword-mode)
+         (subword-mode 1))
+        ((fboundp 'c-subword-mode)
+         (c-subword-mode 1)))
+  ;;(c-toggle-hungry-state 1)
 
   (font-lock-add-keywords nil '(("\\<\\(FIXME\\|TODO\\|XXX+\\|BUG\\):"
                                  1 font-lock-warning-face prepend)))
@@ -607,11 +593,12 @@
 
 (when (fboundp 'cperl-mode)
   (defalias 'perl-mode 'cperl-mode))
+
 (add-hook 'cperl-mode-hook
           (lambda ()
             ;;(c-set-style "perl")
             (flymake-mode 1)
-            (when (>= emacs-major-version 24)
+            (when (fboundp 'electric-pair-mode)
               (electric-pair-mode 0))
             (setq cperl-fontlock t
                   cperl-electric-lbrace-space t
@@ -650,11 +637,13 @@
 
 (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
 (add-hook 'emacs-lisp-mode-hook 'my-shared-lisp-hook)
-(add-hook 'emacs-lisp-mode-hook 'paredit-mode)
+(add-hook 'emacs-lisp-mode-hook #'(lambda ()
+                                    (paredit-mode 1)))
 
-(add-hook 'lisp-mode-hook 'slime-mode)
 (add-hook 'lisp-mode-hook 'my-shared-lisp-hook)
-(add-hook 'lisp-mode-hook 'paredit-mode)
+(add-hook 'lisp-mode-hook #'(lambda ()
+                              (paredit-mode 1)
+                              (slime-mode 1)))
 
 ;; Scheme settings
 (autoload 'chicken-slime "chicken-slime" "SWANK backend for Chicken" t)
