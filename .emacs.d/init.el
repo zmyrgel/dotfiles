@@ -388,11 +388,12 @@
       uniquify-ignore-buffers-re "^\\*")
 
 (when (fboundp 'ibuffer)
-  (setq ibuffer-default-sorting-mode 'major-mode)
-  (setq ibuffer-saved-filter-groups
+  (setq ibuffer-default-sorting-mode 'major-mode
+        ibuffer-expert t
+        ibuffer-show-empty-filter-groups nil
+        ibuffer-saved-filter-groups
         '(("default"
            ("Dired" (mode . dired-mode))
-           ("ERC" (mode . erc-mode))
            ("Programming" (or (mode . sh-mode)
                               (mode . scheme-mode)
                               (mode . java-mode)
@@ -416,7 +417,8 @@
                                (name . "^diary$")
                                (mode . org-mode)
                                (mode . muse-mode)))
-           ("W3M"  (mode . w3m-mode))
+           ("Web"  (or (mode . w3m-mode)
+                       (mode . erc-mode)))
            ("Gnus" (or (mode . message-mode)
                        (mode . bbdb-mode)
                        (mode . mail-mode)
@@ -428,9 +430,10 @@
 
   (add-hook 'ibuffer-mode-hook
             (lambda ()
+              (ibuffer-auto-mode 1)
               (ibuffer-switch-to-saved-filter-groups "default")))
 
-  (global-set-key (kbd "C-x C-b") 'ibuffer))
+  (defalias 'list-buffers 'ibuffer))
 
 ;; ------------------------------
 ;; ERC
