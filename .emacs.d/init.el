@@ -885,9 +885,6 @@
            TeX-electric-macro t
            TeX-newline-function 'reindent-then-newline-and-indent)))
 
-;;; multi-term
-(autoload 'multi-term-next "multi-term" "Multi-term mode" t)
-(autoload 'multi-term "multi-term" "Multi-term mode" t)
 (eval-after-load 'multi-term
   '(progn
      (setq multi-term-program (case system-type
