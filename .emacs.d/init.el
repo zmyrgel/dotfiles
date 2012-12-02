@@ -265,9 +265,8 @@
 (savehist-mode t)
 
 (setq abbrev-file-name (concat-path emacs-dir "abbrev_defs")
-      abbrev-mode t
       save-abbrevs t)
-(abbrev-mode 1)
+
 (when (file-exists-p abbrev-file-name)
   (quietly-read-abbrev-file))
 (add-hook 'kill-emacs-hook 'write-abbrev-file)
