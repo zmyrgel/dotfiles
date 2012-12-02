@@ -553,7 +553,6 @@
          (subword-mode 1))
         ((fboundp 'c-subword-mode)
          (c-subword-mode 1)))
-  ;;(c-toggle-hungry-state 1)
 
   (font-lock-add-keywords nil '(("\\<\\(FIXME\\|TODO\\|XXX+\\|BUG\\):"
                                  1 font-lock-warning-face prepend)))
@@ -593,7 +592,6 @@
 
 (add-hook 'cperl-mode-hook
           (lambda ()
-            ;;(c-set-style "perl")
             (flymake-mode 1)
             (when (fboundp 'electric-pair-mode)
               (electric-pair-mode 0))
@@ -610,10 +608,6 @@
                   cperl-invalid-face 'default)
             (local-set-key (kbd "C-h f") 'cperl-perldoc)))
 
-(defun my-java-mode-hook ()
-  (c-set-style "java"))
-(add-hook 'java-mode-hook 'my-java-mode-hook)
-
 (add-to-list 'auto-mode-alist
      	     '("\\.php[345]?\\'\\|\\.phtml\\'" . php-mode))
 
@@ -621,8 +615,7 @@
   (setq php-manual-url "http://www.php.net/manual/en"
         php-search-url "http://www.php.net/"
         whitespace-line-column 80
-        whitespace-style '(face lines-tail))
-  (c-set-style "php"))
+        whitespace-style '(face lines-tail)))
 (add-hook 'php-mode-hook 'my-php-mode-hook)
 
 ;;; Lisp settings
