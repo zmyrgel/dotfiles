@@ -927,11 +927,6 @@
            gnus-treat-hide-citation t
            gnus-cited-lines-visible '(0 . 5))
 
-     ;; check for new messages every 10 mins
-     (eval-after-load 'gnus-daemon
-       '(progn
-          (gnus-demon-add-handler 'gnus-demon-scan-news 10 t)))
-
      ;; Set renderer for HTML
      (setq mm-text-html-renderer
            (cond ((and (locate-library "w3m") (executable-find "w3m")) 'w3m)
