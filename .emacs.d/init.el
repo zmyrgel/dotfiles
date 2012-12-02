@@ -372,11 +372,14 @@
 (add-hook 'message-mode-hook 'turn-on-orgstruct++)
 (add-hook 'message-mode-hook 'turn-on-orgtbl)
 
+
+
 ;; ------------------------------
 ;; Buffer management
 ;; ------------------------------
 
-(setq uniquify-buffer-name-style 'post-forward
+(require 'uniquify)
+(setq uniquify-buffer-name-style 'post-forward-angle-brackets
       uniquify-separator ":"
       uniquify-after-kill-buffer-p t
       uniquify-ignore-buffers-re "^\\*")
