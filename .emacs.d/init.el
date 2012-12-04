@@ -2,7 +2,7 @@
 ;;
 ;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;; Time-stamp: <2012-12-02 00:06:00 (zmyrgel)>
+;; Time-stamp: <2012-12-04 13:31:46 (tmy)>
 ;; URL: http://github.com/zmyrgel/dotfiles
 ;; Compatibility: GNU Emacs 23.1 (may work with other versions)
 ;;
@@ -45,60 +45,46 @@
 (add-extension emacs-dir)
 (add-extension elisp-dir)
 
+(when (not (boundp 'custom-theme-load-path))
+  (setq custom-theme-load-path nil))
+
 ;; Install package.el if not present
 (when (not (locate-library "package.el"))
-  (let ((package-url "http://repo.or.cz/w/emacs.git/blob_plain/1a0a666f941c99882093d7bd08ced15033bc3f0c:/lisp/emacs-lisp/package.el"))
-    (cond ((fboundp 'url-retrieve-synchronously)
-           (let ((buffer (url-retrieve-synchronously package-url)))
-             (save-excursion
-               (set-buffer buffer)
-               (write-file (concat-path elisp-dir "package.el") t)
-               (kill-buffer))))
-          (t (let ((buffer (get-buffer-create (generate-new-buffer-name " *Download*"))))
-               (save-excursion
-                 (set-buffer buffer)
-                 (shell-command (concat "wget -q -O- " package-url)
-                                (current-buffer))
-                 (write-file (concat-path elisp-dir "package.el") t)
-                 (kill-buffer (current-buffer))))))))
+  (error "Custom settings require package.el to be present."))
 
-(require 'package)
-(setq package-archives '(("GNU" . "http://elpa.gnu.org/packages/")
-                         ;;("Marmalade" . "http://marmalade-repo.org/packages/")
+(setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
                          ("melpa" . "http://melpa.milkbox.net/packages/")
-                         ))
+                         ("marmalade" . "http://marmalade-repo.org/packages/")))
 
 (package-initialize)
+
+(defvar *my-packages* '(ace-jump-mode
+                        auctex
+                        auto-complete
+                        bbdb
+                        boxquote
+                        clojure-mode
+                        magit
+                        org
+                        paredit
+                        pastels-on-dark-theme
+                        php-mode
+                        quack
+                        redshank
+                        smex
+                        suomalainen-kalenteri
+                        undo-tree
+                        w3m
+                        yasnippet))
 
 ;; only for fresh install
 (unless package-archive-contents
   (package-refresh-contents))
 
-(defun ensure-installed (packages)
-  "Ensures given packages are installed using package.el"
-  (dolist (package packages)
-    (when (not (package-installed-p package))
-      (package-install package))))
-
- ;; packages I use
-(ensure-installed '(ace-jump-mode
-                    auctex
-                    auto-complete
-                    bbdb
-                    boxquote
-                    clojure-mode
-                    magit
-                    org
-                    paredit
-                    pastels-on-dark-theme
-                    php-mode
-                    quack
-                    redshank
-                    smex
-                    suomalainen-kalenteri
-                    undo-tree
-                    w3m
-                    yasnippet))
+;; Install my packages
+(dolist (p *my-packages*)
+  (when (not (package-installed-p p))
+    (package-install p)))
 
 ;; Load optional startup files
 (add-extension (concat-path emacs-dir "init-local.el"))
