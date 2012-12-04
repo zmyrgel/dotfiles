@@ -469,7 +469,9 @@
 ;; Programming settings
 ;; ------------------------------
 
-(setq compilation-window-height 12
+(setq compilation-save-buffers-predicate '(lambda () nil)
+      compilation-ask-about-save nil
+      compilation-window-height 12
       gdb-many-windows t)
 
 ;;; CC-mode styles
