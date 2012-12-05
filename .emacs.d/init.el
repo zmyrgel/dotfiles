@@ -2,15 +2,13 @@
 ;;
 ;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;; Time-stamp: <2012-12-04 13:31:46 (tmy)>
+;; Time-stamp: <2012-12-05 15:29:28 (tmy)>
 ;; URL: http://github.com/zmyrgel/dotfiles
 ;; Compatibility: GNU Emacs 23.1 (may work with other versions)
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO:
-;; - Autoloads for gnus
 ;; - indentation of programming modes
-;; - ERC configuration, modules and such
 
 ;; Define few utilities
 (defun concat-path (&rest parts)
@@ -63,7 +61,9 @@
                         auto-complete
                         bbdb
                         boxquote
+                        chicken-scheme
                         clojure-mode
+                        idomenu
                         magit
                         org
                         paredit
@@ -165,6 +165,7 @@
 
 (show-paren-mode t)
 (setq visible-bell 1)
+(setq window-min-height 3)
 (blink-cursor-mode -1)
 
 (when (fboundp 'tool-bar-mode)
@@ -173,7 +174,6 @@
   (scroll-bar-mode -1))
 (when (fboundp 'menu-bar-mode)
   (menu-bar-mode nil))
-
 (when (fboundp 'mouse-wheel-mode)
   (mouse-wheel-mode t))
 
@@ -190,10 +190,12 @@
       use-dialog-box nil)
 
 ;; the modeline
-(line-number-mode t)
-(column-number-mode t)
-(display-time-mode 1)
-(setq window-min-height 3)
+(when (fboundp 'line-number-mode)
+  (line-number-mode t))
+(when (fboundp 'column-number-mode)
+  (column-number-mode t))
+(when (fboundp 'display-time-mode)
+  (display-time-mode 1))
 
 ;; show file size
 (when (fboundp size-indication-mode)
@@ -515,17 +517,9 @@
                      (tab-width . 2)
                      (indent-tabs-mode . nil)))
 
-(c-add-style "perl" '("bsd"
-                      (c-subword-mode . 1)
-                      (c-basic-offset . 2)
-                      (fill-column . 80)
-                      (tab-width . 4)
-                      (indent-tabs-mode . nil)))
-
 (setq c-default-style '((java-mode . "java")
                         (c-mode . "openbsd")
                         (c++-mode . "stroustrup")
-                        (cperl-mode . "perl")
                         (php-mode . "php")))
 
 ;; C programming
@@ -549,7 +543,7 @@
         compilation-read-command nil
         c-hungry-delete-key t)
 
-  (when (featurep 'auto-complete)
+  (when (fboundp 'auto-complete)
     (setq ac-sources (append '(ac-source-semantic) ac-sources)))
 
   (local-set-key (kbd "C-c m") 'man-follow)
@@ -567,7 +561,6 @@
 (defun my-c++-mode ()
   (setq fill-column 100)
   (c-set-style "stroustrup")
-  (local-set-key (kbd "C-c e") #'expand-member-functions)
   (setq whitespace-line-column 100
         whitespace-style '(face lines-tail)))
 
@@ -596,32 +589,32 @@
                   cperl-invalid-face 'default)
             (local-set-key (kbd "C-h f") 'cperl-perldoc)))
 
-(add-to-list 'auto-mode-alist
-     	     '("\\.php[345]?\\'\\|\\.phtml\\'" . php-mode))
+(when (fboundp 'php-mode)
+  (add-to-list 'auto-mode-alist
+               '("\\.php[345]?\\'\\|\\.phtml\\'" . php-mode))
 
-(defun my-php-mode-hook ()
-  (setq php-manual-url "http://www.php.net/manual/en"
-        php-search-url "http://www.php.net/"
-        whitespace-line-column 80
-        whitespace-style '(face lines-tail)))
-(add-hook 'php-mode-hook 'my-php-mode-hook)
+  (defun my-php-mode-hook ()
+    (setq php-manual-url "http://www.php.net/manual/en"
+          php-search-url "http://www.php.net/"
+          whitespace-line-column 80
+          whitespace-style '(face lines-tail)))
+  (add-hook 'php-mode-hook 'my-php-mode-hook))
 
 ;;; Lisp settings
-(autoload 'paredit-mode "paredit" "Paredit-mode" nil)
 
 (defun my-shared-lisp-hook ()
+  (when (fboundp 'paredit-mode)
+    (paredit-mode 1))
+  (when (fboundp 'rainbow-delimiters-mode)
+    (rainbow-delimiters-mode 1))
   (setq whitespace-line-column 80
         whitespace-style '(face lines-tail)))
 
 (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
 (add-hook 'emacs-lisp-mode-hook 'my-shared-lisp-hook)
-(add-hook 'emacs-lisp-mode-hook #'(lambda ()
-                                    (paredit-mode 1)))
 
 (add-hook 'lisp-mode-hook 'my-shared-lisp-hook)
-(add-hook 'lisp-mode-hook #'(lambda ()
-                              (paredit-mode 1)
-                              (slime-mode 1)))
+(add-hook 'lisp-mode-hook '(lambda () (slime-mode 1)))
 
 ;; Scheme settings
 (autoload 'chicken-slime "chicken-slime" "SWANK backend for Chicken" t)
@@ -629,15 +622,10 @@
 (setq scheme-program-name "csi")
 (add-to-list 'load-path "/var/lib/chicken/5/")
 
-;; (require 'chicken-scheme)
-;; (add-hook 'scheme-mode-hook 'enable-paredit-mode)
-;; (add-hook 'scheme-mode-hook 'rainbow-delimiters-mode-enable)
-
 ;;; clojure
-(autoload 'clojure-mode "clojure-mode" "A major mode for Clojure" t)
-(add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
-(add-hook 'clojure-mode-hook 'my-shared-lisp-hook)
-(add-hook 'clojure-mode-hook 'paredit-mode)
+(when (fboundp 'clojure-mode)
+  (add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
+  (add-hook 'clojure-mode-hook 'my-shared-lisp-hook))
 
 ;; ------------------------------
 ;; Completion
@@ -684,59 +672,8 @@
            ido-use-filename-at-point nil
            ido-use-url-at-point t)
 
-     (defun ido-goto-symbol (&optional symbol-list)
-       "Refresh imenu and jump to a place in the buffer using Ido."
-       (interactive)
-       (unless (featurep 'imenu)
-         (require 'imenu nil t))
-       (cond
-        ((not symbol-list)
-         (let ((ido-mode ido-mode)
-               (ido-enable-flex-matching
-                (if (boundp 'ido-enable-flex-matching)
-                    ido-enable-flex-matching t))
-               name-and-pos symbol-names position)
-           (unless ido-mode
-             (ido-mode 1)
-             (setq ido-enable-flex-matching t))
-           (while (progn
-                    (imenu--cleanup)
-                    (setq imenu--index-alist nil)
-                    (ido-goto-symbol (imenu--make-index-alist))
-                    (setq selected-symbol
-                          (ido-completing-read "Symbol? " symbol-names))
-                    (string= (car imenu--rescan-item) selected-symbol)))
-           (unless (and (boundp 'mark-active) mark-active)
-             (push-mark nil t nil))
-           (setq position (cdr (assoc selected-symbol name-and-pos)))
-           (cond
-            ((overlayp position)
-             (goto-char (overlay-start position)))
-            (t
-             (goto-char position)))))
-        ((listp symbol-list)
-         (dolist (symbol symbol-list)
-           (let (name position)
-             (cond
-              ((and (listp symbol) (imenu--subalist-p symbol))
-               (ido-goto-symbol symbol))
-              ((listp symbol)
-               (setq name (car symbol))
-               (setq position (cdr symbol)))
-              ((stringp symbol)
-               (setq name symbol)
-               (setq position
-                     (get-text-property 1 'org-imenu-marker symbol))))
-             (unless (or (null position) (null name)
-                         (string= (car imenu--rescan-item) name))
-               (add-to-list 'symbol-names name)
-               (add-to-list 'name-and-pos (cons name position))))))))
-
-     (global-set-key "\C-ci" 'ido-goto-symbol) ; or any key you see fit
-
-     ))
-
-
+     (when (fboundp 'idomenu)
+       (global-set-key (kbd "C-c i") 'idomenu))))
 
 ;; ------------------------------
 ;; Dired options
@@ -745,10 +682,13 @@
 (setq dired-isearch-filenames t
       dired-ls-F-marks-symlinks t)
 
+;; Don't pass --dired flag to ls on BSD
+(when (eq system-type 'berkeley-unix)
+  (setq dired-use-ls-dired nil))
+
 ;; Enhance dired mode
 (add-hook 'dired-load-hook
           (lambda ()
-            ;;(setq dired-x-hands-off-my-keys nil) ;; ido-find-file
             (load "dired-x")
             (setq dired-omit-files "^#\\|\\.$\\|^\\."
                   dired-guess-shell-alist-user
@@ -810,50 +750,44 @@
   (when (y-or-n-p "Quit terminal? ")
     (save-buffers-kill-terminal)))
 
+(global-set-key (kbd "C-x C-c") 'quit-prompt)
+
 ;; ------------------------------
 ;; Keybindings
 ;; ------------------------------
 
-(windmove-default-keybindings 'meta)
 (global-set-key (kbd "C-x C-k") 'kill-region)
 (global-set-key (kbd "C-w") 'backward-kill-word)
 (global-set-key (kbd "C-c C-j") 'join-line)
-(global-set-key (kbd "C-^") 'repeat)
-(global-set-key (kbd "C-x C-c") 'quit-prompt)
 
-(autoload 'magit-status "magit" "Magit mode" t)
-(global-set-key (kbd "C-x v /") 'magit-status)
+(when (fboundp 'magit-status)
+  (global-set-key (kbd "C-x v /") 'magit-status))
 
-(global-set-key (kbd "C-c SPC") 'ace-jump-mode)
+(when (fboundp 'ace-jump-mode)
+  (global-set-key (kbd "C-c SPC") 'ace-jump-mode))
 
 ;;; Oracle stuff
-(add-extension (concat-path elisp-dir "sqlplus.el"))
-(setq sql-oracle-program "/u01/app/oracle/product/11.2.0/xe/bin/sqlplus")
-
-;; Browser
-(setq browse-url-browser-function
-      (cond ((and (locate-library "w3m") (executable-find "w3m")) 'w3m-browse-url)
-            ((executable-find "firefox") 'browse-url-firefox)
-            ((executable-find "lynx") 'lynx)
-            (t nil)))
+(eval-after-load 'sqlplus
+  '(progn
+     (add-extension (concat-path elisp-dir "sqlplus.el"))
+     (setq sql-oracle-program "/u01/app/oracle/product/11.2.0/xe/bin/sqlplus")))
 
 ;; ------------------------------
 ;; External packages
 ;; ------------------------------
 
-(autoload 'yas/hippie-try-expand "yasnippet")
-(eval-after-load "yasnippet"
+(eval-after-load 'yasnippet
   '(progn
      (yas-global-mode 1)))
 
 ;; Web Browsing
-(eval-after-load "w3m-search"
+(eval-after-load 'w3m-search
   '(progn
      (add-to-list 'w3m-search-engine-alist '("duckduckgo" "https://duckduckgo.com/?q=%s"))
      (add-to-list 'w3m-search-engine-alist '("fi.wikipedia" "http://fi.wikipedia.org/wiki/Spezial:Search?search=%s" utf-8))
      (setq w3m-search-default-engine "duckduckgo")))
 
-(eval-after-load "w3m"
+(eval-after-load 'w3m
   '(progn
 
      (when (fboundp 'newsticker-treeview)
@@ -904,6 +838,13 @@
              w3m-modeline-title-string ""))
      (ad-activate 'w3m-modeline-title)))
 
+;; Browser
+(setq browse-url-browser-function
+      (cond ((and (locate-library "w3m") (executable-find "w3m")) 'w3m-browse-url)
+            ((executable-find "firefox") 'browse-url-firefox)
+            ((executable-find "lynx") 'lynx)
+            (t nil)))
+
 ;;; Auctex
 (eval-after-load 'auctex
   '(progn
@@ -923,24 +864,23 @@
                                 (berkeley-unix "/bin/ksh")
                                 (usg-unix-v "/bin/ksh")))))
 
-(global-set-key (kbd "C-c t") 'multi-term-next)
-(global-set-key (kbd "C-c T") 'multi-term)
+(when (fboundp 'multi-term)
+  (global-set-key (kbd "C-c t") 'multi-term-next)
+  (global-set-key (kbd "C-c T") 'multi-term))
 
 ;; smex
-(autoload 'smex "smex" "Smex" t)
-(autoload 'smex-major-mode-commands "smex" "Smex" t)
 (eval-after-load 'smex
   '(progn
      (smex-initialize)
      (setq smex-save-file (concat-path emacs-dir "/smex-items"))))
 
-(global-set-key (kbd "M-x") 'smex)
-(global-set-key (kbd "C-c C-m") 'smex)
-(global-set-key (kbd "M-X") 'smex-major-mode-commands)
-(global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
+(when (fboundp 'smex)
+  (global-set-key (kbd "M-x") 'smex)
+  (global-set-key (kbd "C-c C-m") 'smex)
+  (global-set-key (kbd "M-X") 'smex-major-mode-commands)
+  (global-set-key (kbd "C-c C-c M-x") 'execute-extended-command))
 
 ;; undo-tree
-(autoload 'global-undo-tree-mode "undo-tree")
 (eval-after-load 'undo-tree
   '(progn
      (global-undo-tree-mode)))
@@ -982,7 +922,7 @@
   (when (file-exists-p slime-load)
     (load slime-load)))
 
-(eval-after-load "slime"
+(eval-after-load 'slime
   '(progn
      (setq slime-description-autofocus t
            slime-repl-history-trim-whitespaces t
