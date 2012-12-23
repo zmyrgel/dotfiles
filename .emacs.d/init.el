@@ -2,13 +2,15 @@
 ;;
 ;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;; Time-stamp: <2012-12-05 15:29:28 (tmy)>
+;; Time-stamp: <2012-12-23 10:27:02 (zmyrgel)>
 ;; URL: http://github.com/zmyrgel/dotfiles
 ;; Compatibility: GNU Emacs 23.1 (may work with other versions)
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO:
+;; - Autoloads for gnus
 ;; - indentation of programming modes
+;; - ERC configuration, modules and such
 
 ;; Define few utilities
 (defun concat-path (&rest parts)
@@ -26,7 +28,7 @@
          (add-to-list 'load-path ext))
         ((file-exists-p ext)
          (load ext))
-        (t (error (concat "Not a directory or file: " ext)))))
+        (t (warn (concat "Not a directory or file: " ext)))))
 
 ;; Provide few defaults
 (defconst emacs-dir (concat-path (getenv "HOME") ".emacs.d"))
