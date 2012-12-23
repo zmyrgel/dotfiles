@@ -2,7 +2,7 @@
 ;;
 ;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;; Time-stamp: <2012-12-23 10:27:02 (zmyrgel)>
+;; Time-stamp: <2012-12-23 11:00:05 (zmyrgel)>
 ;; URL: http://github.com/zmyrgel/dotfiles
 ;; Compatibility: GNU Emacs 23.1 (may work with other versions)
 ;;
@@ -64,7 +64,6 @@
                         bbdb
                         boxquote
                         chicken-scheme
-                        clojure-mode
                         idomenu
                         magit
                         org
@@ -169,6 +168,8 @@
 (setq visible-bell 1)
 (setq window-min-height 3)
 (blink-cursor-mode -1)
+
+(setq-default cursor-type 'hbar)
 
 (when (fboundp 'tool-bar-mode)
   (tool-bar-mode -1))
@@ -519,9 +520,17 @@
                      (tab-width . 2)
                      (indent-tabs-mode . nil)))
 
+(c-add-style "perl" '("bsd"
+                      (c-subword-mode . 1)
+                      (c-basic-offset . 2)
+                      (fill-column . 80)
+                      (tab-width . 4)
+                      (indent-tabs-mode . nil)))
+
 (setq c-default-style '((java-mode . "java")
                         (c-mode . "openbsd")
                         (c++-mode . "stroustrup")
+                        (cperl-mode . "perl")
                         (php-mode . "php")))
 
 ;; C programming
@@ -603,6 +612,7 @@
   (add-hook 'php-mode-hook 'my-php-mode-hook))
 
 ;;; Lisp settings
+(autoload 'paredit-mode "paredit" "Paredit-mode" nil)
 
 (defun my-shared-lisp-hook ()
   (when (fboundp 'paredit-mode)
@@ -616,16 +626,22 @@
 (add-hook 'emacs-lisp-mode-hook 'my-shared-lisp-hook)
 
 (add-hook 'lisp-mode-hook 'my-shared-lisp-hook)
-(add-hook 'lisp-mode-hook '(lambda () (slime-mode 1)))
+(add-hook 'lisp-mode-hook (lambda () (slime-mode 1)))
 
 ;; Scheme settings
-(autoload 'chicken-slime "chicken-slime" "SWANK backend for Chicken" t)
-(add-hook 'scheme-mode-hook 'my-shared-lisp-hook)
-(setq scheme-program-name "csi")
-(add-to-list 'load-path "/var/lib/chicken/5/")
+(when (fboundp 'chicken-slime)
+  (autoload 'chicken-slime "chicken-slime" "SWANK backend for Chicken" t)
+  (add-hook 'scheme-mode-hook 'my-shared-lisp-hook)
+  (setq scheme-program-name "csi")
+  (add-to-list 'load-path "/var/lib/chicken/5/"))
 
-;;; clojure
+(when (fboundp 'chicken-scheme)
+  (require 'chicken-scheme)
+  (add-hook 'scheme-mode-hook 'my-shared-lisp-hook))
+
+;; clojure
 (when (fboundp 'clojure-mode)
+  (autoload 'clojure-mode "clojure-mode" "A major mode for Clojure" t)
   (add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
   (add-hook 'clojure-mode-hook 'my-shared-lisp-hook))
 
@@ -732,7 +748,6 @@
         (dired-do-rename)
         (kill-buffer nil))))
   nil)
-(global-set-key (kbd "C-c R") 'rename-current-file-or-buffer)
 
 (defun find-alternative-file-with-sudo ()
   (interactive)
@@ -752,8 +767,6 @@
   (when (y-or-n-p "Quit terminal? ")
     (save-buffers-kill-terminal)))
 
-(global-set-key (kbd "C-x C-c") 'quit-prompt)
-
 ;; ------------------------------
 ;; Keybindings
 ;; ------------------------------
@@ -761,6 +774,8 @@
 (global-set-key (kbd "C-x C-k") 'kill-region)
 (global-set-key (kbd "C-w") 'backward-kill-word)
 (global-set-key (kbd "C-c C-j") 'join-line)
+(global-set-key (kbd "C-x C-c") 'quit-prompt)
+(global-set-key (kbd "C-c R") 'rename-current-file-or-buffer)
 
 (when (fboundp 'magit-status)
   (global-set-key (kbd "C-x v /") 'magit-status))
@@ -768,17 +783,26 @@
 (when (fboundp 'ace-jump-mode)
   (global-set-key (kbd "C-c SPC") 'ace-jump-mode))
 
-;;; Oracle stuff
+;; Oracle stuff
 (eval-after-load 'sqlplus
   '(progn
      (add-extension (concat-path elisp-dir "sqlplus.el"))
-     (setq sql-oracle-program "/u01/app/oracle/product/11.2.0/xe/bin/sqlplus")))
+     (when (file-exists-p "/u01/app/oracle/product/11.2.0/xe/bin/sqlplus")
+       (setq sql-oracle-program "/u01/app/oracle/product/11.2.0/xe/bin/sqlplus"))))
+
+;; Browser
+(setq browse-url-browser-function
+      (cond ((and (locate-library "w3m") (executable-find "w3m")) 'w3m-browse-url)
+            ((executable-find "firefox") 'browse-url-firefox)
+            ((executable-find "lynx") 'lynx)
+            (t nil)))
 
 ;; ------------------------------
 ;; External packages
 ;; ------------------------------
 
-(eval-after-load 'yasnippet
+(autoload 'yas/hippie-try-expand "yasnippet")
+(eval-after-load "yasnippet"
   '(progn
      (yas-global-mode 1)))
 
@@ -838,14 +862,9 @@
        "prevent original function from running; cleanup remnants"
        (setq w3m-modeline-separator ""
              w3m-modeline-title-string ""))
-     (ad-activate 'w3m-modeline-title)))
+     (ad-activate 'w3m-modeline-title)
 
-;; Browser
-(setq browse-url-browser-function
-      (cond ((and (locate-library "w3m") (executable-find "w3m")) 'w3m-browse-url)
-            ((executable-find "firefox") 'browse-url-firefox)
-            ((executable-find "lynx") 'lynx)
-            (t nil)))
+     ))
 
 ;;; Auctex
 (eval-after-load 'auctex
@@ -865,12 +884,13 @@
                                 (windows-nt "C:\\bin\\cmd.exe")
                                 (berkeley-unix "/bin/ksh")
                                 (usg-unix-v "/bin/ksh")))))
-
 (when (fboundp 'multi-term)
   (global-set-key (kbd "C-c t") 'multi-term-next)
   (global-set-key (kbd "C-c T") 'multi-term))
 
 ;; smex
+;;(autoload 'smex "smex" "Smex" t)
+;;(autoload 'smex-major-mode-commands "smex" "Smex" t)
 (eval-after-load 'smex
   '(progn
      (smex-initialize)
@@ -883,6 +903,7 @@
   (global-set-key (kbd "C-c C-c M-x") 'execute-extended-command))
 
 ;; undo-tree
+;;(autoload 'global-undo-tree-mode "undo-tree")
 (eval-after-load 'undo-tree
   '(progn
      (global-undo-tree-mode)))
@@ -939,17 +960,15 @@
            '((sbcl  ("sbcl"))
              (clisp ("clisp" "-ansi"))))
 
-     (setq common-lisp-hyperspec-root nil)
-     (cond ((file-exists-p "/usr/local/share/doc/clisp-hyperspec")
+     (cond ((file-directory-p "/usr/local/share/doc/clisp-hyperspec")
             (setq common-lisp-hyperspec-root "file:/usr/local/share/doc/clisp-hyperspec"))
-           ((file-exists-p "~/lisp/docs/HyperSpec")
+           ((file-directory-p "~/lisp/docs/HyperSpec")
             (setq common-lisp-hyperspec-root "file:~/lisp/docs/HyperSpec"))
            (t (setq common-lisp-hyperspec-root
                     "http://www.lispworks.com/documentation/HyperSpec/")))
 
-     (when common-lisp-hyperspec-root
-       (setq common-lisp-hyperspec-symbol-table
-             (concat-path common-lisp-hyperspec-root "Data/Map_Sym.txt")))
+     (setq common-lisp-hyperspec-symbol-table
+           (concat-path common-lisp-hyperspec-root "Data/Map_Sym.txt"))
 
      (add-hook 'lisp-mode-hook 'slime-mode)
      (add-hook 'slime-repl-mode-hook 'paredit-mode)
@@ -966,6 +985,7 @@
        (slime-recently-visited-buffer 'clojure-mode))
 
      (setq slime-use-autodoc-mode t)
+
      (slime-setup '(slime-asdf
                     slime-indentation
                     slime-mdot-fu
@@ -973,8 +993,6 @@
                     slime-fancy
                     slime-sbcl-exts
                     slime-xref-browser))
-
-     (slime-autodoc-mode 1)
 
      (setq slime-complete-symbol*-fancy t
            slime-complete-symbol-function 'slime-fuzzy-complete-symbol)))
