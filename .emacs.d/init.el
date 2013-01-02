@@ -2,7 +2,7 @@
 ;;
 ;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;; Time-stamp: <2012-12-23 11:00:05 (zmyrgel)>
+;; Time-stamp: <2012-12-25 20:50:58 (zmyrgel)>
 ;; URL: http://github.com/zmyrgel/dotfiles
 ;; Compatibility: GNU Emacs 23.1 (may work with other versions)
 ;;
@@ -136,17 +136,12 @@
 (set-locale-environment "en_US.UTF-8")
 
 ;; Add Spell-check for select modes
-(add-hook 'prog-mode-hook #'(lambda ()
-                             (flyspell-prog-mode)))
-(add-hook 'org-mode-hook #'(lambda ()
-                             (flyspell-mode)))
-(add-hook 'text-mode-hook #'(lambda ()
-                              (flyspell-mode)))
+(add-hook 'prog-mode-hook (lambda () (flyspell-prog-mode)))
+(add-hook 'org-mode-hook (lambda () (flyspell-mode)))
+(add-hook 'text-mode-hook (lambda () (flyspell-mode)))
 
 ;; Hooks
-(add-hook 'text-mode-hook
-	  (lambda()
-	    (set-fill-column 80)))
+(add-hook 'text-mode-hook (lambda () (set-fill-column 80)))
 
 (add-hook 'text-mode-hook 'auto-fill-mode)
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
@@ -466,7 +461,7 @@
            erc-save-buffer-on-part t)
      (add-hook 'erc-insert-post-hook 'erc-save-buffer-in-logs)
      (setq erc-max-buffer-size 20000)
-     (defvar erc-insert-post-hook)
+     (defvar erc-insert-post-hook nil)
      (add-hook 'erc-insert-post-hook 'erc-truncate-buffer)
      (setq erc-truncate-buffer-on-save t)))
 
@@ -520,17 +515,9 @@
                      (tab-width . 2)
                      (indent-tabs-mode . nil)))
 
-(c-add-style "perl" '("bsd"
-                      (c-subword-mode . 1)
-                      (c-basic-offset . 2)
-                      (fill-column . 80)
-                      (tab-width . 4)
-                      (indent-tabs-mode . nil)))
-
 (setq c-default-style '((java-mode . "java")
                         (c-mode . "openbsd")
                         (c++-mode . "stroustrup")
-                        (cperl-mode . "perl")
                         (php-mode . "php")))
 
 ;; C programming
@@ -672,7 +659,6 @@
      (add-hook 'ibuffer-mode-hook
                (lambda ()
                  (local-set-key (kbd "C-x C-f") 'ido-find-file)))
-     (ido-mode 1)
      (ido-everywhere 1)
      (setq ido-save-directory-list-file (concat emacs-dir "/ido.last")
            ido-ignore-buffers
@@ -692,6 +678,9 @@
 
      (when (fboundp 'idomenu)
        (global-set-key (kbd "C-c i") 'idomenu))))
+
+(when (fboundp 'ido-mode)
+  (ido-mode 1))
 
 ;; ------------------------------
 ;; Dired options
@@ -815,15 +804,8 @@
 
 (eval-after-load 'w3m
   '(progn
-
      (when (fboundp 'newsticker-treeview)
        (setq newsticker-html-renderer 'w3m-region))
-
-     (setq w3m-session-file (concat-path emacs-dir "w3m-session")
-           w3m-session-save-always t
-           w3m-session-load-always t
-           w3m-session-show-titles t
-           w3m-session-duplicate-tabs 'never)
 
      (setq browse-url-browser-function 'w3m-browse-url
            browse-url-new-window-flag t
@@ -862,9 +844,15 @@
        "prevent original function from running; cleanup remnants"
        (setq w3m-modeline-separator ""
              w3m-modeline-title-string ""))
-     (ad-activate 'w3m-modeline-title)
+     (ad-activate 'w3m-modeline-title)))
 
-     ))
+(eval-after-load 'w3m-search
+  '(progn
+     (setq w3m-session-file (concat-path emacs-dir "w3m-session")
+           w3m-session-save-always t
+           w3m-session-load-always t
+           w3m-session-show-titles t
+           w3m-session-duplicate-tabs 'never)))
 
 ;;; Auctex
 (eval-after-load 'auctex
@@ -889,21 +877,20 @@
   (global-set-key (kbd "C-c T") 'multi-term))
 
 ;; smex
-;;(autoload 'smex "smex" "Smex" t)
-;;(autoload 'smex-major-mode-commands "smex" "Smex" t)
+(autoload 'smex "smex" "Smex" t)
+(autoload 'smex-major-mode-commands "smex" "Smex" t)
 (eval-after-load 'smex
   '(progn
      (smex-initialize)
      (setq smex-save-file (concat-path emacs-dir "/smex-items"))))
 
-(when (fboundp 'smex)
-  (global-set-key (kbd "M-x") 'smex)
-  (global-set-key (kbd "C-c C-m") 'smex)
-  (global-set-key (kbd "M-X") 'smex-major-mode-commands)
-  (global-set-key (kbd "C-c C-c M-x") 'execute-extended-command))
+(global-set-key (kbd "M-x") 'smex)
+(global-set-key (kbd "C-c C-m") 'smex)
+(global-set-key (kbd "M-X") 'smex-major-mode-commands)
+(global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
 
 ;; undo-tree
-;;(autoload 'global-undo-tree-mode "undo-tree")
+(autoload 'global-undo-tree-mode "undo-tree")
 (eval-after-load 'undo-tree
   '(progn
      (global-undo-tree-mode)))
@@ -922,7 +909,7 @@
            quack-smart-open-paren-p t
            quack-switch-to-scheme-method 'other-window)))
 
-;;; gnus
+;; gnus
 (eval-after-load 'gnus
   '(progn
      (setq gnus-select-method '(nntp "news.gmane.org")
@@ -961,17 +948,19 @@
              (clisp ("clisp" "-ansi"))))
 
      (cond ((file-directory-p "/usr/local/share/doc/clisp-hyperspec")
-            (setq common-lisp-hyperspec-root "file:/usr/local/share/doc/clisp-hyperspec"))
+            (setq common-lisp-hyperspec-root "file:/usr/local/share/doc/clisp-hyperspec/"))
            ((file-directory-p "~/lisp/docs/HyperSpec")
-            (setq common-lisp-hyperspec-root "file:~/lisp/docs/HyperSpec"))
+            (setq common-lisp-hyperspec-root "file:~/lisp/docs/HyperSpec/"))
            (t (setq common-lisp-hyperspec-root
                     "http://www.lispworks.com/documentation/HyperSpec/")))
 
      (setq common-lisp-hyperspec-symbol-table
            (concat-path common-lisp-hyperspec-root "Data/Map_Sym.txt"))
 
-     (add-hook 'lisp-mode-hook 'slime-mode)
-     (add-hook 'slime-repl-mode-hook 'paredit-mode)
+     (add-hook 'lisp-mode-hook (lambda ()
+                                 (slime-mode 1)))
+     (add-hook 'slime-repl-mode-hook (lambda ()
+                                       (paredit-mode 1)))
 
      (global-set-key (kbd "C-c s") 'slime-selector)
      (def-slime-selector-method ?l
