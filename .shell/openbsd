@@ -5,8 +5,6 @@ CVSROOT="anoncvs@anoncvs.eu.openbsd.org:/cvs"
 
 export PKG_PATH CVSROOT
 
-alias killall='pkill'
-alias shred='rm -P'
 alias flav='make show=FLAVORS'
 
 # Add Latest JDK dir to PATH
@@ -19,7 +17,7 @@ elif [ -x /usr/local/jdk-1.5.0/bin ]; then
 fi
 
 # If version 4.8 or newer, set locale
-if [ `uname -r | tr -d "." > 48` ]; then
+if [ $(uname -r | tr -d ".") -gt 48 ]; then
     LC_CTYPE=en_us.UTF-8
 fi
 
