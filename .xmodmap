@@ -1,5 +1,3 @@
-!keycode  24 = q Q adiaeresis Adiaeresis
-!keycode  33 = p P odiaeresis Odiaeresis
-keysym q = q Q adiaeresis Adiaeresis
-keysym p = p P odiaeresis Odiaeresis
-keycode 108 =  Mode_switch   Mode_switch
+keycode 113 = Mode_switch Mode_switch
+keycode 24 = q Q adiaeresis Adiaeresis
+keycode 33 = p P odiaeresis Odiaeresis
