@@ -8,9 +8,9 @@ CVS_RSH=ssh
 
 export HISTSIZE HISTFILE PAGER LESS CVS_RSH
 
-if [ $(which emacsclient) ]; then
+if [ -x $(which emacsclient) ]; then
     VISUAL='emacsclient -a ""'
-else if [ $(which mg) ]; then
+elif [ -x $(which mg) ]; then
     VISUAL='mg'
 else
     VISUAL='vi'
