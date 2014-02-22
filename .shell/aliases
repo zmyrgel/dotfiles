@@ -1,14 +1,7 @@
 # Aliases  -*- mode: sh; coding: utf-8-unix; -*-
 # ----------------------------------------------
 
-# For convenience
-alias 'dus=du -ms * | sort -n'
-
-# Typing errors...
-alias 'cd..=cd ..'
-
 # Base command REPLACES (possible dangerous)
-alias su='su -l'
 alias df='df -h'
 alias du='du -h'
 alias man='LC_ALL=C man'
@@ -17,9 +10,7 @@ alias mkdir='mkdir -p'
 
 # New aliases
 alias ll='ls -l'
-alias l.='ls -d .[^.]*'
 alias la='ls -a'
-alias lsd='ls -ld *(-/DN)'
 alias md='mkdir -p'
 alias rd='rmdir'
 alias ff='find . -name $*'
@@ -46,7 +37,6 @@ alias play='mpc --no-status toggle; np'
 alias next='mpc --no-status next; np'
 alias prev='mpc --no-status prev; np'
 alias stop='mpc --no-status stop '
-
 alias playiso='mplayer dvd://1 -dvd-device '
 alias playdvd='mplayer dvdnav:// /dev/sr0'
 alias myip='lynx -dump http://tnx.nl/ip'

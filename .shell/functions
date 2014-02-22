@@ -45,41 +45,9 @@ function calc {
     echo "$*" | bc;
 }
 
-function open {
-    if [[ -f "$1" ]]; then
-        case "$1" in
-            (*.tar.bz2)     tar -xvjf "$1" ;;
-            (*.tar.gz)      tar -xvzf "$1" ;;
-            (*.ace)         unace e "$1" ;;
-            (*.rar)         unrar x "$1" ;;
-            (*.deb)         ar -x "$1" ;;
-            (*.bz2)         bzip2 -d "$1" ;;
-            (*.lzh)         lha x "$1" ;;
-            (*.gz)          gunzip -d "$1" ;;
-            (*.tar)         tar -xvf "$1" ;;
-            (*.rpm)         extractrar "$1" ;;
-            (*.lzma)        extractlzma "$1" ;;
-            (*.tgz)         gunzip -d "$1" ;;
-            (*.tbz2)        tar -jxvf "$1" ;;
-            (*.zip)         unzip "$1" ;;
-            (*.Z)           uncompress "$1" ;;
-            (*.7z)          7z x "$1" ;;
-            (*.shar)        sh "$1" ;;
-            (*)             echo "'"$1"' Error. Please go away" ;;
-        esac
-    else
-        echo "'"$1"' is not a valid file"
-    fi
-}
-
 #  https://dgl.cx/wikipedia-dns
 function wiki {
-    if [ -x /usr/sbin/host ]; then
-        host -t txt "$1".wp.dg.cx | cut -f 3
-    elif [ -x /usr/bin/host-woods ]; then
-        host-woods -t txt "$1".wp.dg.cx | cut -f 3
-    fi
-
+    [ -x /usr/sbin/host ] && host -t txt "$1".wp.dg.cx | cut -f 3
 }
 
 # Quick find
@@ -96,18 +64,6 @@ function addartist {
     mpc clear
     mpc search artist "$*" | mpc add
     mpc --no-status play
-  fi
-}
-
-# pull a single file out of a .tar.gz, stops on first match
-function pullout {
-  if [ $# -ne 2 ]; then
-    echo "usage: pullout [file] [archive{.tar.gz,.tgz}]"
-  else
-    case $2 in
-      *.tar.gz|*.tgz) gunzip < $2 | bsdtar -qxf - $1     ;;
-      *)              echo "$2: not a valid archive" ;;
-    esac
   fi
 }
 

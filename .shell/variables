@@ -1,13 +1,22 @@
 # Variables -*- mode: sh; coding: utf-8-unix; -*-
 
-export HISTTIMEFORMAT="[%Y-%m-%d - %H:%M:%S] "
-export HISTIGNORE="&:ls:[bf]g:exit:reset:clear:cd:cd ..:cd.."
-export HISTSIZE=10000
-export EDITOR='emacsclient -a ""'
-export VISUAL=$EDITOR
-export PAGER=less
-export LESS="-i -M -q -S -Sm -F -g --no-init"
-export CVS_RSH=ssh
+HISTSIZE=10000
+HISTFILE=$HOME/.sh_history
+PAGER=less
+LESS="-i -M -q -S -Sm -F -g --no-init"
+CVS_RSH=ssh
+
+export HISTSIZE HISTFILE PAGER LESS CVS_RSH
+
+if [ $(which emacsclient) ]; then
+    VISUAL='emacsclient -a ""'
+else if [ $(which mg) ]; then
+    VISUAL='mg'
+else
+    VISUAL='vi'
+fi
+
+export VISUAL
 
 ### PATH ###
 
