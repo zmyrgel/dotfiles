@@ -1,0 +1,42 @@
+#avoid flicker
+double_buffer yes
+
+#own window to run simultanious 2 or more conkys
+own_window  yes
+own_window_type desktop
+own_window_transparent yes
+own_window_hints undecorate,sticky,skip_taskbar,skip_pager
+
+#borders
+draw_borders no
+#border_margin 1
+
+#shades
+draw_shades no
+
+#position
+gap_x 6
+gap_y 6
+alignment bottom_left
+
+#behaviour
+update_interval 1
+
+#colour
+default_color  8f8f8f
+#default_shade_color 000000
+own_window_colour 262626
+
+#font
+use_xft yes
+xftfont bauhaus:pixelsize=10
+
+#to prevent window from moving
+use_spacer none
+minimum_size 1268 0
+
+#load custom functions
+lua_load ~/.config/conky/scripts/conky_lua_scripts.lua
+
+TEXT
+${voffset -1} ${color} ${color}${time %a %e %b %G %T} | Cpu: ${color e0e0e0}${font}${lua_parse format %3s ${cpu}}% ${color} Mem: ${color e0e0e0}${font}${mem} ${color} | ${color} Up: ${color e0e0e0}${font}${uptime_short}${color} | ${color}Root: ${color e0e0e0}${font}${fs_free /} ${color} Home: ${color e0e0e0}${font}${fs_free /home} ${color} |  Email: ${color e0e0e0}${imap_unseen localhost zmyrgel lf42dd-7 -p 993} new messages ${color} | ${color} Battery: ${color e0e0e0} ${apm_battery_life} ${color} | ${color} Music:  ${color e0e0e0}${font}${audacious_title 75}
