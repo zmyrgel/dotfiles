@@ -15,10 +15,10 @@ elif [ -x /usr/local/jdk-1.6.0/bin ]; then
 elif [ -x /usr/local/jdk-1.5.0/bin ]; then
     PATH=$PATH:/usr/local/jdk-1.5.0/bin/
 fi
+export PATH
 
 # If version 4.8 or newer, set locale
 if [ $(uname -r | tr -d ".") -gt 48 ]; then
     LC_CTYPE=en_us.UTF-8
+    export LC_CTYPE
 fi
-
-export PATH LC_CTYPE
