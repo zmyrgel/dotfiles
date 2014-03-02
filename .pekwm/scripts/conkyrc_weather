@@ -1,0 +1,43 @@
+use_xft yes
+xftfont Aller Display:pixelsize=12
+xftalpha 0.8
+text_buffer_size 2048
+update_interval 1.0
+total_run_times 0
+own_window yes
+own_window_transparent no
+#own_window_type override
+own_window_type normal
+own_window_hints above,skip_pager
+own_window_title Meteo
+double_buffer yes
+minimum_size 220 120
+maximum_width 220
+draw_shades yes
+draw_outline no
+draw_borders no
+border_inner_margin 1
+border_width 1
+default_color grey70
+default_shade_color black
+default_outline_color grey
+own_window_colour black
+alignment tm
+gap_x 0
+gap_y 300
+no_buffers yes
+uppercase no
+cpu_avg_samples 1
+net_avg_samples 1
+override_utf8_locale yes
+use_spacer none
+TEXT
+${if_existing /proc/net/route eth0}${voffset 6}   ${font ConkyWeather:pixelsize=35}${execi 1800 conkyForecast --location=FRXX6277 --datatype=WF}${font}$color ${voffset -18}${font Moon Phases:pixelsize=22}${execi 1800 conkyForecast --location=FRXX6277 --datatype=MF}${font}${voffset -10}${goto 90}${font Aller Display:pixelsize=16}${execi 1800 conkyForecast --location=FRXX6277 --datatype=HT}${alignr 10}${voffset -10}${time %A}
+${alignr 10}${time %d / %m}${font}
+
+    ${execi 1800 conkyForecast --location=FRXX6277 --datatype=DW --startday=0}: ${execi 1800 conkyForecast --location=FRXX6277 --datatype=CC}${color}
+    Vent: ${execi 1800 conkyForecast --location=FRXX6277 --datatype=WS}
+    ${execi 1800 conkyForecast --location=FRXX6277 --datatype=DW --startday=1}: ${execi 1800 conkyForecast --location=FRXX6277 --datatype=LT --startday=1} /${execi 1800 conkyForecast --location=FRXX6277 --datatype=HT --startday=1} ${execi 1800 conkyForecast --location=FRXX6277 --datatype=CC --startday=1}
+    ${execi 1800 conkyForecast --location=FRXX6277 --datatype=DW --startday=2}: ${execi 1800 conkyForecast --location=FRXX6277 --datatype=LT --startday=2} /${execi 1800 conkyForecast --location=FRXX6277 --datatype=HT --startday=2} ${execi 1800 conkyForecast --location=FRXX6277 --datatype=CC --startday=2}
+    ${execi 1800 conkyForecast --location=FRXX6277 --datatype=DW --startday=3}: ${execi 1800 conkyForecast --location=FRXX6277 --datatype=LT --startday=3} /${execi 1800 conkyForecast --location=FRXX6277 --datatype=HT --startday=3} ${execi 1800 conkyForecast --location=FRXX6277 --datatype=CC --startday=3}
+${else}${alignc} NO INFO ${endif}

@@ -1,0 +1,4 @@
+$TERM="xterm"
+$BROWSER="firefox"
+$FILEMANAGER="pcmanfm"
+$EDIT="emacs"

@@ -1,0 +1,74 @@
+use_xft yes
+xftfont Aller:pixelsize=10
+xftalpha 0.8
+text_buffer_size 2048
+update_interval 1.0
+total_run_times 0
+own_window yes
+own_window_transparent no
+#own_window_type override
+own_window_type normal
+own_window_hints above,skip_pager
+own_window_title News
+double_buffer yes
+minimum_size 320 100
+maximum_width 320
+draw_shades no
+draw_outline no
+draw_borders no
+border_inner_margin 1
+border_width 1
+default_color grey70
+default_shade_color black
+default_outline_color grey
+own_window_colour 181818
+alignment tl
+gap_x 200
+gap_y 100
+no_buffers yes
+uppercase no
+cpu_avg_samples 1
+net_avg_samples 1
+override_utf8_locale yes
+use_spacer none
+TEXT
+${if_up re0}${font Aller:pixelsize=12}${rss http://news.google.com/news?cf=all&ned=fi&hl=fr&topic=t&output=rss 120 feed_title}$font
+${rss http://news.google.com/news?cf=all&ned=fi&hl=fr&topic=t&output=rss 10 item_title 0}
+${rss http://news.google.com/news?cf=all&ned=fi&hl=fr&topic=t&output=rss 10 item_title 1}
+${rss http://news.google.com/news?cf=all&ned=fi&hl=fr&topic=t&output=rss 10 item_title 2}
+${rss http://news.google.com/news?cf=all&ned=fi&hl=fr&topic=t&output=rss 10 item_title 3}
+${rss http://news.google.com/news?cf=all&ned=fi&hl=fr&topic=t&output=rss 10 item_title 4}
+${rss http://news.google.com/news?cf=all&ned=fi&hl=fr&topic=t&output=rss 10 item_title 5}
+
+${font Aller:pixelsize=12}${rss http://planet.ubuntu-fr.org/feed/rss2 120 feed_title}$font
+${rss http://planet.ubuntu-fr.org/feed/rss2 60 item_title 0}
+${rss http://planet.ubuntu-fr.org/feed/rss2 60 item_title 1}
+${rss http://planet.ubuntu-fr.org/feed/rss2 60 item_title 2}
+${rss http://planet.ubuntu-fr.org/feed/rss2 60 item_title 3}
+${rss http://planet.ubuntu-fr.org/feed/rss2 60 item_title 4}
+${rss http://planet.ubuntu-fr.org/feed/rss2 60 item_title 5}
+
+${font Aller:pixelsize=12}${rss http://crunchbanglinux.org/planet/rss20.xml 120 feed_title}$font
+${rss http://crunchbanglinux.org/planet/rss20.xml 60 item_title 1}
+${rss http://crunchbanglinux.org/planet/rss20.xml 60 item_title 2}
+${rss http://crunchbanglinux.org/planet/rss20.xml 60 item_title 3}
+${rss http://crunchbanglinux.org/planet/rss20.xml 60 item_title 4}
+${rss http://crunchbanglinux.org/planet/rss20.xml 60 item_title 5}
+
+${font Aller:pixelsize=12}${rss http://www.lemonde.fr/rss/une.xml 120 feed_title}$font
+${rss http://www.lemonde.fr/rss/une.xml 60 item_title 0}
+${rss http://www.lemonde.fr/rss/une.xml 60 item_title 1}
+${rss http://www.lemonde.fr/rss/une.xml 60 item_title 2}
+${rss http://www.lemonde.fr/rss/une.xml 60 item_title 3}
+${rss http://www.lemonde.fr/rss/une.xml 60 item_title 4}
+${rss http://www.lemonde.fr/rss/une.xml 60 item_title 5}
+
+${font Aller:pixelsize=12}${rss http://blog.conky.be/feed/ 120 feed_title}$font
+${rss http://blog.conky.be/feed/ 120 item_title 0}
+${rss http://blog.conky.be/feed/ 120 item_title 1}
+${rss http://blog.conky.be/feed/ 120 item_title 2}
+${rss http://blog.conky.be/feed/ 120 item_title 3}
+${rss http://blog.conky.be/feed/ 120 item_title 4}
+${rss http://blog.conky.be/feed/ 120 feed_title 5}
+
+${else}${alignc} NO INFO ${endif}

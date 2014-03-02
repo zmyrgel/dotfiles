@@ -1,0 +1,221 @@
+# default theme for pekwm mods by arpinux
+# 
+# ChangeLog:
+#
+# * 2009 changing colors, size, behaviour.
+# * depends on 'Aller' font : <http://www.fontsquirrel.com/fonts/Aller>
+# * Update for 0.1.8 with templates enabled.
+# * Created for version 0.1.7
+#
+
+Require {
+  Templates = "True"
+}
+
+Define = "BaseDecor" {
+  Height = "15"
+  HeightAdapt = "True"
+
+  # increase first number to bring title text downwards
+  Pad = "0 1 2 0"
+  
+  Focused = "Empty"
+  Unfocused = "Empty"
+  
+  Tab {
+    Focused = "Solid #dddddd"
+    FocusedSelected = "Solid #ffffff"
+    Unfocused = "Solid #aaaaaa"
+    UnfocusedSelected = "Solid #aaaaaa"
+  }
+  Separator {
+    Focused = "Empty"
+    Unfocused = "Empty"
+  }
+  Font {
+    Focused = "Aller:size=8#CENTER#XFT"
+    FocusedSelected = "Aller Display:size=8#CENTER#XFT"
+    Unfocused = "Aller:size=8#CENTER#XFT"
+    UnfocusedSelected = "Aller:size=8#CENTER#XFT"
+  }
+  FontColor {
+    Focused = "#181818"
+    FocusedSelected = "#181818"
+    Unfocused = "#333333"
+    UnfocusedSelected = "#333333"
+  }
+  Border {
+    Focused {
+      TopLeft = "Solid #181818 1x1"
+      Top = "Solid #181818 1x1"
+      TopRight = "Solid #181818 1x1"
+      Left = "Solid #181818 1x1"
+      Right = "Solid #181818 1x1"
+      BottomLeft = "Solid #181818 1x1"
+      Bottom = "Solid #666666 1x1"
+      BottomRight = "Solid #181818 1x1"
+    }
+    Unfocused {
+      TopLeft = "Solid #666666 1x1"
+      Top = "Solid #666666 1x1"
+      TopRight = "Solid #666666 1x1"
+      Left = "Solid #181818 1x1"
+      Right = "Solid #181818 1x1"
+      BottomLeft = "Solid #181818 1x1"
+      Bottom = "Solid #181818 1x1"
+      BottomRight = "Solid #181818 1x1"
+    }
+  }
+}
+
+Define = "ButtonStates" {
+  Focused = "Solid #181818 0x0"
+  Unfocused = "Solid #999999 0x0"
+  Pressed = "Solid #ffffff 0x0"
+  Hover = "Solid #ff790c 0x0"
+}
+
+Define = "ButtonStatesRemote" {
+  @ButtonStates
+}
+
+Define = "ButtonStatesWarning" {
+  @ButtonStates
+  Focused = "Solid #ff0000 0x0"
+}
+
+Define = "BaseButtonDecor" {
+  @BaseDecor
+
+  Buttons {
+    Left {
+      @ButtonStates
+
+      Button = "1" { Actions = "Close" }
+      Button = "2" { Actions = "Kill" }
+    }
+    Right { 
+      @ButtonStates
+
+      Button = "1" { Actions = "Toggle Maximized 1 1" }
+      Button = "2" { Actions = "Toggle Maximized 0 1" }
+      Button = "3" { Actions = "Toggle Maximized 1 0" }
+    }
+  }
+}
+
+PDecor {
+  Decor = "DEFAULT" {
+    Title {
+      @BaseButtonDecor
+    }
+  }
+
+  Decor = "REMOTE" {
+    Title {
+      @BaseButtonDecor
+
+      Tab {
+        Focused = "Solid #fffcec"
+        FocusedSelected = "Solid #fff9d6"
+      }
+
+      Buttons {
+        Left {
+          @ButtonStatesRemote
+        }
+        Right {
+          @ButtonStatesRemote
+        }
+      }
+    }
+  }
+
+  Decor = "WARNING" {
+    Title {
+      @BaseButtonDecor
+
+      Tab {
+        Focused = "Solid #ee5454"
+        FocusedSelected = "Solid #ff7474"
+      }
+
+      Buttons {
+        Left {
+          @ButtonStatesWarning
+        }
+        Right {
+          @ButtonStatesWarning
+        }
+      }
+    }
+  }
+
+  Decor = "MENU" {
+    Title {
+      @BaseDecor
+    }
+  }
+
+  Decor = "WORKSPACEINDICATOR" {
+    Title {
+        @BaseDecor
+
+        Height = "0"
+        HeightAdapt = "False"
+    }
+  }
+}
+
+Harbour {
+    Texture = "SolidRaised #ffffff #000000 #000000 1 0"
+}
+
+Menu {
+    Pad = "2 2 2 2"
+    Focused {
+        Font = "Aller:size=8#Left#XFT"
+        Background = "Empty"
+        Item = "Solid #181818 1 0"
+        Separator = "Solid #aaaaaa 0x1"
+        Arrow = "Solid #ff790c 4x4"
+        Text = "#aaaaaa"
+    }
+    Unfocused {
+        Font = "Aller:size=8#Left#XFT"
+        Background = "Empty"
+        Item = "Solid #181818 1 0"
+        Separator = "Solid #aaaaaa 0x1"
+        Arrow = "Solid #aaaaaa 4x4"
+        Text = "#aaaaaa"
+    }
+    Selected {
+        Font = "Aller:size=8#Center#XFT"
+        Background = "Empty"
+        Item = "Solid #ff790c"
+        Arrow = "Solid #181818 4x4"
+        Text = "#181818"
+    }
+}
+
+CmdDialog {
+    Font = "Aller:size=8#Left#XFT"
+    Texture = "Solid #ffffff"
+    Text = "#000000"
+}
+
+Status {
+    Font = "Aller:size=8#Center#XFT"
+    Texture = "Solid #ffffff"
+    Text = "#000000"
+}
+
+WorkspaceIndicator {
+    Font = "Aller Display:size=9#Right#XFT"
+    Background = "Solid #181818"
+    Workspace = "Solid #cccccc"
+    WorkspaceActive = "Solid #aaaaaa"
+    Text = "#aaaaaa"
+    EdgePadding = "1"
+    WorkspacePadding = "0"
+}

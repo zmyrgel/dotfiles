@@ -1,0 +1,82 @@
+# conky configuration
+#
+# The list of variables has been removed from this file in favour
+# of keeping the documentation more maintainable.
+# Check http://conky.sf.net for an up-to-date-list.
+#
+# For ideas about how to modify conky, please see:
+# http://crunchbanglinux.org/forums/topic/59/my-conky-config/
+#
+# For help with conky, please see:
+# http://crunchbanglinux.org/forums/topic/2047/conky-help/
+#
+# Enjoy! :)
+##############################################
+#  Settings
+##############################################
+background yes
+use_xft yes
+xftfont Monospace:pixelsize=11:bold
+xftalpha 0.8
+update_interval 1.0
+total_run_times 0
+own_window yes
+own_window_transparent no
+own_window_colour black
+own_window_type normal
+own_window_title Infos System
+own_window_hints skip_pager
+double_buffer yes
+minimum_size 550 430
+maximum_width 550
+draw_shades no
+draw_outline no
+draw_borders no
+border_inner_margin 0
+border_outer_margin 0
+border_width 1
+draw_graph_borders yes
+default_color grey80
+default_shade_color black
+default_outline_color white
+alignment br
+gap_x 10
+gap_y 10
+no_buffers yes
+uppercase no
+text_buffer_size 1024
+cpu_avg_samples 2
+show_graph_scale no
+show_graph_range no
+short_units yes
+override_utf8_locale yes
+use_spacer right
+##############################################
+#  Output
+##############################################
+TEXT
+${time %I:%M:%S}${alignc}OPENBSD ON THINKPAD X201
+${time %a %d %b}${alignc}$sysname $kernel $machine
+${alignc}CPU ${if_match ${cpu} <= 70}${cpubar 10,80}${endif}${if_match ${cpu} > 70}${color red}${cpubar 10,80}${endif}$color ${if_match ${memperc} <= 80}${membar 10,80}$endif${if_match ${memperc} >= 81}${color red}${membar 10,80}${color}$endif RAM
+Uptime:${goto 90}$uptime_short${goto 450}Hdd: ${ibm_temps 2}°C
+#Battery:${goto 90}${battery_percent BAT0}%${goto 220}Volume:${goto 300}${ibm_volume}/14${goto 450}CPU: ${ibm_temps 0}°C
+#Power:${goto 90}${execi 1 ~/.pekwm/scripts/battery.sh}${goto 220}Brightness:${goto 300}${ibm_brightness}/7${goto 450}GPU: ${ibm_temps 3}°C
+
+CBL:${goto 60}${fs_used_perc /}%${goto 90}[U:${fs_used /}]-[F:${fs_free /}]-[T:${fs_size /}]${goto 340}Load: $loadavg
+home:${goto 60}${fs_used_perc /home}%${goto 90}[U:${fs_used /home}]-[F:${fs_free /home}]-[T:${fs_size /home}]${goto 340}Process: $running_processes - $processes
+Ram:${goto 60}${memperc}%${goto 90}[U:${mem}]-[F:${memeasyfree}]-[T:${memmax}]${goto 340}Read:${goto 390}${diskio_read}
+Swap:${goto 60}$swapperc%${goto 90}[U:${swap}]-[F:${swapfree}]-[T:${swapmax}]${goto 340}Write:${goto 390}${diskio_write}
+
+ CPU USAGE >> $cpu %${alignr 5}$memperc % << MEM USAGE
+${top cpu 1} %  ${top name 1}${goto 370}${top_mem name 1}  ${top_mem mem 1} %
+${top cpu 2} %  ${top name 2}${goto 370}${top_mem name 2}  ${top_mem mem 2} %
+${top cpu 3} %  ${top name 3}${goto 370}${top_mem name 3}  ${top_mem mem 3} %
+${top cpu 4} %  ${top name 4}${goto 370}${top_mem name 4}  ${top_mem mem 4} %
+${top cpu 5} %  ${top name 5}${goto 370}${top_mem name 5}  ${top_mem mem 5} %
+
+Network:${if_up re0} Wired Connection
+   Local IP: ${addr re0}
+   Download:${goto 120}${downspeedgraph eth0 10,60} ${downspeed re0}/s${goto 340}Mail: ${texeci 120 python ~/.pekwm/scripts/gmail.py}
+   Upload:${goto 120}${upspeedgraph re0 10,60} ${upspeed re0}/s${goto 340}Pkg : ${execi 28800 ~/.pekwm/scripts/debupdates.sh}${else}
+   no connection :( $endif
+
