@@ -26,7 +26,7 @@ if [[ -x $(which xcompmgr) ]]; then
 fi
 
 # Auto-start applications unless their running
-for app in conky pypanel emacs firefox thunderbird audacious
+for app in conky tint2 emacs firefox thunderbird audacious
 do
 	if [[ -x $(which $app) && -z $(pgrep $app) ]]
 	then

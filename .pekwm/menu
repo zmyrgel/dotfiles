@@ -24,12 +24,13 @@ RootMenu = "Pekwm" {
                     Entry { Actions = "Dynamic /usr/local/share/pekwm/scripts/pekwm_themeset.sh ~/.pekwm/themes" }
                 }
                 Submenu = "gtk themes" {
-                    Entry { Actions = "Dynamic ~/.pekwm/scripts/pekwm_gtk_menu -l" }
-                }
+                    #Entry { Actions = "Dynamic ~/.pekwm/scripts/pekwm_gtk_menu -l" }
+                    Entry { Actions = "Dynamic ~/.pekwm/scripts/pekwm_gtk_theme_menu.sh /usr/local/share/themes" }
+                    Entry { Actions = "Dynamic ~/.pekwm/scripts/pekwm_gtk_theme_menu.sh ~/.themes" }                                    }
                 # Entry = "interface" { Actions = "Exec lxappearance &" }
 
                 Submenu = "Wallpaper" {
-                    Entry = "" { Actions = "Dynamic ~/.pekwm/scripts/pekwm_wp_menu.pl ~/wallpapers" }
+                    Entry = "" { Actions = "Dynamic ~/.pekwm/scripts/pekwm_wp_menu.sh ~/wallpapers" }
                 }
                 Submenu = "3D effect" {
                     Entry = "" { Actions = "Dynamic ~/.pekwm/scripts/pekwm_xcompmgr.sh" }
