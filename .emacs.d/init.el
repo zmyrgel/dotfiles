@@ -2,7 +2,7 @@
 ;;
 ;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;; Time-stamp: <2014-09-11 09:26:14 (tmy)>
+;; Time-stamp: <2014-09-11 21:43:17 (zmyrgel)>
 ;; URL: http://github.com/zmyrgel/dotfiles
 ;; Compatibility: GNU Emacs 23.1 (may work with other versions)
 ;;
@@ -31,7 +31,6 @@
         (t (warn (concat "Not a directory or file: " ext)))))
 
 ;; Provide few defaults
-(require 'cl)
 (defconst emacs-dir (concat-path (getenv "HOME") ".emacs.d"))
 (defconst elisp-dir (concat-path emacs-dir "elisp"))
 (defconst elpa-dir (concat-path emacs-dir "elpa"))
@@ -69,19 +68,18 @@
                         geben
                         keyfreq
                         idomenu
+                        geiser
                         magit
                         org
                         paredit
                         pastels-on-dark-theme
                         php-mode
-                        puppet-mode
                         quack
                         redshank
                         smex
                         suomalainen-kalenteri
                         undo-tree
                         w3m
-                        web-mode
                         yasnippet))
 
 ;; only for fresh install
@@ -102,7 +100,7 @@
 ;;;; ------------------------------
 
 (setq default-frame-alist '((font-backend . "xft")
-                            (font . "gohufont-14")
+                            (font . "gohufont-10")
                             (left-fringe . -1)
                             (right-fringe . -1)
                             (fullscreen . 1)
@@ -306,6 +304,10 @@
   (set (make-local-variable 'cua-mode) nil)
   (set (make-local-variable 'transient-mark-mode) nil))
 (ad-activate 'term-char-mode)
+
+;;; use ssh with rlogin
+(setq rlogin-program "slogin"
+      rlogin-explicit-args (list "-t" "-t"))
 
 ;; ------------------------------
 ;; Org-mode
@@ -540,6 +542,9 @@
         compilation-read-command nil
         c-hungry-delete-key t)
 
+  (when (fboundp 'auto-complete)
+    (setq ac-sources (append '(ac-source-semantic) ac-sources)))
+
   (local-set-key (kbd "C-c m") 'man-follow)
   (local-set-key (kbd "C-c C-c") 'compile)
   (local-set-key (kbd "C-c C-d") 'gdb)
@@ -638,15 +643,12 @@
 (add-hook 'lisp-mode-hook (lambda () (slime-mode 1)))
 
 ;; Scheme settings
-(when (fboundp 'chicken-slime)
+(when (fboundp 'chicken-scheme)
+  (add-to-list 'load-path "/usr/local/lib/chicken/7")
   (autoload 'chicken-slime "chicken-slime" "SWANK backend for Chicken" t)
   (add-hook 'scheme-mode-hook 'my-shared-lisp-hook)
   (setq scheme-program-name "csi")
-  (add-to-list 'load-path "/var/lib/chicken/5/"))
-
-(when (fboundp 'chicken-scheme)
-  (require 'chicken-scheme)
-  (add-hook 'scheme-mode-hook 'my-shared-lisp-hook))
+  (require 'chicken-scheme))
 
 ;; clojure
 (when (fboundp 'clojure-mode)
@@ -654,14 +656,15 @@
   (add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
   (add-hook 'clojure-mode-hook 'my-shared-lisp-hook))
 
-(add-hook 'cider-mode-hook 'cider-turn-on-eldoc-mode)
-(setq nrepl-hide-special-buffers t)
-(add-hook 'cider-repl-mode-hook 'subword-mode)
-(add-hook 'cider-repl-mode-hook 'paredit-mode)
+(when (fboundp  'cider)
+  (add-hook 'cider-mode-hook 'cider-turn-on-eldoc-mode)
+  (setq nrepl-hide-special-buffers t)
+  (add-hook 'cider-repl-mode-hook 'paredit-mode)
+  (add-hook 'cider-repl-mode-hook 'subword-mode))
 
-;; ------------------------------
-;; Completion
-;; ------------------------------
+;;; ------------------------------
+;;; Completion
+;;; ------------------------------
 
 (icomplete-mode t)
 (setq icomplete-prospects-height 2
@@ -709,9 +712,9 @@
 (when (fboundp 'ido-mode)
   (ido-mode 1))
 
-;; ------------------------------
-;; Dired options
-;; ------------------------------
+;;; ------------------------------
+;;; Dired options
+;;; ------------------------------
 
 (setq dired-isearch-filenames t
       dired-ls-F-marks-symlinks t)
@@ -947,10 +950,20 @@
                  ((executable-find "lynx") 'lynx)
                  (t nil)))))
 
+
+;; ruby-mode
+(add-to-list 'auto-mode-alist
+             '("\\.\\(?:gemspec\\|irbrc\\|gemrc\\|rake\\|rb\\|ru\\|thor\\)\\'" . ruby-mode))
+(add-to-list 'auto-mode-alist
+             '("\\(Capfile\\|Gemfile\\(?:\\.[a-zA-Z0-9._-]+\\)?\\|[rR]akefile\\)\\'" . ruby-mode))
+
+
 ;; Slime
-(let ((slime-load (expand-file-name "~/quicklisp/slime-helper.el")))
-  (when (file-exists-p slime-load)
-    (load slime-load)))
+(cond ((file-directory-p (concat elisp-dir "/slime"))
+       (add-to-list 'load-path (concat elisp-dir "/slime"))
+       (require 'slime-autoloads))
+      ((file-directory-p (expand-file-name "~/quicklisp/slime-helper.el"))
+       (load (expand-file-name "~/quicklisp/slime-helper.el"))))
 
 (eval-after-load 'slime
   '(progn
@@ -965,9 +978,10 @@
            slime-net-coding-system 'utf-8-unix
            slime-lisp-implementations
            '((sbcl  ("sbcl"))
-             (clisp ("clisp" "-ansi"))
-             (ecl ("ecl"))
-             (cmucl ("lisp"))))
+             (ecl  ("ecl"))
+             (abcl ("abcl"))
+             (chicken ("csi"))
+             (clisp ("clisp" "-ansi"))))
 
      (cond ((file-directory-p "/usr/local/share/doc/clisp-hyperspec")
             (setq common-lisp-hyperspec-root "file:/usr/local/share/doc/clisp-hyperspec/"))
@@ -1001,8 +1015,7 @@
                     slime-indentation
                     slime-tramp
                     slime-fancy
-                    slime-sbcl-exts
-                    slime-xref-browser))
+                    slime-hyperdoc))
 
      (setq slime-complete-symbol*-fancy t
            slime-complete-symbol-function 'slime-fuzzy-complete-symbol)))
