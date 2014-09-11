@@ -2,7 +2,7 @@
 ;;
 ;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;; Time-stamp: <2012-12-25 20:50:58 (zmyrgel)>
+;; Time-stamp: <2014-09-11 09:26:14 (tmy)>
 ;; URL: http://github.com/zmyrgel/dotfiles
 ;; Compatibility: GNU Emacs 23.1 (may work with other versions)
 ;;
@@ -31,6 +31,7 @@
         (t (warn (concat "Not a directory or file: " ext)))))
 
 ;; Provide few defaults
+(require 'cl)
 (defconst emacs-dir (concat-path (getenv "HOME") ".emacs.d"))
 (defconst elisp-dir (concat-path emacs-dir "elisp"))
 (defconst elpa-dir (concat-path emacs-dir "elpa"))
@@ -48,10 +49,6 @@
 (when (not (boundp 'custom-theme-load-path))
   (setq custom-theme-load-path nil))
 
-;; Install package.el if not present
-(when (not (locate-library "package.el"))
-  (error "Custom settings require package.el to be present."))
-
 (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
                          ("melpa" . "http://melpa.milkbox.net/packages/")
                          ("marmalade" . "http://marmalade-repo.org/packages/")))
@@ -64,18 +61,27 @@
                         bbdb
                         boxquote
                         chicken-scheme
+                        cider
+                        clojure-mode
+                        flymake-php
+                        flymake-phpcs
+                        flymake-json
+                        geben
+                        keyfreq
                         idomenu
                         magit
                         org
                         paredit
                         pastels-on-dark-theme
                         php-mode
+                        puppet-mode
                         quack
                         redshank
                         smex
                         suomalainen-kalenteri
                         undo-tree
                         w3m
+                        web-mode
                         yasnippet))
 
 ;; only for fresh install
@@ -87,15 +93,16 @@
   (when (not (package-installed-p p))
     (package-install p)))
 
-;; Load optional startup files
-(add-extension (concat-path emacs-dir "init-local.el"))
+;; store command frequency stats
+(keyfreq-mode 1)
+(keyfreq-autosave-mode 1)
 
-;; ------------------------------
-;; General
-;; ------------------------------
+;;;; ------------------------------
+;;;; General
+;;;; ------------------------------
 
 (setq default-frame-alist '((font-backend . "xft")
-                            (font . "terminus-10")
+                            (font . "gohufont-14")
                             (left-fringe . -1)
                             (right-fringe . -1)
                             (fullscreen . 1)
@@ -508,17 +515,9 @@
                (tab-width . 8)
 	       (indent-tabs-mode . t)))
 
-(c-add-style "php" '("bsd"
-                     (c-subword-mode . 1)
-                     (c-basic-offset . 2)
-                     (fill-column . 80)
-                     (tab-width . 2)
-                     (indent-tabs-mode . nil)))
-
 (setq c-default-style '((java-mode . "java")
                         (c-mode . "openbsd")
-                        (c++-mode . "stroustrup")
-                        (php-mode . "php")))
+                        (c++-mode . "stroustrup")))
 
 ;; C programming
 
@@ -540,9 +539,6 @@
         compilation-scroll-output 'first-error
         compilation-read-command nil
         c-hungry-delete-key t)
-
-  (when (fboundp 'auto-complete)
-    (setq ac-sources (append '(ac-source-semantic) ac-sources)))
 
   (local-set-key (kbd "C-c m") 'man-follow)
   (local-set-key (kbd "C-c C-c") 'compile)
@@ -587,7 +583,11 @@
                   cperl-invalid-face 'default)
             (local-set-key (kbd "C-h f") 'cperl-perldoc)))
 
+(when (fboundp 'flymake-phpcs-load)
+  (setq flymake-phpcs-standard "Zend"))
+
 (when (fboundp 'php-mode)
+
   (add-to-list 'auto-mode-alist
                '("\\.php[345]?\\'\\|\\.phtml\\'" . php-mode))
 
@@ -595,8 +595,30 @@
     (setq php-manual-url "http://www.php.net/manual/en"
           php-search-url "http://www.php.net/"
           whitespace-line-column 80
-          whitespace-style '(face lines-tail)))
+          whitespace-style '(face lines-tail))
+    (php-enable-symfony2-coding-style)
+    (flymake-phpcs-load))
+
   (add-hook 'php-mode-hook 'my-php-mode-hook))
+
+(when (fboundp 'web-mode)
+  (add-to-list 'auto-mode-alist '("\\.jsp\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
+
+  (defun web-mode-hook ()
+    "Hooks for Web mode."
+    (setq web-mode-markup-indent-offset 2))
+  (add-hook 'web-mode-hook 'web-mode-hook)
+
+  ;; Indentation HTML offset indentation
+  (setq web-mode-markup-indent-offset 2)
+  ;; CSS offset indentation
+  (setq web-mode-css-indent-offset 2)
+  ;;Script offset indentation (for JavaScript, Java, PHP, etc.)
+  (setq web-mode-code-indent-offset 2))
 
 ;;; Lisp settings
 (autoload 'paredit-mode "paredit" "Paredit-mode" nil)
@@ -631,6 +653,11 @@
   (autoload 'clojure-mode "clojure-mode" "A major mode for Clojure" t)
   (add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
   (add-hook 'clojure-mode-hook 'my-shared-lisp-hook))
+
+(add-hook 'cider-mode-hook 'cider-turn-on-eldoc-mode)
+(setq nrepl-hide-special-buffers t)
+(add-hook 'cider-repl-mode-hook 'subword-mode)
+(add-hook 'cider-repl-mode-hook 'paredit-mode)
 
 ;; ------------------------------
 ;; Completion
@@ -771,13 +798,6 @@
 
 (when (fboundp 'ace-jump-mode)
   (global-set-key (kbd "C-c SPC") 'ace-jump-mode))
-
-;; Oracle stuff
-(eval-after-load 'sqlplus
-  '(progn
-     (add-extension (concat-path elisp-dir "sqlplus.el"))
-     (when (file-exists-p "/u01/app/oracle/product/11.2.0/xe/bin/sqlplus")
-       (setq sql-oracle-program "/u01/app/oracle/product/11.2.0/xe/bin/sqlplus"))))
 
 ;; Browser
 (setq browse-url-browser-function
@@ -945,7 +965,9 @@
            slime-net-coding-system 'utf-8-unix
            slime-lisp-implementations
            '((sbcl  ("sbcl"))
-             (clisp ("clisp" "-ansi"))))
+             (clisp ("clisp" "-ansi"))
+             (ecl ("ecl"))
+             (cmucl ("lisp"))))
 
      (cond ((file-directory-p "/usr/local/share/doc/clisp-hyperspec")
             (setq common-lisp-hyperspec-root "file:/usr/local/share/doc/clisp-hyperspec/"))
@@ -977,7 +999,6 @@
 
      (slime-setup '(slime-asdf
                     slime-indentation
-                    slime-mdot-fu
                     slime-tramp
                     slime-fancy
                     slime-sbcl-exts
@@ -985,3 +1006,6 @@
 
      (setq slime-complete-symbol*-fancy t
            slime-complete-symbol-function 'slime-fuzzy-complete-symbol)))
+
+;; Load optional local startup files
+(add-extension (concat-path emacs-dir "init-local.el"))
