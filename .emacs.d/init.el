@@ -140,10 +140,23 @@
 (set-language-environment "UTF-8")
 (set-locale-environment "en_US.UTF-8")
 
-;; Add Spell-check for select modes
-(add-hook 'prog-mode-hook (lambda () (flyspell-prog-mode)))
-(add-hook 'org-mode-hook (lambda () (flyspell-mode)))
-(add-hook 'text-mode-hook (lambda () (flyspell-mode)))
+;; Add Spell-check for select modes if spell-checker is installed
+(when (fboundp 'flyspell-mode)
+  (when (or (executable-find "aspell")
+            (executable-find "ispell"))
+    ;; enable flyspell for most text-based buffers
+    (dolist (hook '(text-mode-hook org-mode-hook))
+      (add-hook hook (lambda () (flyspell-mode 1))))
+    (dolist (hook '(change-log-mode-hook log-edit-mode-hook))
+      (add-hook hook (lambda () (flyspell-mode -1))))
+    ;; enable flyspell to check comments in source code
+    (dolist (hook '(prog-mode-hook))
+      (add-hook hook (lambda () (flyspell-prog-mode))))
+
+    (setq flyspell-issue-message-flag nil)
+
+    (setq ispell-list-command "--list") ; when using aspell instead of ispell
+    ))
 
 ;; Hooks
 (add-hook 'text-mode-hook (lambda () (set-fill-column 80)))
