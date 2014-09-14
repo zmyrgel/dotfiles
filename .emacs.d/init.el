@@ -2,7 +2,7 @@
 ;;
 ;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;; Time-stamp: <2014-09-11 21:43:17 (zmyrgel)>
+;; Time-stamp: <2014-09-14 21:55:15 (zmyrgel)>
 ;; URL: http://github.com/zmyrgel/dotfiles
 ;; Compatibility: GNU Emacs 23.1 (may work with other versions)
 ;;
@@ -80,7 +80,20 @@
                         suomalainen-kalenteri
                         undo-tree
                         w3m
-                        yasnippet))
+                        yasnippet
+                        ;; ruby stuff
+                        company
+                        company-inf-ruby
+                        flymake-ruby
+                        inf-ruby
+                        omniref
+                        rinari
+                        robe
+                        rsense
+                        rspec-mode
+                        ruby-compilation
+                        rvm
+                        ))
 
 ;; only for fresh install
 (unless package-archive-contents
