@@ -477,7 +477,7 @@
      (pcomplete-erc-setup)
      (setq erc-pcomplete-order-nickname-completions t)
      (erc-log-mode 1)
-     (setq erc-log-channels-directory "~/.irclogs/"
+     (setq erc-log-channels-directory (expand-file-name "~/.irclogs/")
            erc-log-insert-log-on-open nil
            erc-log-file-coding-system 'utf-8-unix
            erc-save-buffer-on-part t)
