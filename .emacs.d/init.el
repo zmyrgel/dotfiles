@@ -983,13 +983,15 @@
 (add-to-list 'auto-mode-alist
              '("\\(Capfile\\|Gemfile\\(?:\\.[a-zA-Z0-9._-]+\\)?\\|[rR]akefile\\)\\'" . ruby-mode))
 
-
 ;; Slime
+;; Load local slime installation and fallback to quicklisp slime otherwise
 (cond ((file-directory-p (concat elisp-dir "/slime"))
        (add-to-list 'load-path (concat elisp-dir "/slime"))
        (require 'slime-autoloads))
       ((file-directory-p (expand-file-name "~/quicklisp/slime-helper.el"))
-       (load (expand-file-name "~/quicklisp/slime-helper.el"))))
+       (load (expand-file-name "~/quicklisp/slime-helper.el")))
+      ((file-directory-p (expand-file-name "~/../../quicklisp/slime-helper.el"))
+       (load (expand-file-name "~/../../quicklisp/slime-helper.el"))))
 
 (eval-after-load 'slime
   '(progn
@@ -1005,10 +1007,23 @@
            slime-lisp-implementations
            '((sbcl  ("sbcl"))
              (ecl  ("ecl"))
-             (abcl ("abcl"))
              (chicken ("csi"))
              (clisp ("clisp" "-ansi"))))
 
+     ;; tweaks for windows-nt
+     (if (eq system-type 'windows-nt)
+         (progn
+           (push '(abcl ("java" "-cp" "C:\\abcl" "-jar" "C:\\abcl\\abcl.jar" "org.armedbear.lisp.Main"))
+                 slime-lisp-implementations)
+           (push '(ccl ,(list (expand-file-name "~/../../ccl/wx86cl64.exe") "-K UTF-8"))
+                 slime-lisp-implementations))
+       (progn
+         (abcl ("abcl"))))
+
+
+     (ccl ,(list (expand-file-name "~/../../ccl/wx86cl64.exe") "-K UTF-8"))
+
+     ;; try to find local hyperspec or fallback to use the default web site
      (cond ((file-directory-p "/usr/local/share/doc/clisp-hyperspec")
             (setq common-lisp-hyperspec-root "file:/usr/local/share/doc/clisp-hyperspec/"))
            ((file-directory-p "~/lisp/docs/HyperSpec")
