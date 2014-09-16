@@ -112,6 +112,9 @@
 ;;;; General
 ;;;; ------------------------------
 
+;; silence gnutls warnings
+(setq gnutls-min-prime-bits nil)
+
 (setq default-frame-alist '((font-backend . "xft")
                             (font . "gohufont-10")
                             (left-fringe . -1)
