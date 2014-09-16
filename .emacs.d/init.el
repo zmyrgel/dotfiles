@@ -1,16 +1,16 @@
-;; -*- mode: emacs-lisp; coding: utf-8-unix; indent-tabs-mode: nil -*-
-;;
-;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
-;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;; Time-stamp: <2014-09-14 21:55:15 (zmyrgel)>
-;; URL: http://github.com/zmyrgel/dotfiles
-;; Compatibility: GNU Emacs 23.1 (may work with other versions)
-;;
+;;;; -*- mode: emacs-lisp; coding: utf-8-unix; indent-tabs-mode: nil -*-
+;;;;
+;;;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
+;;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
+;;;; Time-stamp: <2014-09-16 15:44:56 (tmy)>
+;;;; URL: http://github.com/zmyrgel/dotfiles
+;;;; Compatibility: GNU Emacs 23.1 (may work with other versions)
+;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; TODO:
-;; - Autoloads for gnus
-;; - indentation of programming modes
-;; - ERC configuration, modules and such
+;;;; TODO:
+;;;; - Autoloads for gnus
+;;;; - indentation of programming modes
+;;;; - ERC configuration, modules and such
 
 ;; Define few utilities
 (defun concat-path (&rest parts)
@@ -54,46 +54,72 @@
 
 (package-initialize)
 
-(defvar *my-packages* '(ace-jump-mode
-                        auctex
-                        auto-complete
-                        bbdb
-                        boxquote
-                        chicken-scheme
-                        cider
-                        clojure-mode
-                        flymake-php
-                        flymake-phpcs
-                        flymake-json
-                        geben
-                        keyfreq
-                        idomenu
-                        geiser
-                        magit
-                        org
-                        paredit
-                        pastels-on-dark-theme
-                        php-mode
-                        quack
-                        redshank
-                        smex
-                        suomalainen-kalenteri
-                        undo-tree
-                        w3m
-                        yasnippet
-                        ;; ruby stuff
-                        company
-                        company-inf-ruby
-                        flymake-ruby
-                        inf-ruby
-                        omniref
-                        rinari
-                        robe
-                        rsense
-                        rspec-mode
-                        ruby-compilation
-                        rvm
-                        ))
+(defvar *my-packages*
+  '(;; general
+    ace-jump-mode
+    auctex
+    keyfreq
+    org
+    suomalainen-kalenteri
+    undo-tree
+    multi-term
+
+    ;; web browsing
+    w3m
+
+    ;; completion
+    auto-complete
+    company
+    idomenu
+    ag
+    flx-ido
+    smex
+
+    ;; email
+    bbdb
+    boxquote
+
+    ;; themes
+    pastels-on-dark-theme
+    professional-theme
+
+    ;; programming
+    flymake-json
+    yasnippet
+    web-mode
+    projectile
+    yaml-mode
+    magit
+
+    ;; php stuff
+    php-mode
+    flymake-php
+    flymake-phpcs
+
+    ;; lisp
+    geben
+    chicken-scheme
+    cider
+    clojure-mode
+    quack
+    paredit
+    redshank
+
+    ;; ruby stuff
+    flymake-ruby
+    rvm
+    inf-ruby
+    rhtml-mode
+    company-inf-ruby
+    projectile-rails
+    ;; robe
+    ;; rsense
+    ;; rinari
+    ;; emacs-rails-reloaded
+    omniref
+    rspec-mode
+    ruby-compilation
+    ))
 
 ;; only for fresh install
 (unless package-archive-contents
@@ -108,20 +134,15 @@
 (keyfreq-mode 1)
 (keyfreq-autosave-mode 1)
 
-;;;; ------------------------------
-;;;; General
-;;;; ------------------------------
+;;; ------------------------------
+;;; General
+;;; ------------------------------
 
 ;; silence gnutls warnings
 (setq gnutls-min-prime-bits nil)
 
-(setq default-frame-alist '((font-backend . "xft")
-                            (font . "gohufont-10")
-                            (left-fringe . -1)
-                            (right-fringe . -1)
-                            (fullscreen . 1)
-                            (menu-bar-lines . 0)
-                            (tool-bar-lines . 0)))
+;; Bump threshold to avoid constant garbage collection
+(setq gc-cons-threshold 20000000)
 
 (setq-default indent-tabs-mode nil)
 (setq require-final-newline t
@@ -186,9 +207,9 @@
 ;; enable disabled features
 (put 'narrow-to-region 'disabled nil)
 
-;; ------------------------------
-;; Visual settings
-;; ------------------------------
+;;; ------------------------------
+;;; Visual settings
+;;; ------------------------------
 
 (global-font-lock-mode t)
 (setq font-lock-maximum-decoration t)
@@ -208,6 +229,14 @@
   (menu-bar-mode nil))
 (when (fboundp 'mouse-wheel-mode)
   (mouse-wheel-mode t))
+
+(setq default-frame-alist '((font-backend . "xft")
+                            (font . "gohufont-14")
+                            (left-fringe . -1)
+                            (right-fringe . -1)
+                            (fullscreen . 1)
+                            (menu-bar-lines . 0)
+                            (tool-bar-lines . 0)))
 
 ;; Setup clipboard options if running in X
 (cond ((eq window-system 'x)
@@ -233,9 +262,12 @@
 (when (fboundp size-indication-mode)
   (size-indication-mode t))
 
-;; ------------------------------
-;; Calendar and diary settings
-;; ------------------------------
+;; set theme
+(load-theme 'professional)
+
+;;; ------------------------------
+;;; Calendar and diary settings
+;;; ------------------------------
 
 (setq time-stamp-active t
       time-stamp-line-limit 10
@@ -271,9 +303,12 @@
 (add-hook 'diary-mark-entries-hook 'diary-mark-included-diary-files)
 (add-hook 'calendar-today-visible-hook 'calendar-mark-today)
 
-;; ------------------------------
-;; Session
-;; ------------------------------
+;;; ------------------------------
+;;; Session
+;;; ------------------------------
+
+(when (fboundp 'recentf-mode)
+  (recentf-mode))
 
 (setq bookmark-default-file (concat-path emacs-dir "emacs.bmk")
       bookmark-save-flag 1)
@@ -300,9 +335,9 @@
       kept-old-versions 5
       delete-old-versions t)
 
-;; ------------------------------
-;; Shell settings
-;; ------------------------------
+;;; ------------------------------
+;;; Shell settings
+;;; ------------------------------
 
 (setq shell-command-switch "-c"
       explicit-sh-args '("-login" "-i"))
@@ -334,13 +369,9 @@
   (set (make-local-variable 'transient-mark-mode) nil))
 (ad-activate 'term-char-mode)
 
-;;; use ssh with rlogin
-(setq rlogin-program "slogin"
-      rlogin-explicit-args (list "-t" "-t"))
-
-;; ------------------------------
-;; Org-mode
-;; ------------------------------
+;;; ------------------------------
+;;; Org-mode
+;;; ------------------------------
 
 (eval-after-load 'org-mode
   '(progn
@@ -398,9 +429,9 @@
 
 
 
-;; ------------------------------
-;; Buffer management
-;; ------------------------------
+;;; ------------------------------
+;;; Buffer management
+;;; ------------------------------
 
 (require 'uniquify)
 (setq uniquify-buffer-name-style 'post-forward-angle-brackets
@@ -456,9 +487,9 @@
 
   (defalias 'list-buffers 'ibuffer))
 
-;; ------------------------------
-;; ERC
-;; ------------------------------
+;;; ------------------------------
+;;; ERC
+;;; ------------------------------
 
 (eval-after-load 'erc
   '(progn
@@ -503,14 +534,19 @@
      (add-hook 'erc-insert-post-hook 'erc-truncate-buffer)
      (setq erc-truncate-buffer-on-save t)))
 
-;; ------------------------------
-;; Programming settings
-;; ------------------------------
+;;; ------------------------------
+;;; Programming settings
+;;; ------------------------------
 
 (setq compilation-save-buffers-predicate '(lambda () nil)
       compilation-ask-about-save nil
       compilation-window-height 12
       gdb-many-windows t)
+
+;; project management
+(projectile-global-mode)
+;; or it can be hooked into particular modes:
+;(add-hook 'ruby-mode-hook 'projectile-on)
 
 ;;; CC-mode styles
 
@@ -570,9 +606,6 @@
         compilation-scroll-output 'first-error
         compilation-read-command nil
         c-hungry-delete-key t)
-
-  (when (fboundp 'auto-complete)
-    (setq ac-sources (append '(ac-source-semantic) ac-sources)))
 
   (local-set-key (kbd "C-c m") 'man-follow)
   (local-set-key (kbd "C-c C-c") 'compile)
@@ -654,6 +687,39 @@
   ;;Script offset indentation (for JavaScript, Java, PHP, etc.)
   (setq web-mode-code-indent-offset 2))
 
+;;; ruby settings
+(when (fboundp 'ruby-mode)
+    (add-to-list 'auto-mode-alist
+                 '("\\.\\(?:gemspec\\|irbrc\\|gemrc\\|rake\\|rb\\|ru\\|thor\\)\\'" . ruby-mode))
+    (add-to-list 'auto-mode-alist
+                 '("\\(Capfile\\|Gemfile\\(?:\\.[a-zA-Z0-9._-]+\\)?\\|[rR]akefile\\)\\'" . ruby-mode))
+  (add-hook 'ruby-mode-hook
+            '(lambda ()
+               (setq ruby-deep-arglist t)
+               (setq ruby-deep-indent-paren nil) ;; handle function param indent
+               (setq c-tab-always-indent nil))))
+
+(when (fboundp 'flymake-ruby)
+  (add-hook 'ruby-mode-hook 'flymake-ruby-load))
+
+(when (fboundp 'rvm)
+  (rvm-use-default))
+
+(when (fboundp 'rhtml-mode)
+  (add-to-list 'auto-mode-alist '("\\.erb\\'" . rhtml-mode))
+  (add-to-list 'auto-mode-alist '("\\.rjs\\'" . rhtml-mode))
+  (add-hook 'rhtml-mode '(lambda ()
+                           (define-key rhtml-mode-map (kbd "M-s") 'save-buffer))))
+
+(when (fboundp 'yaml-mode)
+  (add-to-list 'auto-mode-alist '("\\.yml$" . yaml-mode))
+  (add-to-list 'auto-mode-alist '("\\.yaml$" . yaml-mode)))
+
+(when (fboundp 'css-mode)
+  (add-hook 'css-mode-hook '(lambda ()
+                              (setq css-indent-level 2)
+                              (setq css-indent-offset 2))))
+
 ;;; Lisp settings
 (autoload 'paredit-mode "paredit" "Paredit-mode" nil)
 
@@ -672,12 +738,15 @@
 (add-hook 'lisp-mode-hook (lambda () (slime-mode 1)))
 
 ;; Scheme settings
-(when (fboundp 'chicken-scheme)
-  (add-to-list 'load-path "/usr/local/lib/chicken/7")
+(when (fboundp 'chicken-slime)
   (autoload 'chicken-slime "chicken-slime" "SWANK backend for Chicken" t)
   (add-hook 'scheme-mode-hook 'my-shared-lisp-hook)
   (setq scheme-program-name "csi")
-  (require 'chicken-scheme))
+  (add-to-list 'load-path "/var/lib/chicken/5/"))
+
+(when (fboundp 'chicken-scheme)
+  (require 'chicken-scheme)
+  (add-hook 'scheme-mode-hook 'my-shared-lisp-hook))
 
 ;; clojure
 (when (fboundp 'clojure-mode)
@@ -741,6 +810,29 @@
 (when (fboundp 'ido-mode)
   (ido-mode 1))
 
+(when (fboundp 'flx-ido-mode)
+  (flx-ido-mode 1)
+  ;; disable ido faces to see flx highlights.
+  (setq ido-enable-flex-matching t
+        ido-use-faces nil
+        flx-ido-threshold 10000)
+
+  ;; If you don't want to use the flx's highlights you can turn them off
+  ;; like this:
+  (setq flx-ido-use-faces nil))
+
+;; ;; Display ido results vertically, rather than horizontally
+;; (setq ido-decorations (quote ("\n-> " "" "\n   " "\n   ..." "[" "]" " [No match]" " [Matched]" " [Not readable]" " [Too big]" " [Confirm]")))
+;; (defun ido-disable-line-truncation ()
+;;   (set (make-local-variable 'truncate-lines) nil))
+;; (add-hook 'ido-minibuffer-setup-hook 'ido-disable-line-truncation)
+
+;; (defun ido-define-keys () ;; C-n/p is more intuitive in vertical layout
+;;   (define-key ido-completion-map (kbd "C-n") 'ido-next-match)
+;;   (define-key ido-completion-map (kbd "C-p") 'ido-prev-match))
+
+;; (add-hook 'ido-setup-hook 'ido-define-keys)
+
 ;;; ------------------------------
 ;;; Dired options
 ;;; ------------------------------
@@ -775,9 +867,9 @@
 (define-key global-map (kbd "C-x C-j") 'dired-jump)
 (define-key global-map (kbd "C-x 4 C-j") 'dired-jump-other-window)
 
-;; ------------------------------
-;; Functions
-;; ------------------------------
+;;; ------------------------------
+;;; Functions
+;;; ------------------------------
 
 (defun ssh ()
   "Simple command to open remote shell through SSH."
@@ -815,15 +907,19 @@
   (when (y-or-n-p "Quit terminal? ")
     (save-buffers-kill-terminal)))
 
-;; ------------------------------
-;; Keybindings
-;; ------------------------------
+;;; ------------------------------
+;;; Keybindings
+;;; ------------------------------
 
 (global-set-key (kbd "C-x C-k") 'kill-region)
 (global-set-key (kbd "C-w") 'backward-kill-word)
 (global-set-key (kbd "C-c C-j") 'join-line)
 (global-set-key (kbd "C-x C-c") 'quit-prompt)
 (global-set-key (kbd "C-c R") 'rename-current-file-or-buffer)
+
+;; shortcuts
+(global-set-key (kbd "<f11>") 'gnus)
+(global-set-key (kbd "<f12>") 'bookmark-bmenu-list)
 
 (when (fboundp 'magit-status)
   (global-set-key (kbd "C-x v /") 'magit-status))
@@ -838,9 +934,9 @@
             ((executable-find "lynx") 'lynx)
             (t nil)))
 
-;; ------------------------------
-;; External packages
-;; ------------------------------
+;;; ------------------------------
+;;; External packages
+;;; ------------------------------
 
 (autoload 'yas/hippie-try-expand "yasnippet")
 (eval-after-load "yasnippet"
