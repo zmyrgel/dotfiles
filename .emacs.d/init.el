@@ -2,7 +2,7 @@
 ;;;;
 ;;;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;;; Time-stamp: <2014-09-17 13:15:06 (tmy)>
+;;;; Time-stamp: <2014-09-17 13:48:24 (tmy)>
 ;;;; URL: http://github.com/zmyrgel/dotfiles
 ;;;; Compatibility: GNU Emacs 23.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -121,6 +121,8 @@
     rspec-mode
     ruby-compilation
     robe
+    bundler
+    feature-mode
     ))
 
 ;; only for fresh install
