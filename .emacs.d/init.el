@@ -2,7 +2,7 @@
 ;;;;
 ;;;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;;; Time-stamp: <2014-09-17 13:48:24 (tmy)>
+;;;; Time-stamp: <2014-09-17 16:38:05 (tmy)>
 ;;;; URL: http://github.com/zmyrgel/dotfiles
 ;;;; Compatibility: GNU Emacs 23.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -749,10 +749,6 @@
   (add-hook 'scheme-mode-hook 'my-shared-lisp-hook)
   (setq scheme-program-name "csi")
   (add-to-list 'load-path "/var/lib/chicken/5/"))
-
-(when (fboundp 'chicken-scheme)
-  (require 'chicken-scheme)
-  (add-hook 'scheme-mode-hook 'my-shared-lisp-hook))
 
 ;; clojure
 (when (fboundp 'clojure-mode)
