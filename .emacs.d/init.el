@@ -2,10 +2,9 @@
 ;;;;
 ;;;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;;; Time-stamp: <2014-09-16 15:44:56 (tmy)>
+;;;; Time-stamp: <2014-09-17 12:07:02 (tmy)>
 ;;;; URL: http://github.com/zmyrgel/dotfiles
 ;;;; Compatibility: GNU Emacs 23.1 (may work with other versions)
-;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; TODO:
 ;;;; - Autoloads for gnus
@@ -55,7 +54,8 @@
 (package-initialize)
 
 (defvar *my-packages*
-  '(;; general
+  '(
+    ;; general
     ace-jump-mode
     auctex
     keyfreq
@@ -72,8 +72,8 @@
     company
     idomenu
     ag
-    flx-ido
     smex
+    grizzl
 
     ;; email
     bbdb
@@ -84,12 +84,18 @@
     professional-theme
 
     ;; programming
+    ;autopair
+    smartparens
+    mode-compile
     flymake-json
     yasnippet
-    web-mode
+    rainbow-mode
     projectile
     yaml-mode
     magit
+
+    ;; web stuff
+    web-mode
 
     ;; php stuff
     php-mode
@@ -110,15 +116,14 @@
     rvm
     inf-ruby
     rhtml-mode
-    company-inf-ruby
     projectile-rails
+    omniref
+    rspec-mode
+    ruby-compilation
     ;; robe
     ;; rsense
     ;; rinari
     ;; emacs-rails-reloaded
-    omniref
-    rspec-mode
-    ruby-compilation
     ))
 
 ;; only for fresh install
@@ -544,9 +549,14 @@
       gdb-many-windows t)
 
 ;; project management
-(projectile-global-mode)
-;; or it can be hooked into particular modes:
-;(add-hook 'ruby-mode-hook 'projectile-on)
+(when (fboundp 'projectile-global-mode)
+  (projectile-global-mode)
+  (setq projectile-enable-caching t)
+  (setq projectile-completion-system 'grizzl))
+
+;; add autopairing
+(require 'smartparens-config)
+(smartparens-global-mode t)
 
 ;;; CC-mode styles
 
@@ -591,8 +601,10 @@
 (defun my-c-mode-common ()
   (interactive)
   (hs-minor-mode t)
-  (when (fboundp 'electric-pair-mode)
-    (electric-pair-mode 1))
+  ;; enable auto pairing mode
+  (cond ((fboundp 'smartparens-mode) (smartparens-mode 1))
+        ((fboundp 'autopair-mode) (autopair-mode 1))
+        ((fboundp 'electric-pair-mode) (electric-pair-mode 1)))
   (which-function-mode t)
   (cwarn-mode 1)
   (cond ((fboundp 'subword-mode)
@@ -608,7 +620,7 @@
         c-hungry-delete-key t)
 
   (local-set-key (kbd "C-c m") 'man-follow)
-  (local-set-key (kbd "C-c C-c") 'compile)
+  (local-set-key (kbd "C-c C-c") 'mode-compile)
   (local-set-key (kbd "C-c C-d") 'gdb)
   (local-set-key (kbd "RET") 'c-context-line-break)
   (local-set-key (kbd "C-c o") 'ff-find-other-file)
@@ -809,29 +821,6 @@
 
 (when (fboundp 'ido-mode)
   (ido-mode 1))
-
-(when (fboundp 'flx-ido-mode)
-  (flx-ido-mode 1)
-  ;; disable ido faces to see flx highlights.
-  (setq ido-enable-flex-matching t
-        ido-use-faces nil
-        flx-ido-threshold 10000)
-
-  ;; If you don't want to use the flx's highlights you can turn them off
-  ;; like this:
-  (setq flx-ido-use-faces nil))
-
-;; ;; Display ido results vertically, rather than horizontally
-;; (setq ido-decorations (quote ("\n-> " "" "\n   " "\n   ..." "[" "]" " [No match]" " [Matched]" " [Not readable]" " [Too big]" " [Confirm]")))
-;; (defun ido-disable-line-truncation ()
-;;   (set (make-local-variable 'truncate-lines) nil))
-;; (add-hook 'ido-minibuffer-setup-hook 'ido-disable-line-truncation)
-
-;; (defun ido-define-keys () ;; C-n/p is more intuitive in vertical layout
-;;   (define-key ido-completion-map (kbd "C-n") 'ido-next-match)
-;;   (define-key ido-completion-map (kbd "C-p") 'ido-prev-match))
-
-;; (add-hook 'ido-setup-hook 'ido-define-keys)
 
 ;;; ------------------------------
 ;;; Dired options
