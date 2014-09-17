@@ -2,7 +2,7 @@
 ;;;;
 ;;;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;;; Time-stamp: <2014-09-17 12:07:02 (tmy)>
+;;;; Time-stamp: <2014-09-17 12:23:58 (tmy)>
 ;;;; URL: http://github.com/zmyrgel/dotfiles
 ;;;; Compatibility: GNU Emacs 23.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -236,7 +236,7 @@
   (mouse-wheel-mode t))
 
 (setq default-frame-alist '((font-backend . "xft")
-                            (font . "gohufont-14")
+                            (font . "gohufont-10")
                             (left-fringe . -1)
                             (right-fringe . -1)
                             (fullscreen . 1)
@@ -458,6 +458,7 @@
                               (mode . jde-mode)
                               (mode . cperl-mode)
                               (mode . sepia-mode)
+                              (mode . ruby-mode)
                               (mode . python-mode)
                               (mode . c-mode)
                               (mode . c++-mode)
@@ -684,20 +685,19 @@
   (add-to-list 'auto-mode-alist '("\\.jsp\\'" . web-mode))
   (add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
   (add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.rhtml\\'" . web-mode))
   (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
   (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
 
   (defun web-mode-hook ()
     "Hooks for Web mode."
-    (setq web-mode-markup-indent-offset 2))
+    ;; Indentation HTML offset indentation
+    (setq web-mode-markup-indent-offset 2)
+    ;; CSS offset indentation
+    (setq web-mode-css-indent-offset 2)
+    ;;Script offset indentation (for JavaScript, Java, PHP, etc.)
+    (setq web-mode-code-indent-offset 2)))
   (add-hook 'web-mode-hook 'web-mode-hook)
-
-  ;; Indentation HTML offset indentation
-  (setq web-mode-markup-indent-offset 2)
-  ;; CSS offset indentation
-  (setq web-mode-css-indent-offset 2)
-  ;;Script offset indentation (for JavaScript, Java, PHP, etc.)
-  (setq web-mode-code-indent-offset 2))
 
 ;;; ruby settings
 (when (fboundp 'ruby-mode)
@@ -716,12 +716,6 @@
 
 (when (fboundp 'rvm)
   (rvm-use-default))
-
-(when (fboundp 'rhtml-mode)
-  (add-to-list 'auto-mode-alist '("\\.erb\\'" . rhtml-mode))
-  (add-to-list 'auto-mode-alist '("\\.rjs\\'" . rhtml-mode))
-  (add-hook 'rhtml-mode '(lambda ()
-                           (define-key rhtml-mode-map (kbd "M-s") 'save-buffer))))
 
 (when (fboundp 'yaml-mode)
   (add-to-list 'auto-mode-alist '("\\.yml$" . yaml-mode))
