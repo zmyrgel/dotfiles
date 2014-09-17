@@ -2,7 +2,7 @@
 ;;;;
 ;;;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;;; Time-stamp: <2014-09-17 12:23:58 (tmy)>
+;;;; Time-stamp: <2014-09-17 12:33:02 (tmy)>
 ;;;; URL: http://github.com/zmyrgel/dotfiles
 ;;;; Compatibility: GNU Emacs 23.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -115,15 +115,11 @@
     flymake-ruby
     rvm
     inf-ruby
-    rhtml-mode
     projectile-rails
     omniref
     rspec-mode
     ruby-compilation
-    ;; robe
-    ;; rsense
-    ;; rinari
-    ;; emacs-rails-reloaded
+    robe
     ))
 
 ;; only for fresh install
@@ -195,10 +191,7 @@
     (dolist (hook '(prog-mode-hook))
       (add-hook hook (lambda () (flyspell-prog-mode))))
 
-    (setq flyspell-issue-message-flag nil)
-
-    (setq ispell-list-command "--list") ; when using aspell instead of ispell
-    ))
+    (setq flyspell-issue-message-flag nil)))
 
 ;; Hooks
 (add-hook 'text-mode-hook (lambda () (set-fill-column 80)))
@@ -714,6 +707,10 @@
 (when (fboundp 'flymake-ruby)
   (add-hook 'ruby-mode-hook 'flymake-ruby-load))
 
+;; test following before enabling
+;; (when (fboundp 'robe-mode)
+;;   (add-hook 'ruby-mode-hook 'robe-mode))
+
 (when (fboundp 'rvm)
   (rvm-use-default))
 
@@ -1100,10 +1097,7 @@
            (push '(ccl ,(list (expand-file-name "~/../../ccl/wx86cl64.exe") "-K UTF-8"))
                  slime-lisp-implementations))
        (progn
-         (abcl ("abcl"))))
-
-
-     (ccl ,(list (expand-file-name "~/../../ccl/wx86cl64.exe") "-K UTF-8"))
+         (push '(abcl ("abcl")) slime-lisp-implementations)))
 
      ;; try to find local hyperspec or fallback to use the default web site
      (cond ((file-directory-p "/usr/local/share/doc/clisp-hyperspec")
