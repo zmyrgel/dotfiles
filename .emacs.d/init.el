@@ -2,7 +2,7 @@
 ;;;;
 ;;;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;;; Time-stamp: <2014-09-17 16:38:05 (tmy)>
+;;;; Time-stamp: <2014-09-17 23:38:37 (zmyrgel)>
 ;;;; URL: http://github.com/zmyrgel/dotfiles
 ;;;; Compatibility: GNU Emacs 23.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -30,10 +30,10 @@
         (t (warn (concat "Not a directory or file: " ext)))))
 
 ;; Provide few defaults
-(defconst emacs-dir (concat-path (getenv "HOME") ".emacs.d"))
-(defconst elisp-dir (concat-path emacs-dir "elisp"))
-(defconst elpa-dir (concat-path emacs-dir "elpa"))
-(setq custom-file (concat-path emacs-dir "custom.el"))
+(require 'cl) ; required by grizzl at least
+(defconst elisp-dir (concat-path user-emacs-directory "elisp"))
+(defconst elpa-dir (concat-path user-emacs-directory "elpa"))
+(setq custom-file (concat-path user-emacs-directory "custom.el"))
 (load custom-file 'noerror)
 
 ;; Ensure ELPA exists
@@ -41,7 +41,6 @@
   (make-directory elpa-dir t))
 
 ;; Add emacs dir to load path
-(add-extension emacs-dir)
 (add-extension elisp-dir)
 
 (when (not (boundp 'custom-theme-load-path))
@@ -68,7 +67,6 @@
     w3m
 
     ;; completion
-    auto-complete
     company
     idomenu
     ag
@@ -82,9 +80,9 @@
     ;; themes
     pastels-on-dark-theme
     professional-theme
+    zenburn-theme
 
     ;; programming
-    ;autopair
     smartparens
     mode-compile
     flymake-json
@@ -105,6 +103,7 @@
 
     ;; lisp
     geben
+    geiser
     chicken-scheme
     cider
     clojure-mode
@@ -264,7 +263,7 @@
   (size-indication-mode t))
 
 ;; set theme
-(load-theme 'professional)
+(load-theme 'zenburn)
 
 ;;; ------------------------------
 ;;; Calendar and diary settings
@@ -283,7 +282,7 @@
        "kesäkuu" "heinäkuu" "elokuu" "syyskuu"
        "lokakuu" "marraskuu" "joulukuu"])
 
-(setq diary-file  (concat emacs-dir "/diary")
+(setq diary-file  (concat user-emacs-directory "/diary")
       display-time-24hr-format t
       display-time-day-and-date nil
       display-time-format nil
@@ -309,25 +308,26 @@
 ;;; ------------------------------
 
 (when (fboundp 'recentf-mode)
+  (setq recentf-save-file (concat user-emacs-directory "recentf"))
   (recentf-mode))
 
-(setq bookmark-default-file (concat-path emacs-dir "emacs.bmk")
+(setq bookmark-default-file (concat-path user-emacs-directory "emacs.bmk")
       bookmark-save-flag 1)
 
 (setq savehist-additional-variables
       '(search ring regexp-search-ring)
       savehist-autosave-interval 60
-      savehist-file (concat-path emacs-dir "savehist"))
+      savehist-file (concat-path user-emacs-directory "savehist"))
 (savehist-mode t)
 
-(setq abbrev-file-name (concat-path emacs-dir "abbrev_defs")
+(setq abbrev-file-name (concat-path user-emacs-directory "abbrev_defs")
       save-abbrevs t)
 
 (when (file-exists-p abbrev-file-name)
   (quietly-read-abbrev-file))
 (add-hook 'kill-emacs-hook 'write-abbrev-file)
 
-(setq backup-directory-alist (list `("." . ,(concat-path emacs-dir "backups")))
+(setq backup-directory-alist (list `("." . ,(concat-path user-emacs-directory "backups")))
       make-backup-files t
       backup-by-copying t
       auto-save-timeout 600
@@ -376,7 +376,7 @@
 
 (eval-after-load 'org-mode
   '(progn
-     (setq org-directory (concat-path emacs-dir "/org")
+     (setq org-directory (concat-path user-emacs-directory "/org")
            org-agenda-files (list org-directory)
            org-agenda-include-all-todo t ;; deprecated, find better way
            org-agenda-include-diary t
@@ -539,6 +539,8 @@
 ;;; ------------------------------
 ;;; Programming settings
 ;;; ------------------------------
+
+
 
 (setq compilation-save-buffers-predicate '(lambda () nil)
       compilation-ask-about-save nil
@@ -766,6 +768,16 @@
 ;;; Completion
 ;;; ------------------------------
 
+(setq company-begin-commands '(self-insert-command)
+      company-idle-delay 0.3
+      company-backends '(company-elisp
+                         company-ropemacs
+                         company-gtags
+                         company-dabbrev-code
+                         company-keywords
+                         company-files
+                         company-dabbrev))
+
 (icomplete-mode t)
 (setq icomplete-prospects-height 2
       completion-ignore-case t
@@ -790,7 +802,7 @@
                (lambda ()
                  (local-set-key (kbd "C-x C-f") 'ido-find-file)))
      (ido-everywhere 1)
-     (setq ido-save-directory-list-file (concat emacs-dir "/ido.last")
+     (setq ido-save-directory-list-file (concat user-emacs-directory "/ido.last")
            ido-ignore-buffers
            '("\\` " "^\*Mess" "^\*Back" ".*Completion" "^\*Ido")
            ido-everywhere t
@@ -942,7 +954,7 @@
            w3m-use-cookies t
            w3m-use-tab nil
            url-keep-history t
-           w3m-profile-directory emacs-dir
+           w3m-profile-directory user-emacs-directory
            w3m-default-save-directory "~/Downloads"
            w3m-coding-system 'utf-8
            w3m-file-coding-system 'utf-8
@@ -975,7 +987,7 @@
 
 (eval-after-load 'w3m-search
   '(progn
-     (setq w3m-session-file (concat-path emacs-dir "w3m-session")
+     (setq w3m-session-file (concat-path user-emacs-directory "w3m-session")
            w3m-session-save-always t
            w3m-session-load-always t
            w3m-session-show-titles t
@@ -1009,7 +1021,7 @@
 (eval-after-load 'smex
   '(progn
      (smex-initialize)
-     (setq smex-save-file (concat-path emacs-dir "/smex-items"))))
+     (setq smex-save-file (concat-path user-emacs-directory "/smex-items"))))
 
 (global-set-key (kbd "M-x") 'smex)
 (global-set-key (kbd "C-c C-m") 'smex)
@@ -1026,7 +1038,7 @@
 (eval-after-load 'quack
   '(progn
      (setq quack-default-program "csi"
-           quack-dir (concat-path emacs-dir "quack")
+           quack-dir (concat-path user-emacs-directory "quack")
            quack-fontify-style nil
            quack-newline-behavior 'indent-newline-indent
            quack-pretty-lambda-p nil
@@ -1076,7 +1088,7 @@
      (setq slime-description-autofocus t
            slime-repl-history-trim-whitespaces t
            slime-repl-wrap-history t
-           slime-repl-history-file (concat emacs-dir "slime-history.eld")
+           slime-repl-history-file (concat user-emacs-directory "slime-history.eld")
            slime-repl-history-remove-duplicates t
            slime-ed-use-dedicated-frame t
            slime-kill-without-query-p t
@@ -1137,4 +1149,4 @@
            slime-complete-symbol-function 'slime-fuzzy-complete-symbol)))
 
 ;; Load optional local startup files
-(add-extension (concat-path emacs-dir "init-local.el"))
+(add-extension (concat-path user-emacs-directory "init-local.el"))
