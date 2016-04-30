@@ -1,56 +1,74 @@
-# source some X settings
-[ -r ~/.Xresources ] && xrdb ~/.Xresources
-
-# Visual settings
+### Visual settings ###
 xset -b
-#xsetroot -solid rgb:11/11/11
-#xsetroot -cursor_name left_ptr -fg black -bg white
+xsetroot -solid rgb:11/11/11
+xsetroot -cursor_name Adwaita
 
-# Disable laptop screen on dock
-#dmesg | grep 'ACPI Dock' >/dev/null && `xrandr --output LVDS1 --off`
+[ -r ~/.Xresources ] && xrdb -merge ~/.Xresources
 
-if [ -x $(which wmname) ]
-then
-    wmname LG3D
-fi
+case $(uname) in
+    OpenBSD)
+	FONTDIR=/usr/local/share/fonts
+	;;
+    *)
+	FONTDIR=/usr/lib/fonts
+	;;
+esac
+for FONT in $FONTDIR
+do
+	xset +fp /usr/local/share/fonts/${FONT}
+done
+xset fp rehash
 
-# Keyboard settings
+### Input settings ###
 setxkbmap -layout us -variant altgr-intl -option ctrl:nocaps
 
-# Environment variables for X
-export OOO_FORCE_DESKTOP=gnome
-export GDK_USE_XFT=1
-export QT_XFT=true
-cd $HOME
-
-# Start extra applications
-if [ -x $(which nm-applet) ]
-then
-    nm-applet &
-fi
-
-if [ -x $(which xscreensaver) ]
-then
-    xscreensaver &
-fi
-
-if [ -x $(which dunst) ]
-then
-    dunst &
-fi
-
-# Set Trackpoint sensitivity
+# Set Trackpoint sensitivity if needed
 tpset() {
 	xinput set-prop "TPPS/2 IBM TrackPoint" "$@";
 }
-#tpset "Device Accel Constant Deceleration" 0.4
+if [ $(uname) = Linux ]
+   tpset "Device Accel Constant Deceleration" 0.4
+fi
 
-# Restore wallpaper
-if [ -x $(which feh) -a -x ~/.fehbg ]
+# Workaround for Firefox Image scaling
+MOZ_DISABLE_IMAGE_OPTIMIZE=1
+export MOZ_DISABLE_IMAGE_OPTIMIZE
+
+# Environment variables for X
+OOO_FORCE_DESKTOP=gnome
+GDK_USE_XFT=1
+QT_XFT=true
+export OOO_FORCE_DESKTOP GDK_USE_XFT QT_XFT
+
+# Set my working dir to $HOME
+cd $HOME
+
+### Start extra applications
+if [ -x $(which xidle) -a -x $(which xlock) ]
 then
-    ~/.fehbg &
+	xidle -delay 5 -program "xlock" -timeout 300 &
+fi
+[ -x $(which nm-applet) ] && nm-applet &
+[ -x $(which dunst) ] && dunst &
+[ -x $(which wmname) ] && wmname LG3D
+
+# Launch DBUS session
+if [ -x $(which dbus-launch) -a -z "${DBUS_SESSION_BUS_ADDRESS}" ]
+then
+	eval `dbus-launch --sh-syntax --exit-with-session`
+fi
+
+# Increase memory limits to 6GB, I got plenty to spare
+ulimit -d 6144000
+
+# Restore previous background image, if any
+[ -x ~/.fehbg ] && ~/.fehbg &
+
+if [ ! -z "$SSH_AUTH_SOCK" ];
+then
+	KEYS=$(ls $HOME/.ssh/* | grep -Ev '(authorized_keys|config|known_hosts|pub)$')
+	ssh-add $KEYS
 fi
 
 # Start WM
-exec /usr/bin/ssh-agent /usr/bin/i3 2>~/.xerrors.log
-#exec /usr/bin/ssh-agent /usr/bin/pekwm 2>~/.xerrors.log
+exec /usr/bin/ssh-agent i3 2> ~/.xerrors
