@@ -9,10 +9,10 @@ Emacs.backGround:               black
 Emacs.menuBar:			off
 Emacs.verticalScrollBars:	off
 Emacs.toolBar:			off
-Emacs.font:                     terminus
+Emacs.font:                     gohufont
+
 ! -----------------------------------------
 ! Colors
-
 *foreground: rgb:dd/dd/dd
 *background: rgb:11/11/11
 *color0:     rgb:00/00/00
@@ -33,128 +33,64 @@ Emacs.font:                     terminus
 *color15:    rgb:ff/ff/ff
 
 ! -----------------------------------------
-! XCursor
-Xcursor*theme: Vanilla-DMZ-AA
-Xcursor.size:  16
+! Xresources for applications not supporting fontconfig
+Xft.autohint: 0
+Xft.lcdfilter:  lcddefault
+Xft.hintstyle:  hintslight
+Xft.hinting: 1
+Xft.antialias: 1
+Xft.rgba: rgb
 
 ! -----------------------------------------
-! Xft font settings
-
-xft.dpi:        96
-xft.antialias:  true
-xft.rgba:       rgb
-xft.hinting:    true
-xft.hintstyle:  hintsfull
+! Xcursor
+Xcursor.theme: OpenZone
+Xcursor.size:  22
 
 ! -----------------------------------------
 ! Xterm settings
-
-XTerm*termName: xterm-color256
-XTerm*faceName: terminus
-XTerm*faceSize: 10
-XTerm*internalBorder: 3
-XTerm*loginShell: true
-XTerm*scrollBar: false
-XTerm*scrollKey: true
-XTerm*saveLines: 100000
-XTerm*multiClickTime: 250
-XTerm*eightBitInput: false
-XTerm*metaSendsEscape: true
-XTerm*locale: UTF-8
-
-! Fix backspace, delete still broken in mg
-XTerm*ttyModes:         erase ^?
-XTerm*VT100.Translations: \
+xterm*termName: xterm-256color
+xterm*faceName: gohufont-11
+xterm*renderFont: true
+xterm*charClass: 33:48,36-47:48,58-59:48,61:48,63-64:48,95:48,126:48
+xterm*on3Clicks: regex ([[:alpha:]]+://)?([[:alnum:]!#+,./=?@_~-]|(%[[:xdigit:]][[:xdigit:]]))+
+xterm*VT100*translations: #override Shift <Btn1Up>: exec-formatted("firefox '%s'", PRIMARY)
+xterm*scrollBar: false
+xterm*scrollKey: true
+xterm*fullscreen: never
+xterm*allowFontOps: false
+xterm*allowWindowOps: false
+xterm*deleteIsDEL: true
+xterm*ptyInitialErase: true
+xterm*backarrowKeyIsErase: true
+xterm*loginShell: true
+xterm*saveLines: 20000
+xterm*bellIsUrgent: true
+xterm*borderWidth: 0
+xterm*multiClickTime: 250
+xterm*eightBitInput: false
+xterm*metaSendsEscape: true
+xterm*locale: UTF-8
+xterm*cursorUnderLine: true
+xterm*ttyModes:         erase ^?
+xterm*VT100.Translations: \
         #override <Key>BackSpace: string(0x7f) \n\
 		  <Key>Delete:    string(0x1b) string("[3~")
 
-
-! -----------------------------------------
-! UXterm settings
-
-UXTerm*termName: xterm-color256
-UXTerm*faceName: terminus
-UXTerm*faceSize: 10
-UXTerm*internalBorder: 3
-UXTerm*loginShell: true
-UXTerm*scrollBar: false
-UXTerm*scrollKey: true
-UXTerm*saveLines: 100000
-UXTerm*multiClickTime: 250
-UXTerm*eightBitInput: false
-UXTerm*metaSendsEscape: true
-UXTerm*locale: UTF-8
-
-
-! -------------------------------------------
-! URxvt settings
-
-urxvt*faceName: 		envy code r
-urxvt*faceSize: 		10
-urxvt*geometry:           	90x30
-urxvt*borderless:		true
-urxvt*internalBorder:     	5
-urxvt*urgentOnBell:             true
-!urxvt*fading:             	20
-!urxvt*shading:          	20
-!urxvt*tintColor:       	black
-urxvt*depth:			24
-urxvt*saveLines:          	32767
-urxvt*visualBell:         	true
-urxvt*scrollTtyKeypress:  	true
-urxvt*scrollWithBuffer:   	false
-urxvt*scrollTtyOutput:    	false
-urxvt*scrollBar:          	false
-urxvt*scrollBar_right:    	true
-urxvt*loginShell:         	true
-urxvt*termName:           	xterm-color
-!urxvt*inheritPixmap:      	true
-urxvt*cutchars:           	"\"()*,<>[]{}|'"
-urxvt*print-pipe:         	cat > $(echo urxvt.dump.`date +'%Y%M%d%H%m%S'`)
-urxvt*secondaryScroll:    	true
-urxvt*mapAlert:           	true
-urxvt*utmpInhibit:        	true
-urxvt*perl-lib:           	/usr/lib/urxvt/perl/
-urxvt*perl-ext-common:    	default,matcher
-urxvt*urlLauncher:        	firefox
-urxvt*matcher.button:     	1
-urxvt*matcher.pattern.1:	\\bwww\\.[\\w-]+\\.[\\w./?&@#-]*[\\w/-]
-!urxvt*background:		rgba:1111/1111/1111/aaaa
-!urxvt*transparent:             true
-
 ! -----------------------------------------
 ! Xpdf options
-
 xpdf*enableFreetype:    yes
 xpdf*antialias:         yes
 xpdf*foreground:        black
 xpdf*background:        white
 xpdf*urlCommand:        /usr/bin/firefox %s
 
-! -----------------------------------------
-! XScreensaver
-
-xscreensaver.Dialog.headingFont:	-*-fixed-bold-r-*-*-*-100-*-*-*-*-iso8859-1
-xscreensaver.Dialog.bodyFont:		-*-fixed-medium-r-*-*-*-120-*-*-*-*-iso8859-1
-xscreensaver.Dialog.labelFont:		-*-fixed-medium-r-*-*-*-120-*-*-*-*-iso8859-1
-xscreensaver.Dialog.unameFont:		-*-fixed-medium-r-*-*-*-120-*-*-*-*-iso8859-1
-xscreensaver.Dialog.buttonFont:		-*-fixed-bold-r-*-*-*-120-*-*-*-*-iso8859-1
-xscreensaver.Dialog.dateFont:		-*-fixed-medium-r-*-*-*-100-*-*-*-*-iso8859-1
-xscreensaver.passwd.passwdFont:		-*-fixed-bold-r-*-*-*-100-*-*-*-*-iso8859-1
-xscreensaver.Dialog.foreground:		#ffffff
-xscreensaver.Dialog.background:		#111111
-xscreensaver.Dialog.topShadowColor:	#111111
-xscreensaver.Dialog.bottomShadowColor:	#111111
-xscreensaver.Dialog.Button.foreground:	#666666
-xscreensaver.Dialog.Button.background:	#ffffff
-xscreensaver.Dialog.text.foreground:	#666666
-xscreensaver.Dialog.text.background:	#ffffff
-xscreensaver.Dialog.internalBorderWidth:24
-xscreensaver.Dialog.borderWidth:	20
-xscreensaver.Dialog.shadowThickness:	2
-xscreensaver.passwd.thermometer.foreground:  #ff0000
-xscreensaver.passwd.thermometer.background:  #000000
-xscreensaver.passwd.thermometer.width:	8
-xscreensaver.dateFormat:		%I:%M%P %a %b %d, %Y
-xscreensaver.lock:			true
-
+! x11-ssh-askpass ------------------------------------------------------------
+ssh-askpass*font:                   -*-dina-medium-r-*-*-12-*-*-*-*-*-*-*
+ssh-askpass*background:             #000000
+ssh-askpass*foreground:             #ffffff
+ssh-askpass.Button*background:      #000000
+ssh-askpass.Indicator*foreground:   #ff9900
+ssh-askpass.Indicator*background:   #090909
+ssh-askpass*topShadowColor:         #000000
+ssh-askpass*bottomShadowColor:      #000000
+ssh-askpass.*borderWidth:           1
