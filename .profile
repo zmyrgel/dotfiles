@@ -1,18 +1,22 @@
-# sh/bash/ksh initialization
+# sh/ksh initialization
 
-[ -r $HOME/.shell/variables ] && . $HOME/.shell/variables
-[ -r $HOME/.shell/aliases ]   && . $HOME/.shell/aliases
-[ -r $HOME/.shell/functions ] && . $HOME/.shell/functions
+PATH=$HOME/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/X11R6/bin:/usr/local/bin:/usr/local/sbin:/usr/games:.
+export PATH HOME TERM
 
-case $(uname) in
-    OpenBSD) [ -r $HOME/.shell/openbsd ] && . $HOME/.shell/openbsd ;;
-    NetBSD)  [ -r $HOME/.shell/netbsd ]  && . $HOME/.shell/netbsd  ;;
-    Linux)   [ -r $HOME/.shell/linux ]   && . $HOME/.shell/linux   ;;
-    SunOS)   [ -r $HOME/.shell/sunos ]   && . $HOME/.shell/sunos   ;;
-esac
+export ENV=$HOME/.kshrc
 
-# Init KSH
-if [ -r $HOME/.kshrc ]; then
-    ENV=$HOME/.kshrc
-    export ENV
+if [ -x $(which mg) ]
+then
+	ALTERNATE_EDITOR="mg"
+	EDITOR="mg"
+	VISUAL="mg"
+	FCEDIT="mg"
+	export ALTERNATE_EDITOR EDITOR VISUAL FCEDIT
 fi
+
+HISTSIZE=5000
+HISTFILE=$HOME/.sh_history
+PAGER=less
+LESS="-i -M -q -S -Sm -F -g --no-init"
+
+export HISTSIZE HISTFILE PAGER LESS
