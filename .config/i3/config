@@ -23,7 +23,7 @@ bindsym $mod+period exec rofi -show ssh
 bindsym $mod+slash exec rofi -show window
 
 # Lock screen
-bindsym $mod+Delete exec xscreensaver-command -lock
+bindsym $mod+Delete exec xlock
 
 # change focus
 bindsym $mod+j focus left
