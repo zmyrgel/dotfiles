@@ -49,7 +49,7 @@ then
 	xidle -delay 5 -program "xlock" -timeout 300 &
 fi
 [ -x $(which nm-applet) ] && nm-applet &
-[ -x $(which dunst) ] && dunst &
+[ -x $(which dunst) ] && LC_ALL=C dunst &
 [ -x $(which wmname) ] && wmname LG3D
 
 # Launch DBUS session
