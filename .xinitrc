@@ -1,7 +1,5 @@
 ### Visual settings ###
 xset -b
-xsetroot -solid rgb:11/11/11
-xsetroot -cursor_name Adwaita
 
 [ -r ~/.Xresources ] && xrdb -merge ~/.Xresources
 
@@ -10,12 +8,12 @@ case $(uname) in
 	FONTDIR=/usr/local/share/fonts
 	;;
     *)
-	FONTDIR=/usr/lib/fonts
+	FONTDIR=/usr/share/fonts
 	;;
 esac
-for FONT in $FONTDIR
+for FONT in $(ls $FONTDIR)
 do
-	xset +fp /usr/local/share/fonts/${FONT}
+	xset +fp "$FONTDIR/$FONT"
 done
 xset fp rehash
 
@@ -27,7 +25,8 @@ tpset() {
 	xinput set-prop "TPPS/2 IBM TrackPoint" "$@";
 }
 if [ $(uname) = Linux ]
-   tpset "Device Accel Constant Deceleration" 0.4
+then
+    tpset "Device Accel Constant Deceleration" 0.4
 fi
 
 # Workaround for Firefox Image scaling
@@ -44,9 +43,10 @@ export OOO_FORCE_DESKTOP GDK_USE_XFT QT_XFT
 cd $HOME
 
 ### Start extra applications
-if [ -x $(which xidle) -a -x $(which xlock) ]
+xlock_bin=$(which xlock)
+if [ -x $(which xidle) -a ! -z "$xlock_bin" ]
 then
-	xidle -delay 5 -program "xlock" -timeout 300 &
+	xidle -delay 3 -sw -program "$xlock_bin" -timeout 300 &
 fi
 [ -x $(which nm-applet) ] && nm-applet &
 [ -x $(which dunst) ] && LC_ALL=C dunst &
@@ -64,6 +64,7 @@ ulimit -d 6144000
 # Restore previous background image, if any
 [ -x ~/.fehbg ] && ~/.fehbg &
 
+# Pass in all my SSH keys to agent
 if [ ! -z "$SSH_AUTH_SOCK" ];
 then
 	KEYS=$(ls $HOME/.ssh/* | grep -Ev '(authorized_keys|config|known_hosts|pub)$')
