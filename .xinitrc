@@ -10,12 +10,12 @@ case $(uname) in
 	FONTDIR=/usr/local/share/fonts
 	;;
     *)
-	FONTDIR=/usr/lib/fonts
+	FONTDIR=/usr/share/fonts
 	;;
 esac
 for FONT in $FONTDIR
 do
-	xset +fp /usr/local/share/fonts/${FONT}
+	xset +fp ${FONTDIR}/${FONT}
 done
 xset fp rehash
 
@@ -44,12 +44,13 @@ export OOO_FORCE_DESKTOP GDK_USE_XFT QT_XFT
 cd $HOME
 
 ### Start extra applications
-if [ -x $(which xidle) -a -x $(which xlock) ]
+xlock_bin=$(which xlock)
+if [ -x $(which xidle) -a ! -z $(xlock_bin) ]
 then
-	xidle -delay 5 -program "xlock" -timeout 300 &
+	xidle -delay 5 -program "$xlock_bin" -timeout 300 &
 fi
 [ -x $(which nm-applet) ] && nm-applet &
-[ -x $(which dunst) ] && dunst &
+[ -x $(which dunst) ] && LC_ALL=C dunst &
 [ -x $(which wmname) ] && wmname LG3D
 
 # Launch DBUS session
