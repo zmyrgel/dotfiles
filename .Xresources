@@ -94,3 +94,9 @@ ssh-askpass.Indicator*background:   #090909
 ssh-askpass*topShadowColor:         #000000
 ssh-askpass*bottomShadowColor:      #000000
 ssh-askpass.*borderWidth:           1
+
+! xlock ----------------------------------------------------------------------
+XLock.font: 		-*-terminus-medium-r-normal--24-*-*-*-*-*-iso8859-1
+XLock.planfont: 	-*-terminus-medium-r-normal--24-*-*-*-*-*-iso8859-1
+XLock.mode:		blank
+XLock.blank.delay:	2000000
