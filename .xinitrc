@@ -13,7 +13,7 @@ case $(uname) in
 esac
 for FONT in $(ls $FONTDIR)
 do
-	xset +fp "$FONTDIR/$FONT"
+	xset +fp ${FONTDIR}/${FONT}
 done
 xset fp rehash
 
@@ -44,9 +44,9 @@ cd $HOME
 
 ### Start extra applications
 xlock_bin=$(which xlock)
-if [ -x $(which xidle) -a ! -z "$xlock_bin" ]
+if [ -x $(which xidle) -a ! -z $(xlock_bin) ]
 then
-	xidle -delay 3 -sw -program "$xlock_bin" -timeout 300 &
+	xidle -delay 5 -program "$xlock_bin" -timeout 300 &
 fi
 [ -x $(which nm-applet) ] && nm-applet &
 [ -x $(which dunst) ] && LC_ALL=C dunst &
