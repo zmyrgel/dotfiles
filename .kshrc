@@ -109,8 +109,16 @@ add_path $GOPATH/bin
 add_path $HOME/.rvm/bin
 add_path $HOME/.cabal/bin
 add_path $HOME/.perl6/2015.12/bin
-eval "$(/home/tmy/.rakudobrew/bin/rakudobrew init -)"
-eval "$(perl -I$HOME/perl5/lib/perl5 -Mlocal::lib)"
+
+if [ -x $HOME/.rakudobrew/bin/rakudobrew ]
+then
+    eval "$($HOME/.rakudobrew/bin/rakudobrew init -)"
+fi
+
+if [ -d $HOME/perl5/lib/perl5 ]
+then
+    eval "$(perl -I$HOME/perl5/lib/perl5 -Mlocal::lib)"
+fi
 
 CVSROOT="anoncvs@anoncvs.eu.openbsd.org:/cvs"
 export CVSROOT
