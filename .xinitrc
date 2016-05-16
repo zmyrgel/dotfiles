@@ -44,9 +44,9 @@ cd $HOME
 
 ### Start extra applications
 xlock_bin=$(which xlock)
-if [ -x $(which xidle) -a ! -z $(xlock_bin) ]
+if [ -x $(which xidle) -a ! -z "$xlock_bin" ]
 then
-	xidle -delay 5 -program "$xlock_bin" -timeout 300 &
+	xidle -delay 3 -se -program "$xlock_bin" -timeout 300 &
 fi
 [ -x $(which nm-applet) ] && nm-applet &
 [ -x $(which dunst) ] && LC_ALL=C dunst &
@@ -64,12 +64,25 @@ ulimit -d 6144000
 # Restore previous background image, if any
 [ -x ~/.fehbg ] && ~/.fehbg &
 
-# Pass in all my SSH keys to agent
-if [ ! -z "$SSH_AUTH_SOCK" ];
+# ensure ssh-agent is running
+# TODO: ensure $(ssh-agent -s -k) is run on exit
+if [ -z "$SSH_AGENT_PID" ]
+then
+	if [ -x $(which ssh-agent) ]
+	then
+		eval $(ssh-agent -s)
+	fi
+fi
+
+if [ ! -z "$SSH_AUTH_SOCK" ]
 then
 	KEYS=$(ls $HOME/.ssh/* | grep -Ev '(authorized_keys|config|known_hosts|pub)$')
 	ssh-add $KEYS
 fi
+
+# Displays, T430s LVDS1, T460s
+#xrandr --query | grep "DVI-0 connected" && ~/bin/docked-dvi
+#xrandr --query | grep "VGA-0 connected" && ~/bin/docked-vga
 
 # Start WM
 exec /usr/bin/ssh-agent i3 2> ~/.xerrors
