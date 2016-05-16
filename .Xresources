@@ -1,7 +1,13 @@
 ! -----------------------------------------
 ! Rofi resources
-rofi.font: terminus 12
-rofi.kb-cancel: Escape,Control+bracketleft,Control+g
+rofi.font:		terminus 12
+rofi.kb-cancel:		Escape,Control+bracketleft,Control+g
+rofi.terminal:		xterm
+rofi.color-normal:	#fdf6e3,#002b36,#eee8d5,#586e75,#eee8d5
+rofi.color-urgent:	#fdf6e3,#dc322f,#eee8d5,#dc322f,#fdf6e3
+rofi.color-active:	#fdf6e3,#268bd2,#eee8d5,#268bd2,#fdf6e3
+rofi.color-window:	#fdf6e3,#002b36
+rofi.separator-style:	dash
 
 ! -----------------------------------------
 ! Emacs resources
@@ -9,7 +15,7 @@ Emacs.backGround:               black
 Emacs.menuBar:			off
 Emacs.verticalScrollBars:	off
 Emacs.toolBar:			off
-Emacs.font:                     gohufont
+Emacs.font:                     terminus
 
 ! -----------------------------------------
 ! Colors
@@ -34,12 +40,12 @@ Emacs.font:                     gohufont
 
 ! -----------------------------------------
 ! Xresources for applications not supporting fontconfig
-Xft.autohint: 0
+Xft.autohint:	0
 Xft.lcdfilter:  lcddefault
 Xft.hintstyle:  hintslight
-Xft.hinting: 1
-Xft.antialias: 1
-Xft.rgba: rgb
+Xft.hinting:	1
+Xft.antialias:	1
+Xft.rgba:	rgb
 
 ! -----------------------------------------
 ! Xcursor
@@ -48,41 +54,38 @@ Xcursor.size:  22
 
 ! -----------------------------------------
 ! Xterm settings
-xterm*termName: xterm-256color
-xterm*faceName: gohufont-11
-xterm*renderFont: true
-xterm*charClass: 33:48,36-47:48,58-59:48,61:48,63-64:48,95:48,126:48
-xterm*on3Clicks: regex ([[:alpha:]]+://)?([[:alnum:]!#+,./=?@_~-]|(%[[:xdigit:]][[:xdigit:]]))+
+xterm*termName: 	xterm-256color
+!xterm*faceName:		gohufont-11
+xterm*faceName:		terminus-10
+xterm*renderFont:	true
+xterm*charClass: 	33:48,36-47:48,58-59:48,61:48,63-64:48,95:48,126:48
+xterm*on3Clicks: 	regex ([[:alpha:]]+://)?([[:alnum:]!#+,./=?@_~-]|(%[[:xdigit:]][[:xdigit:]]))+
 xterm*VT100*translations: #override Shift <Btn1Up>: exec-formatted("firefox '%s'", PRIMARY)
-xterm*scrollBar: false
-xterm*scrollKey: true
-xterm*fullscreen: never
-xterm*allowFontOps: false
-xterm*allowWindowOps: false
-xterm*deleteIsDEL: true
-xterm*ptyInitialErase: true
+xterm*scrollBar: 	false
+xterm*scrollKey: 	true
+xterm*fullscreen: 	never
+xterm*allowFontOps:	false
+xterm*allowWindowOps:	false
+xterm*deleteIsDEL:	true
+xterm*ptyInitialErase:	true
 xterm*backarrowKeyIsErase: true
-xterm*loginShell: true
-xterm*saveLines: 20000
-xterm*bellIsUrgent: true
-xterm*borderWidth: 0
-xterm*multiClickTime: 250
-xterm*eightBitInput: false
-xterm*metaSendsEscape: true
-xterm*locale: UTF-8
-xterm*cursorUnderLine: true
-xterm*ttyModes:         erase ^?
+xterm*loginShell:	true
+xterm*saveLines:	20000
+xterm*bellIsUrgent:	true
+xterm*borderWidth:	0
+xterm*multiClickTime:	250
+xterm*eightBitInput:	false
+xterm*metaSendsEscape:	true
+xterm*locale:		UTF-8
+xterm*cursorUnderLine:	true
+xterm*ttyModes:		erase ^?
 xterm*VT100.Translations: \
         #override <Key>BackSpace: string(0x7f) \n\
 		  <Key>Delete:    string(0x1b) string("[3~")
 
-! -----------------------------------------
-! Xpdf options
-xpdf*enableFreetype:    yes
-xpdf*antialias:         yes
-xpdf*foreground:        black
-xpdf*background:        white
-xpdf*urlCommand:        /usr/bin/firefox %s
+! xlock ----------------------------------------------------------------------
+xpdf*fontList:		-*-terminus-medium-r-normal--14-*-*-*-*-*-iso8859-1
+xpdf.initialZoom:	width
 
 ! x11-ssh-askpass ------------------------------------------------------------
 ssh-askpass*font:                   -*-dina-medium-r-*-*-12-*-*-*-*-*-*-*
@@ -100,3 +103,15 @@ XLock.font: 		-*-terminus-medium-r-normal--24-*-*-*-*-*-iso8859-1
 XLock.planfont: 	-*-terminus-medium-r-normal--24-*-*-*-*-*-iso8859-1
 XLock.mode:		blank
 XLock.blank.delay:	2000000
+
+! XMessage -------------------------------------------------------------------
+Xmessage*font:                  -*-terminus-medium-r-*-*-14-*-*-*-*-*-*-*
+Xmessage*background:            #242424
+Xmessage*foreground:            #CCCCCC
+Xmessage*form.*.shapeStyle:     rectangle
+Xmessage*Scrollbar.width:       1
+Xmessage*Scrollbar.borderWidth: 0
+!Xmessage.form.message.Scroll:  WhenNeeded
+Xmessage*Buttons:               Quit
+Xmessage*defaultButton:         Quit
+!Xmessage*geometry:             +20+20
