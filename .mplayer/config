@@ -29,7 +29,7 @@ subfont-osd-scale = 4.2
 # =====================
 # Audio settings
 # =====================
-ao = alsa
+#ao = alsa
 #af = volnorm
 #autosync = 0 # 20
 
