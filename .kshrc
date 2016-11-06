@@ -120,8 +120,5 @@ then
     eval "$(perl -I$HOME/perl5/lib/perl5 -Mlocal::lib)"
 fi
 
-CVSROOT="anoncvs@anoncvs.eu.openbsd.org:/cvs"
-export CVSROOT
-
 PS1='${USER}@${HOST%%.*} ${PWD##*/} $ '
 export PS1
