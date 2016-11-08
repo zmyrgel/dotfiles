@@ -43,6 +43,10 @@ alias xcap="ffmpeg -f x11grab -s wxga -r 25 -i :0.0 -sameq /tmp/out.mpg"
 alias flav='make show=FLAVORS'
 alias show_beacons='doas tcpdump -n -i iwn0 -s 1500 -vvv -y IEEE802_11_RADIO subtype beacon'
 
+function rmline {
+	sed -i "$1d" $2
+}
+
 function s {
 	if [ -x /usr/bin/doas ]
 	then
@@ -71,11 +75,45 @@ function clamscan {
 }
 
 function spell {
+    if [ -x $(which aspell) ]
+    then
 	echo "$@" | aspell -a
+    else
+        echo "$@" | spell
+    fi
 }
 
 function calc {
 	echo "$*" | bc;
+}
+
+function pwhash {
+    python3 -c 'import crypt; print(crypt.crypt("$1", crypt.mksalt(crypt.METHOD_SHA512)))'
+}
+
+# is $1 missing from $2 (or PATH) ?
+function no_path {
+	eval _v="\$${2:-PATH}"
+	case :$_v: in
+		*:$1:*) return 1;; # no we have it
+	esac
+	return 0
+}
+
+# if $1 exists and is not in path, append it
+function add_path {
+	[ -d ${1:-.} ] && no_path $* && eval ${2:-PATH}="\$${2:-PATH}:$1"
+}
+
+# if $1 exists and is not in path, prepend it
+function pre_path {
+	[ -d ${1:-.} ] && no_path $* && eval ${2:-PATH}="$1:\$${2:-PATH}"
+}
+
+# if $1 is in path, remove it
+function del_path {
+	no_path $* || eval ${2:-PATH}=`eval echo :'$'${2:-PATH}: |
+	sed -e "s;:$1:;:;g" -e "s;^:;;" -e "s;:\$;;"`
 }
 
 # Add Latest JDK dir to PATH
@@ -90,9 +128,11 @@ then
 	alias pwhatis='whatis -M /usr/local/share/doc/posix/man'
 fi
 
-# Locale stuff
-LC_CTYPE=en_us.UTF-8
-export LC_CTYPE
+# Use locale to choose available UTF-8
+if [ -x $(which locale) ]
+then
+    export LC_CTYPE=$(locale -a | grep -i en_us.utf)
+fi
 
 # Variables for programming languages
 if [ -d /usr/local/go ]
@@ -108,12 +148,12 @@ add_path $GOPATH/bin
 
 add_path $HOME/.rvm/bin
 add_path $HOME/.cabal/bin
-add_path $HOME/.perl6/2015.12/bin
 
 if [ -x $HOME/.rakudobrew/bin/rakudobrew ]
 then
     eval "$($HOME/.rakudobrew/bin/rakudobrew init -)"
 fi
+add_path $HOME/.rakudobrew/moar-nom/install/share/perl6/site/bin
 
 if [ -d $HOME/perl5/lib/perl5 ]
 then
@@ -121,4 +161,6 @@ then
 fi
 
 PS1='${USER}@${HOST%%.*} ${PWD##*/} $ '
+#PS1="[\u@\h \W]$ "
 export PS1
+

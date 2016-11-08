@@ -1,7 +1,7 @@
 ### Visual settings ###
 xset -b
 
-[ -r ~/.Xresources ] && xrdb -merge ~/.Xresources
+[ -r ~/.Xresources ] && xrdb ~/.Xresources
 
 case $(uname) in
     OpenBSD)
@@ -21,12 +21,9 @@ xset fp rehash
 setxkbmap -layout us -variant altgr-intl -option ctrl:nocaps
 
 # Set Trackpoint sensitivity if needed
-tpset() {
-	xinput set-prop "TPPS/2 IBM TrackPoint" "$@";
-}
-if [ $(uname) = Linux ]
+if [ $(uname) = Linux -a $(dmesg | grep -q 'ThinkPad T460s') ]
 then
-    tpset "Device Accel Constant Deceleration" 0.4
+    xinput set-prop "TPPS/2 IBM TrackPoint" "Device Accel Constant Deceleration" 0.5
 fi
 
 # Workaround for Firefox Image scaling
@@ -46,11 +43,15 @@ cd $HOME
 xlock_bin=$(which xlock)
 if [ -x $(which xidle) -a ! -z "$xlock_bin" ]
 then
-	xidle -delay 3 -se -program "$xlock_bin" -timeout 300 &
+	xidle -delay 3 -se -program "$xlock_bin" -timeout 600 &
 fi
 [ -x $(which nm-applet) ] && nm-applet &
 [ -x $(which dunst) ] && LC_ALL=C dunst &
 [ -x $(which wmname) ] && wmname LG3D
+
+# Fix fonts in Java applications
+_JAVA_OPTIONS='-Dawt.useSystemAAFontSettings=on -Dswing.aatext=true -Dswing.defaultlaf=com.sun.java.swing.plaf.gtk.GTKLookAndFeel'
+export _JAVA_OPTIONS
 
 # Launch DBUS session
 if [ -x $(which dbus-launch) -a -z "${DBUS_SESSION_BUS_ADDRESS}" ]
@@ -81,8 +82,11 @@ then
 fi
 
 # Displays, T430s LVDS1, T460s
-#xrandr --query | grep "DVI-0 connected" && ~/bin/docked-dvi
-#xrandr --query | grep "VGA-0 connected" && ~/bin/docked-vga
+# If we're docked, poweroff the internal display
+if xrandr --query | grep -q 'DP2-2 connected'
+then
+        xrandr --output eDP1 --off
+fi
 
 # Start WM
-exec /usr/bin/ssh-agent i3 2> ~/.xerrors
+exec /usr/bin/ssh-agent pekwm 2> ~/.xerrors
