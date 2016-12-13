@@ -1,0 +1,25 @@
+# OpenBSD specific options -*- mode: sh; coding: utf-8-unix; -*-
+
+alias flav='make show=FLAVORS'
+alias top='top -1C'
+alias show_beacons='doas tcpdump -n -i iwn0 -s 1500 -vvv -y IEEE802_11_RADIO subtype beacon'
+
+# Add Latest JDK dir to PATH
+add_path /usr/local/jdk-1.8.0/bin
+add_path /usr/local/jdk-1.7.0/bin
+add_path /usr/local/jdk-1.6.0/bin
+
+if [ -d /usr/local/share/doc/posix/man ]
+then
+	alias pman='man -M /usr/local/share/doc/posix/man'
+	alias papropos='apropos -M /usr/local/share/doc/posix/man'
+	alias pwhatis='whatis -M /usr/local/share/doc/posix/man'
+fi
+
+if test -d /usr/local/go
+then
+	GOROOT=/usr/local/go
+	export GOROOT
+	add_path $GOROOT/bin
+	add_path $GOROOT/pkg/tool/openbsd_amd64
+fi
