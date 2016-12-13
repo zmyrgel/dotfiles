@@ -18,4 +18,5 @@ set -o noclobber	# Don't allow > redirection to existing files.
 set -o trackall		# Use full pathnames for commands in alias expansions.
 
 PS1='${USER}@${HOST%%.*} ${PWD##*/} $ '
+#PS1="[\u@\h \W]$ "
 export PS1
