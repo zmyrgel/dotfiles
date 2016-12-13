@@ -1,78 +1,59 @@
 # Functions -*- mode: sh; coding: utf-8-unix; -*-
 # ---------------------------------------------
 
-function clamscan {
-    mkdir -p /tmp/virus
-    nice -n 19 clamscan --verbose --max-recursion=20 -m -i --detect-pua --move=/tmp/virus -r
-    cd /tmp/virus
-    echo -n "Viruses:"
-    ls
+# These two from OpenBSD /etc/ksh.kshrc
+
+# is $1 missing from $2 (or PATH) ?
+no_path() {
+	eval _v="\$${2:-PATH}"
+	case :$_v: in
+	*:$1:*) return 1;;		# no we have it
+	esac
+	return 0
 }
 
-function qemiso {
-    qemu -boot d -m 384 -smp 2 -localtime \
-    -net nic \
-    -net user \
-    -no-fd-bootchk -no-acpi -cdrom $1
+# if $1 exists and is not in path, append it
+add_path() {
+	[[ -d ${1:-.} ]] && no_path $* && eval ${2:-PATH}="\$${2:-PATH}:$1"
 }
 
-function qemimg {
-    qemu-img create -f qcow2 $i.qcow 10G
+s() {
+	if [ -x /usr/bin/doas ]
+	then
+		/usr/bin/doas $*
+	elif [ -x /usr/bin/sudo ]
+	then
+		/usr/bin/sudo $*
+	fi
 }
 
-function qeminst {
-    echo "Supply disk.img and path to iso or drive for installing from"
-        qemu -boot d -m 384 -smp 2 -localtime \
-        -net nic \
-        -net user \
-        -no-fd-bootchk -no-acpi \
-        -hda /media/nfs/qemu/$1.qcow -cdrom $2
+base64() {
+	perl -MMIME::Base64 -e 'print encode_base64(<>)'
 }
 
-function qemrun {
-    echo "Supply drive image to boot from"
-    qemu -boot c -m 512 -smp 2 -localtime \
-    -net nic \
-    -net user \
-    -no-fd-bootchk -no-acpi -hda /media/nfs/qemu/$1.qcow
+rndpw() {
+	random="$(dd if=/dev/random bs=10 count=1)" 2>/dev/null
+	echo $random | base64
 }
 
-function spell {
-    echo "$@" | aspell -a
+clamscan() {
+	mkdir -p /tmp/virus
+	nice -n 19 clamscan --verbose --max-recursion=20 -m -i --detect-pua --move=/tmp/virus -r
+	cd /tmp/virus
+	echo -n "Viruses:"
+	ls
 }
 
-function calc {
-    echo "$*" | bc;
+spell() {
+	echo "$@" | aspell -a
 }
 
-#  https://dgl.cx/wikipedia-dns
-function wiki {
-    [ -x /usr/sbin/host ] && host -t txt "$1".wp.dg.cx | cut -f 3
+calc() {
+	echo "$*" | bc;
 }
 
 # Quick find
-function f {
-    echo "find . -iname \"*$1*\""
-    find . -iname "*$1*"
-}
-
-# add by artist to mpc
-function addartist {
-  if [ $# -lt 1 ]; then
-    echo "usage: addartist [artist]"
-  else
-    mpc clear
-    mpc search artist "$*" | mpc add
-    mpc --no-status play
-  fi
-}
-
-# recursively fix dir/file permissions on a given directory
-function fix {
-  if [ -d "$1" ]; then
-    find "$1" -type d -exec chmod 755 {} \;
-    find "$1" -type f -exec chmod 644 {} \;
-  else
-    echo "usage: fix [directory]"
-  fi
+f() {
+	echo "find . -iname \"*$1*\""
+	find . -iname "*$1*"
 }
