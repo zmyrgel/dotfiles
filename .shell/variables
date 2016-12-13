@@ -8,38 +8,52 @@ CVS_RSH=ssh
 
 export HISTSIZE HISTFILE PAGER LESS CVS_RSH
 
-if [ -x $(which emacsclient) ]; then
-    VISUAL='emacsclient -a ""'
-elif [ -x $(which mg) ]; then
-    VISUAL='mg'
+if [ -x $(which emacsclient) ]
+then
+	VISUAL='emacsclient -a ""'
+elif [ -x $(which mg) ]
+then
+	VISUAL='mg'
 else
-    VISUAL='vi'
+	VISUAL='vi'
 fi
 
-export VISUAL
+ALTERNATE_EDITOR="$VISUAL"
+EDITOR="$VISUAL"
+VISUAL="$VISUAL"
+FCEDIT="$VISUAL"
+export ALTERNATE_EDITOR EDITOR VISUAL FCEDIT
 
 ### PATH ###
-
-# Path components
-HOME_PATH=$HOME/bin
-SYSTEM_PATH=/sbin:/usr/sbin:/bin:/usr/bin
-RUBY_PATH=$HOME/
-X_PATH=/usr/X11R6/bin
-CONTRIB_PATH=/usr/local/sbin:/usr/local/bin
-
-PATH=$HOME_PATH:$SYSTEM_PATH:$X_PATH:$CONTRIB_PATH:.
-
-# Path additions
-if [ -x $HOME/.gem/ruby/1.9.1/bin ]; then
-   PATH=$PATH:/home/zmyrgel/.gem/ruby/1.9.1/bin
+PATH=$HOME/bin:/bin:/sbin:/usr/bin:/usr/sbin
+if [ -d /usr/X11R6/bin ]
+then
+	PATH=$PATH:/usr/X11R6/bin
 fi
+PATH=$PATH:/usr/local/bin:/usr/local/sbin
 
-if [ -x $HOME/.cabal/bin ]; then
-    PATH=$PATH:$HOME/.cabal/bin
-fi
-
-if [ -x /usr/games ]; then
-    PATH=$PATH:/usr/games
+if [ -x /usr/games ]
+then
+	PATH=$PATH:/usr/games
 fi
 
 export PATH
+
+GOPATH=$HOME/workspace
+export GOPATH
+add_path $GOPATH/bin
+
+add_path $HOME/gauche-0.9.5/bin
+add_path $HOME/.rvm/bin
+add_path $HOME/.cabal/bin
+add_path $HOME/.perl6/2015.12/bin
+
+if test -x $HOME/.rakudobrew/bin/rakudobrew
+then
+	eval "$($HOME/.rakudobrew/bin/rakudobrew init -)"
+fi
+
+if test -d $HOME/perl5/lib/perl5
+then
+	eval "$(perl -I$HOME/perl5/lib/perl5 -Mlocal::lib)"
+fi
