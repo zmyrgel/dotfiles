@@ -7,6 +7,7 @@ alias du='du -h'
 alias man='LC_ALL=C man'
 alias ls='/bin/ls -F'
 alias mkdir='mkdir -p'
+alias diff='diff -wub'
 
 # New aliases
 alias ll='ls -l'
