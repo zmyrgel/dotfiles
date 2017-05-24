@@ -1,0 +1,6 @@
+#!/bin/sh
+
+if [[ $(which pasystray) ]]
+then
+        pasystray &
+fi
