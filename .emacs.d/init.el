@@ -3,9 +3,9 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2015-02-02 22:35:22 (zmyrgel)>
+;;; Time-stamp: <2017-12-05 12:21:00 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
-;;; Compatibility: GNU Emacs 23.1 (may work with other versions)
+;;; Compatibility: GNUtls Emacs 23.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Commentary:
 ;;; - Autoloads for gnus
@@ -54,8 +54,8 @@ If it names existing file, it loads it."
   (setq custom-theme-load-path nil))
 
 (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
-                         ("melpa" . "http://melpa.milkbox.net/packages/")
-                         ("marmalade" . "http://marmalade-repo.org/packages/")))
+                         ("melpa-stable" . "https://stable.melpa.org/packages/")
+			 ("marmalade" . "http://marmalade-repo.org/packages/")))
 
 (package-initialize)
 
@@ -67,14 +67,11 @@ If it names existing file, it loads it."
     multi-term
     smart-mode-line
     smart-mode-line-powerline-theme
-    w3m
     company
     ag
     smex
     grizzl
-    bbdb
     boxquote
-    pastels-on-dark-theme
     zenburn-theme
     smartparens
     mode-compile
@@ -85,25 +82,19 @@ If it names existing file, it loads it."
     ibuffer-projectile
     yaml-mode
     magit
-    slime
     web-mode
     haml-mode
-    php-mode
+    ;php-mode
     geben
-    ;;geiser
-    scheme-complete
-    cider
     clojure-mode
+    cider
     quack
     paredit
-    redshank
     rvm
     inf-ruby
     projectile-rails
-    omniref
     rspec-mode
     ruby-compilation
-    robe
     bundler
     feature-mode
     company-go
@@ -112,10 +103,6 @@ If it names existing file, it loads it."
     go-errcheck
     go-mode
     go-play
-    go-projectile
-    go-snippets
-    go-stacktracer
-    racket-mode
     ))
 
 ;; only for fresh install
@@ -164,6 +151,7 @@ If it names existing file, it loads it."
 
 ;; mouse options
 (setq mouse-yank-at-point t)
+(mouse-wheel-mode t)
 
 ;; Encoding
 (setq locale-coding-system 'utf-8)
@@ -201,6 +189,9 @@ If it names existing file, it loads it."
 ;; enable disabled features
 (put 'narrow-to-region 'disabled nil)
 
+;; https://bugs.debian.org/766397
+(setq tls-program '("gnutls-cli --x509cafile %t -p %p %h"))
+
 ;;; ------------------------------
 ;;; Visual settings
 ;;; ------------------------------
@@ -209,29 +200,24 @@ If it names existing file, it loads it."
 (setq font-lock-maximum-decoration t)
 
 (show-paren-mode t)
-(setq visible-bell 1)
+(setq visible-bell t)
 (setq window-min-height 3)
 (blink-cursor-mode -1)
 
 (setq-default cursor-type 'hbar)
 
-(scroll-bar-mode -1)
-(tool-bar-mode -1)
-(mouse-wheel-mode t)
+(when (fboundp 'tool-bar-mode)
+  (tool-bar-mode -1))
+(when (fboundp 'scroll-bar-mode)
+  (scroll-bar-mode -1))
+(when (fboundp 'horizontal-scroll-bar-mode)
+  (horizontal-scroll-bar-mode -1))
 (menu-bar-mode t)
 
 ;; ;; Set Default font if present
-(when (find-font (font-spec :name "gohufont-10"))
-  (add-to-list 'default-frame-alist '(font . "gohufont-10" ))
-  (set-face-attribute 'default nil :font "gohufont-10"))
-
-;; (setq default-frame-alist '((font-backend . "xft")
-;;                             (font . "gohufont-10")
-;;                             (left-fringe . -1)
-;;                             (right-fringe . -1)
-;;                             (fullscreen . 1)
-;;                             (menu-bar-lines . 0)
-;;                             (tool-bar-lines . 0)))
+(when (find-font (font-spec :name "terminus-10"))
+  (add-to-list 'default-frame-alist '(font . "terminus-10" ))
+  (set-face-attribute 'default nil :font "terminus-10"))
 
 ;; Maximize first frame
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
@@ -239,6 +225,7 @@ If it names existing file, it loads it."
 ;; Setup clipboard options if running in X
 (when (display-graphic-p)
   (setq x-select-enable-clipboard t
+        save-interprogram-paste-before-kill t
         interprogram-paste-function 'x-cut-buffer-or-selection-value))
 
 ;; disable dialog boxes
@@ -255,8 +242,12 @@ If it names existing file, it loads it."
 ;; show file size
 (size-indication-mode t)
 
+;; XXX: sort these
+(setq apropos-do-all t
+      load-prefer-newer t)
+
 ;; set theme
-(load-theme 'monokai)
+(load-theme 'material)
 
 ;; Handle screen drawing before input
 (setq redisplay-dont-pause t)
@@ -310,6 +301,10 @@ If it names existing file, it loads it."
 ;;; Session
 ;;; ------------------------------
 
+(require 'saveplace)
+(setq-default save-place t
+              save-place-file (concat user-emacs-directory "places"))
+
 (setq recentf-save-file (concat user-emacs-directory "recentf")
       recentf-max-saved-items 50)
 (recentf-mode t)
@@ -349,6 +344,11 @@ If it names existing file, it loads it."
 ;;; ------------------------------
 ;;; Shell settings
 ;;; ------------------------------
+
+(defun zmg/sh-mode-hook ()
+  (setq indent-tabs-mode t))
+
+(add-hook 'sh-mode-hook 'zmg/sh-mode-hook)
 
 (setq shell-command-switch "-c"
       explicit-sh-args '("-login" "-i"))
@@ -560,20 +560,19 @@ If it names existing file, it loads it."
 ;;; Email settings
 ;;; ------------------------------
 
-(setq user-mail-address "timo.myyra@wickedbsd.net"
+(setq user-mail-address "timo.myyra@bittivirhe.fi"
       user-full-name "Timo Myyrä")
 
 ;; ;; smtp mail setting; these are the same that `gnus' uses.
 (setq message-send-mail-function   'smtpmail-send-it
-      smtpmail-default-smtp-server "mail.wickedbsd.net"
-      smtpmail-smtp-server         "mail.wickedbsd.net"
-      smtpmail-local-domain        "wickedbsd.net"
-      smtpmail-smtp-service        587
+      smtpmail-default-smtp-server "smtp.fastmail.com"
+      smtpmail-smtp-server         "smtp.fastmail.com"
+      smtpmail-local-domain        "bittivirhe.fi"
+      smtpmail-smtp-service        465
       smtpmail-stream-type         'ssl)
 
 ;; gnus
 (setq gnus-select-method '(nntp "news.gmane.org")
-      mm-w3m-safe-url-regexp nil ;; consider all ulrs safe
       mm-inline-text-html-with-images t
       mm-inline-large-images 'resize
       mm-discouraged-alternatives '("text/html" "text/richtext")
@@ -582,18 +581,16 @@ If it names existing file, it loads it."
       gnus-always-read-dribble-file t)
 
 ;; Set renderer for HTML
-(setq mm-text-html-renderer
-      (cond ((and (locate-library "w3m") (executable-find "w3m")) 'w3m)
-            ((fboundp 'libxml-parse-html-region) 'shr)
-            (t nil)))
+(setq mm-text-html-renderer 'shr)
 
 (setq gnus-secondary-select-methods
-      '((nnimap "gmail"
-                (nnimap-address "imap.gmail.com")
-                (nnimap-stream ssl))
-        (nnimap "wickedbsd"
-                (nnimap-address "mail.wickedbsd.net")
-                (nnimap-stream ssl))))
+      '(
+       (nnimap "gmail"
+               (nnimap-address "imap.gmail.com")
+               (nnimap-stream ssl))
+       (nnimap "fastmail"
+               (nnimap-address "imap.fastmail.com")
+               (nnimap-stream tls))))
 
 ;;; ------------------------------
 ;;; Programming settings
@@ -608,16 +605,37 @@ If it names existing file, it loads it."
 (setq flycheck-completion-system 'grizzl
       flycheck-phpcs-standard "Zend")
 
+
+(setq ediff-window-setup-function 'ediff-setup-windows-plain
+      ediff-split-window-function 'split-window-horizontally
+      ediff-diff-options "-w")
+(add-hook 'ediff-after-quit-hook-internal 'winner-undo)
+
 (setq diff-switches '("-u"))
 
-;; go-mode company-go go-eldoc go-projectile go-snippets
-;; go-mode (setq gofmt-command "goimports")
-;; set company popup delay in seconds (setq company-idle-delay 0)
+(add-hook 'prog-mode-hook 'subword-mode)
+
+;; Go programming
+(let ((oracle-file (concat-path (getenv "GOPATH") "src/code.google.com/p/go.tools/cmd/oracle/oracle.el")))
+  (when (file-exists-p oracle-file)
+    (load oracle-file)
+    (setq go-oracle-command (concat (getenv "GOPATH") "/bin/oracle"))))
+
+;; go-mode
+(when (file-exists-p "/home/tmy/workspace/bin")
+  (setq exec-path (append exec-path '("/home/tmy/workspace/bin"))))
 (defun zmg/go-mode-hook ()
   "Options for Go language."
+  (when (not (string-match "go" compile-command))
+    (set (make-local-variable 'compile-command)
+         "go build -v && go test -v && go vet"))
+  (setq gofmt-command "goimports")
   (local-set-key (kbd "C-c m") 'gofmt)
+  (set (make-local-variable 'company-backends) '(company-go))
   (local-set-key (kbd "M-.") 'godef-jump)
-  (set (make-local-variable 'company-backends) '(company-go)))
+  (local-set-key (kbd "C-c C-r") 'go-remove-unused-imports)
+  (local-set-key (kbd "C-c g i") 'go-goto-imports)
+  (local-set-key (kbd "C-c C-k") 'godoc))
 
 (add-hook 'before-save-hook 'gofmt-before-save)
 (add-hook 'go-mode-hook 'zmg/go-mode-hook)
@@ -754,58 +772,46 @@ If it names existing file, it loads it."
 
 (defun zmg/shared-lisp-hook ()
   (paredit-mode t)
-  (rainbow-delimiters-mode t)
+  ;;(rainbow-delimiters-mode t)
   (setq whitespace-line-column 80
         whitespace-style '(face lines-tail)))
 
 (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
 (add-hook 'emacs-lisp-mode-hook 'zmg/shared-lisp-hook)
 (add-hook 'lisp-mode-hook 'zmg/shared-lisp-hook)
-(add-hook 'lisp-mode-hook 'slime-mode)
 (add-hook 'scheme-mode-hook 'zmg/shared-lisp-hook)
 (add-hook 'racket-mode-hook 'zmg/shared-lisp-hook)
 (add-hook 'racket-repl-mode-hook 'zmg/shared-lisp-hook)
 
 ;; clojure
+
 (add-to-list 'auto-mode-alist '("\\.clj\\'" . clojure-mode))
 (add-hook 'clojure-mode-hook 'zmg/shared-lisp-hook)
 
-(add-hook 'cider-mode-hook 'cider-turn-on-eldoc-mode)
+(add-hook 'cider-mode-hook 'eldoc-mode)
 (setq nrepl-hide-special-buffers t)
 (add-hook 'cider-repl-mode-hook 'paredit-mode)
 (add-hook 'cider-repl-mode-hook 'subword-mode)
 
+(eval-after-load 'cider
+  (setq cider-lein-parameters "repl :headless :host localhost"))
+
 ;; ;; Scheme settings
-
-(eval-after-load 'scheme
-  '(define-key scheme-mode-map (kbd "<tab>") 'scheme-complete-or-indent))
-
 (autoload 'scheme-get-current-symbol-info "scheme-complete" nil t)
 (add-hook 'scheme-mode-hook
           (lambda ()
             (make-local-variable 'eldoc-documentation-function)
             (setq eldoc-documentation-function 'scheme-get-current-symbol-info)
-            (eldoc-mode)
-            (define-key scheme-mode-map (kbd "") 'scheme-inj)))
+            (eldoc-mode)))
 
-;; geiser config
-(with-eval-after-load 'geiser
-  (setq geiser-guile-binary
-        (if (eq system-type 'berkeley-unix)
-            "guile2"
-          "guile")
-        geiser-default-implementation 'guile
-        geiser-mode-start-repl-p t)
-
-  (add-hook 'scheme-mode-hook 'geiser-smart-tab-mode))
-
-;; TODO: add snippet here
-;; (require 'autoinsert)
-;; (add-hook 'find-file-hooks 'auto-insert)
-
-;; (setq auto-insert-alist
-;;       '(("\\.scm" .
-;;          (insert "#!/bin/sh\n#| -*- scheme -*-\nexec csi -s $0 \"$@\"\n|#\n"))))
+(autoload 'gerbil-mode "gerbil" "Gerbil editing mode." t)
+(require 'gambit)
+(add-hook 'inferior-scheme-mode-hook 'gambit-inferior-mode)
+(defvar gsi-options " -:tE8,f8,-8,h2097152")    ; some sensible options for gsi
+(defvar gerbil-program-name
+  (concat (expand-file-name "~/gerbil/bin/gxi") ; Set this for your GERBIL_HOME
+          gsi-options))
+(setq scheme-program-name gerbil-program-name)
 
 ;;; ------------------------------
 ;;; Completion
@@ -938,16 +944,20 @@ If it names existing file, it loads it."
 (global-set-key (kbd "C-x C-c") 'quit-prompt)
 (global-set-key (kbd "C-c R") 'rename-current-file-or-buffer)
 
+(global-set-key (kbd "M-z") 'zap-up-to-char)
+
+;; enable regexp search by default
+(global-set-key (kbd "C-s") 'isearch-forward-regexp)
+(global-set-key (kbd "C-r") 'isearch-backward-regexp)
+(global-set-key (kbd "C-M-s") 'isearch-forward)
+(global-set-key (kbd "C-M-r") 'isearch-backward)
+
 ;; shortcuts
 (global-set-key (kbd "M-o") 'other-window)
 (global-set-key (kbd "<f1>") 'eshell)
 (global-set-key (kbd "<f2>") 'rgrep)
 (global-set-key (kbd "<f11>") 'gnus)
 (global-set-key (kbd "<f12>") 'bookmark-bmenu-list)
-
-(setq browse-url-browser-function
-      (cond ((and (locate-library "w3m") (executable-find "w3m")) 'w3m-browse-url)
-            (t 'eww-browse-url)))
 
 ;;; ------------------------------
 ;;; External packages
@@ -956,57 +966,13 @@ If it names existing file, it loads it."
 (global-set-key (kbd "C-x v /") 'magit-status)
 (global-set-key (kbd "C-c SPC") 'ace-jump-mode)
 
-(yas-global-mode 1)
+;;(yas-global-mode 1)
 
 ;; Web Browsing
-(with-eval-after-load 'w3m-search
-  (add-to-list 'w3m-search-engine-alist '("duckduckgo" "https://duckduckgo.com/?q=%s"))
-  (add-to-list 'w3m-search-engine-alist '("fi.wikipedia" "http://fi.wikipedia.org/wiki/Spezial:Search?search=%s" utf-8))
-  (setq w3m-search-default-engine "duckduckgo"))
-
-(with-eval-after-load 'w3m
-  (define-key w3m-mode-map "z" 'w3m-previous-buffer)
-  (define-key w3m-mode-map "x" 'w3m-next-buffer))
-
-(setq browse-url-browser-function 'w3m-browse-url
+(setq browse-url-browser-function 'eww-browse-url
       browse-url-new-window-flag t
       browse-url-firefox-new-window-is-tab t
-      w3m-use-form t
-      w3m-default-display-inline-images t
-      w3m-use-cookies t
-      w3m-use-tab nil
-      url-keep-history t
-      w3m-profile-directory user-emacs-directory
-      w3m-default-save-directory "~/Downloads"
-      w3m-coding-system 'utf-8
-      w3m-file-coding-system 'utf-8
-      w3m-file-name-coding-system 'utf-8
-      w3m-output-coding-system 'utf-8
-      w3m-terminal-coding-system 'utf-8
-      w3m-home-page "http://www.openbsd.org")
-
-(defun zmg/w3m-rename-buffer (url)
-  "Base buffer name on title URL."
-  (let* ((size 32)
-         (title w3m-current-title)
-         (name (truncate-string-to-width
-                (replace-regexp-in-string " " "_" title)
-                size)))
-    (rename-buffer name t)))
-
-(add-hook 'w3m-display-hook 'zmg/w3m-rename-buffer)
-
-(defadvice w3m-modeline-title (around my-w3m-modeline-title)
-  "Prevent original function from running; cleanup remnants."
-  (setq w3m-modeline-separator ""
-        w3m-modeline-title-string ""))
-(ad-activate 'w3m-modeline-title)
-
-(setq w3m-session-file (concat-path user-emacs-directory "w3m-session")
-      w3m-session-save-always t
-      w3m-session-load-always t
-      w3m-session-show-titles t
-      w3m-session-duplicate-tabs 'never)
+      url-keep-history t)
 
 ;;; Auctex
 (add-hook 'LaTeX-mode-hook 'auto-fill-mode)
@@ -1080,7 +1046,7 @@ If it names existing file, it loads it."
   (cond ((file-directory-p "/usr/local/share/doc/clisp-hyperspec")
          (setq common-lisp-hyperspec-root "file:/usr/local/share/doc/clisp-hyperspec/"))
         ((file-directory-p "~/lisp/docs/HyperSpec")
-         (setq common-lisp-hyperspec-root "file:~/lisp/docs/HyperSpec/"))
+         (setq common-lisp-hyperspec-root (concat "file:" (getenv "HOME") "/lisp/docs/HyperSpec/")))
         (t (setq common-lisp-hyperspec-root
                  "http://www.lispworks.com/documentation/HyperSpec/")))
 
@@ -1089,17 +1055,6 @@ If it names existing file, it loads it."
 
   (add-hook 'lisp-mode-hook 'slime-mode)
   (add-hook 'slime-repl-mode-hook 'paredit-mode)
-
-  (global-set-key (kbd "C-c s") 'slime-selector)
-  (def-slime-selector-method ?l
-    "most recently visited lisp-mode buffer."
-    (slime-recently-visited-buffer 'lisp-mode))
-  (def-slime-selector-method ?c
-    "most recently visited scheme-mode buffer."
-    (slime-recently-visited-buffer 'scheme-mode))
-  (def-slime-selector-method ?j
-    "most recently visited clojure-mode buffer."
-    (slime-recently-visited-buffer 'clojure-mode))
 
   (setq slime-use-autodoc-mode t)
 
