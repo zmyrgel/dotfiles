@@ -3,7 +3,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2018-06-02 09:19:59 (tmy)>
+;;; Time-stamp: <2018-09-20 11:46:19 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -70,8 +70,12 @@
   :bind ("C-x v /" . magit-status))
 
 (use-package smex
-  :disabled
-  :ensure t)
+  ;;:disabled
+  :ensure t
+  :bind
+  (("M-x" . 'smex)
+   ("M-X" . 'smex-major-mode-commands)
+   ("C-c C-c M-x" . 'execute-extended-command)))
 
 (use-package flx
   :ensure t)
@@ -253,6 +257,26 @@
                       (bongo-player-get bongo-player 'file-name))
                  (setq bongo-next-action 'bongo-stop))))))
 
+(use-package ido
+  :config
+  (progn
+    (setq ido-save-directory-list-file (concat user-emacs-directory "ido.last")
+          ido-ignore-buffers '("\\` " "^\*Mess" "^\*Back" ".*Completion" "^\*Ido")
+          ido-everywhere t
+          ido-case-fold  t
+          ido-enable-last-directory-history t
+          ido-max-work-directory-list 30
+          ido-max-work-file-list 50
+          ido-enable-flex-matching t
+          ido-max-prospects 4
+          ido-confirm-unique-completion t
+          ido-completion-buffer-all-completions nil
+          ido-create-new-buffer 'always
+          ido-use-filename-at-point nil
+          ido-use-url-at-point t
+          ido-ignore-extensions t
+          ))
+  (ido-mode 1))
 
 (use-package suomalainen-kalenteri
   :ensure t)
