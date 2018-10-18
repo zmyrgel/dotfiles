@@ -1,9 +1,9 @@
 ;;; init.el --- Emacs lisp initialization file
 ;;; -*- mode: emacs-lisp; coding: utf-8-unix; indent-tabs-mode: nil -*-
 ;;;
-;;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
+;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2018-06-02 09:19:59 (tmy)>
+;;; Time-stamp: <2018-10-18 09:11:07 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -36,6 +36,9 @@
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
+
+(use-package diminish
+  :ensure t)
 
 (use-package exec-path-from-shell
   :init
@@ -95,6 +98,7 @@
 
 (use-package counsel
   :ensure t
+  :diminish t
   :config
   (counsel-mode))
 
@@ -175,16 +179,17 @@
   :bind (("C-c t" . multi-term-next)
          ("C-c T" . multi-term)))
 
-;; (use-package auctex
-;;   :ensure t
-;;   :config
-;;   (add-hook 'LaTeX-mode-hook 'auto-fill-mode)
-;;   (setq TeX-auto-save t
-;;         TeX-parse-self t
-;;         TeX-insert-braces nil
-;;         TeX-electric-escape t
-;;         TeX-electric-macro t
-;;         TeX-newline-function 'reindent-then-newline-and-indent))
+(use-package tex
+  :defer t
+  :ensure auctex
+  :config
+  (add-hook 'LaTeX-mode-hook 'auto-fill-mode)
+  (setq TeX-auto-save t
+        TeX-parse-self t
+        TeX-insert-braces nil
+        TeX-electric-escape t
+        TeX-electric-macro t
+        TeX-newline-function 'reindent-then-newline-and-indent))
 
 (use-package hungry-delete
   :ensure t
@@ -212,7 +217,7 @@
   (add-to-list 'load-path (concat user-emacs-directory "elisp/sly/"))
   (require 'sly-autoloads)
   (setq inferior-lisp-program "/usr/local/bin/sbcl")
-  (setq sly-lisp-implementations '((sbcl ("sbcl"))
+  (setq sly-lisp-implementations '((sbcl ("sbcl" "--dynamic-space-size" "2048"))
                                    (ecl ("ecl"))
                                    (clisp ("clisp" "-ansi"))
                                    (chicken ("csi"))
@@ -304,7 +309,8 @@
 (use-package company-go
     :ensure t
     :config
-    (add-to-list 'company-backends 'company-go))
+    (add-to-list (make-local-variable 'company-backends)
+                 'company-go))
 
  (use-package zenburn-theme
    :ensure t)
@@ -363,8 +369,6 @@
 (use-package go-mode
   :ensure t
   :config
-  ;; (when (file-exists-p "/home/tmy/workspace/bin")
-  ;;   (setq exec-path (append exec-path '("/home/tmy/workspace/bin"))))
   (defun my/go-mode-hook ()
     "Options for Go language."
     (when (not (string-match "go" compile-command))
@@ -372,7 +376,6 @@
            "go build -v && go test -v && go vet"))
     (setq gofmt-command "goimports")
     (local-set-key (kbd "C-c m") 'gofmt)
-    (set (make-local-variable 'company-backends) '(company-go))
     (local-set-key (kbd "M-.") 'godef-jump)
     (local-set-key (kbd "C-c C-r") 'go-remove-unused-imports)
     (local-set-key (kbd "C-c g i") 'go-goto-imports)
@@ -467,13 +470,14 @@
   :config
   (add-hook 'php-mode-hook
             '(lambda ()
-               (require 'company-php)
-               (company-mode t)
-               (add-to-list 'company-backends 'company-ac-php-backend ))))
+               (when (bound-and-true-p company-mode)
+                 (require 'company-php)
+                 (add-to-list (make-local-variable 'company-backends)
+                              'company-ac-php-backend)))))
 
 (use-package company-shell
   :ensure t
-  )
+)
 
 (use-package ibuffer-vc
   :disabled ;; causes a lot slow-down, music skips etc.
@@ -1010,10 +1014,7 @@
   :ensure t)
 
 (use-package company-irony
-  :disabled
-  :ensure t
-  :config
-  (add-to-list 'company-backends 'company-irony))
+  :ensure t)
 
 (use-package flycheck-irony
   :ensure t
@@ -1036,6 +1037,10 @@
 
   (defun my/c-mode-common ()
     "Programming options shared for C-like languages."
+
+    (when (bound-and-true-p company-mode)
+      (add-to-list (make-local-variable 'company-backends)
+                   'company-irony))
 
     ;;(setq company-backends (delete 'company-semantic company-backends))
     (setq which-func-unknown "TOP LEVEL"
@@ -1243,7 +1248,8 @@ by using nxml's indentation rules."
     (message "Ah, much better!"))
 
 ;; Load optional local startup files
-(add-extension (concat-path user-emacs-directory "init-local.el"))
+(when (file-exists-p (concat user-emacs-directory "init-local.el"))
+  (load (concat user-emacs-directory "init-local.el")))
 
 (provide 'init)
 
