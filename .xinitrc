@@ -11,31 +11,29 @@ case $(uname) in
 	FONTDIR=/usr/share/fonts
 	;;
 esac
-for FONT in $(ls $FONTDIR)
+for FONT in $(/bin/ls $FONTDIR)
 do
 	xset +fp ${FONTDIR}/${FONT}
 done
+
 xset fp rehash
 
 ### Input settings ###
 setxkbmap -layout us -variant altgr-intl -option ctrl:nocaps
 
-# Set Trackpoint sensitivity if needed
-if [ $(uname) = Linux -a $(dmesg | grep -q 'ThinkPad T460s') ]
-then
-    xinput set-prop "TPPS/2 IBM TrackPoint" "Device Accel Constant Deceleration" 0.5
-fi
-
-# Workaround for Firefox Image scaling
-MOZ_DISABLE_IMAGE_OPTIMIZE=1
-export MOZ_DISABLE_IMAGE_OPTIMIZE
-
 # Environment variables for X
+
+# Fix OpenOffice/Libreoffice? look
 OOO_FORCE_DESKTOP=gnome
+export OOO_FORCE_DESKTOP
+
 GDK_USE_XFT=1
 QT_XFT=true
+export GDK_USE_XFT QT_XFT
+
+# Fix mouse scrolling in GTK3
 GDK_CORE_DEVICE_EVENTS=1
-export OOO_FORCE_DESKTOP GDK_USE_XFT QT_XFT GDK_CORE_DEVICE_EVENTS
+export GDK_CORE_DEVICE_EVENTS
 
 # Set my working dir to $HOME
 cd $HOME
@@ -45,49 +43,47 @@ xlock_bin=$(which xlock)
 if [ -x $(which xidle) -a ! -z "$xlock_bin" ]
 then
 	xidle -delay 3 -se -program "$xlock_bin" -timeout 600 &
+elif [ -x $(which xscreensaver) ]
+then
+	xscreensaver -no-splash &
 fi
+[ -x $(which tint2) ] && tint2 -c ~/.config/tint2/FlatSlate_tint2/dark_taskbar/tint2rc &
 [ -x $(which nm-applet) ] && nm-applet &
 [ -x $(which dunst) ] && LC_ALL=C dunst &
 [ -x $(which wmname) ] && wmname LG3D
 
 # Fix fonts in Java applications
-_JAVA_OPTIONS='-Dawt.useSystemAAFontSettings=on -Dswing.aatext=true -Dswing.defaultlaf=com.sun.java.swing.plaf.gtk.GTKLookAndFeel'
-export _JAVA_OPTIONS
+export _JAVA_OPTIONS='-Dawt.useSystemAAFontSettings=lcd_hrgb'
 
 # Launch DBUS session
 if [ -x $(which dbus-launch) -a -z "${DBUS_SESSION_BUS_ADDRESS}" ]
 then
-	eval `dbus-launch --sh-syntax --exit-with-session`
+	eval $(dbus-launch --sh-syntax --exit-with-session)
 fi
 
 # Increase memory limits to 6GB, I got plenty to spare
 ulimit -d 6144000
 
-# Restore previous background image, if any
-[ -x ~/.fehbg ] && ~/.fehbg &
+if [ -x $(which xwallpaper) ]
+then
+	xwallpaper --stretch ~/wallpapers/slackclean_1600x1200.jpg
+fi
 
 # ensure ssh-agent is running
 # TODO: ensure $(ssh-agent -s -k) is run on exit
+export SSH_AUTH_SOCK=~/.ssh/ssh-agent.$HOSTNAME.sock
 if [ -z "$SSH_AGENT_PID" ]
 then
 	if [ -x $(which ssh-agent) ]
 	then
-		eval $(ssh-agent -s)
+		eval $(ssh-agent -s -a "$SSH_AUTH_SOCK")
 	fi
 fi
 
-if [ ! -z "$SSH_AUTH_SOCK" ]
-then
-	KEYS=$(ls $HOME/.ssh/* | grep -Ev '(authorized_keys|config|known_hosts|pub)$')
-	ssh-add $KEYS
-fi
-
-# Displays, T430s LVDS1, T460s
-# If we're docked, poweroff the internal display
 if xrandr --query | grep -q 'DP2-2 connected'
 then
-        xrandr --output eDP1 --off
+	xrandr --output eDP1 --off --output DP2-2 --auto
 fi
 
 # Start WM
-exec /usr/bin/ssh-agent pekwm 2> ~/.xerrors
+exec ck-launch-session ssh-agent openbox-session 2> ~/.xerrors
