@@ -37,21 +37,20 @@ then
 	PATH=$PATH:/usr/games
 fi
 
+if [ -x $HOME/.local/bin ]
+then
+	PATH=$PATH:$HOME/.local/bin
+fi
+
 export PATH
 
 GOPATH=$HOME/workspace
 export GOPATH
 add_path $GOPATH/bin
+add_path /usr/local/go/bin
 
 add_path $HOME/gauche-0.9.5/bin
 add_path $HOME/.rvm/bin
-add_path $HOME/.cabal/bin
-add_path $HOME/.perl6/2015.12/bin
-
-if test -x $HOME/.rakudobrew/bin/rakudobrew
-then
-	eval "$($HOME/.rakudobrew/bin/rakudobrew init -)"
-fi
 
 if test -d $HOME/perl5/lib/perl5
 then
