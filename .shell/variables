@@ -14,8 +14,6 @@ then
 elif [ -x $(which mg) ]
 then
 	VISUAL='mg'
-else
-	VISUAL='vi'
 fi
 
 ALTERNATE_EDITOR="$VISUAL"
