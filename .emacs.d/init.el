@@ -3,7 +3,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2018-10-18 23:05:36 (tmy)>
+;;; Time-stamp: <2019-02-21 07:45:33 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -56,6 +56,15 @@
   (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
 
 (use-package try
+  :ensure t)
+
+(use-package keyfreq
+  :ensure t
+  :config
+  (keyfreq-mode 1)
+  (keyfreq-autosave-mode 1))
+
+(use-package achievements
   :ensure t)
 
 (use-package which-key
@@ -633,10 +642,11 @@
   (horizontal-scroll-bar-mode -1))
 (menu-bar-mode t)
 
-;; ;; Set Default font if present
-(when (find-font (font-spec :name "gohufont-10"))
-  (add-to-list 'default-frame-alist '(font . "gohufont-10" ))
-  (set-face-attribute 'default nil :font "gohufont-10"))
+;; set my font
+(let ((my-font-name "tamsyn-16"))
+  (when (find-font (font-spec :name my-font-name))
+    (add-to-list 'default-frame-alist `(font . ,my-font-name ))
+    (set-face-attribute 'default nil :font my-font-name)))
 
 ;; Maximize first frame
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
