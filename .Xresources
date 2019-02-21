@@ -1,6 +1,6 @@
 ! -----------------------------------------
 ! Rofi resources
-rofi.font:		terminus 12
+rofi.font:		tamsyn 12
 rofi.kb-cancel:		Escape,Control+bracketleft,Control+g
 rofi.terminal:		xterm
 rofi.color-normal:	#fdf6e3,#002b36,#eee8d5,#586e75,#eee8d5
