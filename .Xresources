@@ -55,37 +55,23 @@ Xcursor.size:  22
 ! -----------------------------------------
 ! Xterm settings
 xterm*termName: 	xterm-256color
-!xterm*faceName:		gohufont-11
-xterm*faceName:		terminus-10
-xterm*renderFont:	true
-xterm*charClass: 	33:48,36-47:48,58-59:48,61:48,63-64:48,95:48,126:48
-xterm*on3Clicks: 	regex ([[:alpha:]]+://)?([[:alnum:]!#+,./=?@_~-]|(%[[:xdigit:]][[:xdigit:]]))+
-xterm*VT100*translations: #override Shift <Btn1Up>: exec-formatted("firefox '%s'", PRIMARY)
+xterm*faceName:		tamsyn-16
 xterm*scrollBar: 	false
-xterm*scrollKey: 	true
-xterm*fullscreen: 	never
-xterm*allowFontOps:	false
-xterm*allowWindowOps:	false
-xterm*deleteIsDEL:	true
-xterm*ptyInitialErase:	true
-xterm*backarrowKeyIsErase: true
 xterm*loginShell:	true
-xterm*saveLines:	20000
+xterm*saveLines:	4096
 xterm*bellIsUrgent:	true
 xterm*borderWidth:	0
-xterm*multiClickTime:	250
-xterm*eightBitInput:	false
-xterm*metaSendsEscape:	true
-xterm*locale:		UTF-8
+xterm*metaSendsEscape:  true
+xterm*eightBitInput:    false
+xterm*backarrowKey:     false
+xterm*ttyModes:         erase ^?
 xterm*cursorUnderLine:	true
-xterm*ttyModes:		erase ^?
-xterm*VT100.Translations: \
-        #override <Key>BackSpace: string(0x7f) \n\
-		  <Key>Delete:    string(0x1b) string("[3~")
+xterm*selectToClipboard:true
+
 
 ! xlock ----------------------------------------------------------------------
 xpdf*fontList:		-*-terminus-medium-r-normal--14-*-*-*-*-*-iso8859-1
-xpdf.initialZoom:	width
+xpdf.initialZoom:	page
 
 ! x11-ssh-askpass ------------------------------------------------------------
 ssh-askpass*font:                   -*-dina-medium-r-*-*-12-*-*-*-*-*-*-*
