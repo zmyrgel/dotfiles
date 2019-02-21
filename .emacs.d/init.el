@@ -1240,21 +1240,8 @@
 (global-set-key (kbd "M-o") 'other-window)
 (global-set-key (kbd "<f1>") 'eshell)
 (global-set-key (kbd "<f2>") 'rgrep)
+(global-set-key (kbd "<f8>") 'magit-status)
 (global-set-key (kbd "<f11>") 'gnus)
-
-
-(require 'gambit)
-(add-hook 'inferior-scheme-mode-hook 'gambit-inferior-mode)
-
-;; load gerbil scheme
-(autoload 'gerbil-mode "gerbil" "Gerbil editing mode." t)
-(add-to-list 'auto-mode-alist '("\\.ss" . gerbil-mode))
-
-(defvar gerbil-program-name
-  (expand-file-name "~/git/gerbil/bin/gxi")) ; Set this for your GERBIL_HOME
-(setq scheme-program-name gerbil-program-name)
-
-;;(load-file (concat user-emacs-directory "elisp/gerbil.el"))
 
 (defun bf-pretty-print-xml-region (begin end)
   "Pretty format XML markup in region. You need to have nxml-mode
