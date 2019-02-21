@@ -72,6 +72,13 @@
   (setq magit-completing-read-function 'ivy-completing-read)
   :bind ("C-x v /" . magit-status))
 
+(use-package tide
+  :ensure t
+  :after (typescript-mode company flycheck)
+  :hook ((typescript-mode . tide-setup)
+         (typescript-mode . tide-hl-identifier-mode)
+         (before-save . tide-format-before-save)))
+
 (use-package smex
   ;;:disabled
   :ensure t
@@ -1137,6 +1144,27 @@
     (setq ruby-deep-indent-paren nil)
     (setq c-tab-always-indent nil))
   (add-hook 'ruby-mode-hook 'my/ruby-mode-hook))
+
+;; Javascript
+
+(defun setup-tide-mode ()
+  (interactive)
+  (tide-setup)
+  (flycheck-mode +1)
+  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  (eldoc-mode +1)
+  (tide-hl-identifier-mode +1)
+  (company-mode +1))
+
+;; aligns annotation to the right hand side
+(setq company-tooltip-align-annotations t)
+
+;; formats the buffer before saving
+(add-hook 'before-save-hook 'tide-format-before-save)
+
+(add-hook 'typescript-mode-hook #'setup-tide-mode)
+
+;;(setq tide-format-options '(:insertSpaceAfterFunctionKeywordForAnonymousFunctions t :placeOpenBraceOnNewLineForFunctions nil))
 
 ;;; ------------------------------
 ;;; Completion
