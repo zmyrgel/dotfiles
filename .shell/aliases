@@ -19,6 +19,7 @@ alias msgs='tail -f /var/log/messages'
 alias tailf='tail -f'
 alias topcpu='ps aux | sort -n +2 | tail -10'
 alias topmem='ps aux | sort -n +3 | tail -10'
+alias=dirs='ls -l | grep -E "^d"'
 
 # Quick keys
 alias p='print'
