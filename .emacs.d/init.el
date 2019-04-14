@@ -85,40 +85,26 @@
   (setq magit-completing-read-function 'ivy-completing-read)
   :bind ("C-x v /" . magit-status))
 
-(use-package tide
-  :ensure t
-  :after (typescript-mode company flycheck)
-  :hook ((typescript-mode . tide-setup)
-         (typescript-mode . tide-hl-identifier-mode)
-         (before-save . tide-format-before-save)))
-
 (use-package smex
-  ;;:disabled
-  :ensure t
-  :bind
-  (("M-x" . 'smex)
-   ("M-X" . 'smex-major-mode-commands)
-   ("C-c C-c M-x" . 'execute-extended-command)))
+  :ensure t)
 
 (use-package flx
   :ensure t)
 
 (use-package ivy
-  :disabled
   :ensure t
   :diminish (ivy-mode . "")
-  :bind
-  (:map ivy-mode-map
-        ("C-'" . ivy-avy))
+  :bind (("C-c C-r" . ivy-resume)
+         :map ivy-mode-map
+         ("C-'" . ivy-avy))
   :config
   (ivy-mode 1)
-  (setq ;;ivy-use-virtual-buffers t                              ;; add ‘recentf-mode’ and bookmarks to ‘ivy-switch-buffer’.
-        ;;ivy-height 10                                          ;; number of result lines to display
+  (setq ivy-use-virtual-buffers t                              ;; add ‘recentf-mode’ and bookmarks to ‘ivy-switch-buffer’.
+        ivy-height 10                                          ;; number of result lines to display
         ;;ivy-count-format ""                                    ;; does not count candidates
         ;;ivy-initial-inputs-alist nil                           ;; no regexp by default
         ;;ivy-re-builders-alist '((t . ivy--regex-ignore-order)) ;; configure regexp engine. ;; allow input not in order
-        )
-  (global-set-key (kbd "C-c C-r") 'ivy-resume))
+        ))
 
 (use-package counsel
   :ensure t
@@ -257,48 +243,28 @@
                       (bongo-player-get bongo-player 'file-name))
                  (setq bongo-next-action 'bongo-stop))))))
 
-(use-package ido
-  :config
-  (progn
-    (setq ido-save-directory-list-file (concat user-emacs-directory "ido.last")
-          ido-ignore-buffers '("\\` " "^\*Mess" "^\*Back" ".*Completion" "^\*Ido")
-          ido-everywhere t
-          ido-case-fold  t
-          ido-enable-last-directory-history t
-          ido-max-work-directory-list 30
-          ido-max-work-file-list 50
-          ido-enable-flex-matching t
-          ido-max-prospects 4
-          ido-confirm-unique-completion t
-          ido-completion-buffer-all-completions nil
-          ido-create-new-buffer 'always
-          ido-use-filename-at-point nil
-          ido-use-url-at-point t
-          ido-ignore-extensions t
-          ))
-  (ido-mode 1))
 
 (use-package suomalainen-kalenteri
   :ensure t)
 
-;; (use-package smart-mode-line
-;;   :ensure t
-;;   :config (sml/setup))
+(use-package smart-mode-line
+  :ensure t
+  :config (sml/setup))
 
-;; (use-package smart-mode-line-powerline-theme
-;;   :ensure t
-;;   :config (sml/apply-theme 'powerline))
+(use-package smart-mode-line-powerline-theme
+  :ensure t
+  :config (sml/apply-theme 'powerline))
 
 (use-package smartparens
   :disabled
+  :defer t
   :ensure t
   :init (require 'smartparens-config)
   :config
   (smartparens-global-strict-mode 1)
-  (add-to-list 'sp-lisp-modes 'sly-mrepl-mode)
-  (add-to-list 'sp-lisp-modes 'sly-mode)
-  (sp-local-pair #'sly-mrepl-mode "'" nil :actions nil)
-  )
+  (add-to-list 'sp-lisp-modes 'slime-mrepl-mode)
+  (add-to-list 'sp-lisp-modes 'slime-mode)
+  (sp-local-pair #'slime-mrepl-mode "'" nil :actions nil))
 
 (use-package projectile
   :ensure t
@@ -309,37 +275,43 @@
 
 (use-package counsel-projectile
   :ensure t
-  :config
-  (add-hook 'after-init-hook 'counsel-projectile-mode))
+  :hook (after-init-hook . counsel-projectile-mode))
 
 (use-package company
   :ensure t
-  :config
-  (setq company-dabbrev-downcase nil)
-  (add-hook 'after-init-hook 'global-company-mode)
-
-  (defun my/company-mode-hook ()
-    (define-key company-active-map (kbd "C-p") 'company-select-next)
-    (define-key company-active-map (kbd "C-n") 'company-select-previous))
-
-  (add-hook 'company-mode-hook 'my/company-mode-hook)
-  :bind ("M-/" . company-complete))
+  :hook (after-init . global-company-mode)
+  :config (setq company-dabbrev-downcase nil)
+  :bind (("M-/" . company-complete)
+         :map company-active-map
+         ("C-p" . company-select-next)
+         ("C-n" . company-select-previous)))
 
 (use-package company-go
-    :ensure t
-    :config
-    (add-to-list (make-local-variable 'company-backends)
-                 'company-go))
+  :ensure t
+  :defer t
+  :config
+  (add-to-list 'company-backends 'company-go))
 
  (use-package zenburn-theme
+   :defer t
    :ensure t)
 
  (use-package base16-theme
+   :defer t
    :ensure t
    ;;:config (load-theme 'base16-gruvbox-dark-medium t)
    )
 
-(load-theme 'wombat t)
+(use-package flatland-theme
+  :ensure t
+  :config (load-theme 'flatland t))
+
+(use-package tide
+  :ensure t
+  :after (typescript-mode company flycheck)
+  :hook ((typescript-mode . tide-setup)
+         (typescript-mode . tide-hl-identifier-mode)
+         (before-save . tide-format-before-save)))
 
 (use-package markdown-mode
   :ensure t
@@ -350,10 +322,11 @@
   :init (setq markdown-command "multimarkdown"))
 
 (use-package flycheck
+  :defer t
   :ensure t
+  :hook (after-init-hook . #'global-flycheck-mode)
   :config
-  (add-hook 'after-init-hook #'global-flycheck-mode)
-  (setq ;;flycheck-completion-system 'ivy
+  (setq flycheck-completion-system 'ivy
         flycheck-phpcs-standard "Zend"))
 
 (use-package yasnippet
@@ -387,6 +360,7 @@
 
 (use-package go-mode
   :ensure t
+  :hook (before-save . gofmt-before-save)
   :config
   (defun my/go-mode-hook ()
     "Options for Go language."
@@ -395,33 +369,36 @@
            "go build -v && go test -v && go vet"))
     (setq gofmt-command "goimports")
     (local-set-key (kbd "C-c m") 'gofmt)
+    (set (make-local-variable 'company-backends) '(company-go))
     (local-set-key (kbd "M-.") 'godef-jump)
     (local-set-key (kbd "C-c C-r") 'go-remove-unused-imports)
     (local-set-key (kbd "C-c g i") 'go-goto-imports)
     (local-set-key (kbd "C-c C-k") 'godoc))
 
-  (add-hook 'before-save-hook 'gofmt-before-save)
   (add-hook 'go-mode-hook 'my/go-mode-hook)
-  ;;(add-hook 'go-mode-hook 'company-mode)
+  (add-hook 'go-mode-hook 'company-mode)
   )
 
 (use-package go-eldoc
   :ensure t
-  :config
-  (add-hook 'go-mode-hook 'go-eldoc-setup))
+  :hook (go-mode-hook . go-eldoc-setup))
 
 (use-package godoctor
-  :ensure t)
+  :ensure t
+  :defer t)
 
 (use-package go-guru
-  :ensure t)
+  :ensure t
+  :defer t)
 
 (use-package go-errcheck
-  :ensure t)
+  :ensure t
+  :defer t)
 
 (use-package projectile-rails
   :ensure t
-  :config (add-hook 'projectile-mode-hook 'projectile-rails-on))
+  :defer t
+  :hook (projectile-mode-hook . projectile-rails-on))
 
 (use-package clojure-mode
   :ensure t
@@ -430,33 +407,35 @@
 
 (use-package cider
   :ensure t
+  :defer t
   :config
   (setq cider-lein-parameters "repl :headless :host localhost")
   (setq nrepl-hide-special-buffers t)
-  (add-hook 'cider-mode-hook 'eldoc-mode)
-  (add-hook 'cider-repl-mode-hook 'subword-mode))
+  :hook
+  (cider-mode-hook . eldoc-mode)
+  (cider-repl-mode-hook . subword-mode))
 
 (use-package geiser
+  :disabled
   :ensure t
   :config
+;;   (setq geiser-chicken-binary "chicken-csi"
+;;         geiser-active-implementations '(chicken)))
   (setq geiser-guile-binary (if (eq system-type 'berkeley-unix)
                                 "guile2"
                               "guile")))
 
 (use-package racket-mode
   :disabled
-  :config
-  (add-hook 'racket-mode-hook 'my/shared-lisp-hook)
-  (add-hook 'racket-repl-mode-hook 'my/shared-lisp-hook))
-
-(use-package diminish
-  :ensure t)
+  :hook ((racket-mode-hook . my/shared-lisp-hook)
+         (racket-repl-mode-hook . my/shared-lisp-hook)))
 
 (use-package elfeed
   :ensure t
+  :defer t
   :config
-  (setq elfeed-use-curl t)
-  (setq elfeed-feeds
+  (setq elfeed-use-curl t
+        elfeed-feeds
         '("http://nullprogram.com/feed/"
           "http://planet.emacsen.org/atom.xml"
           "https://news.ycombinator.com/rss"
@@ -477,30 +456,33 @@
     (setq indent-tabs-mode nil
           tab-width 4
           c-basic-offset 4))
-
-  (add-hook 'php-mode-hook 'my/php-mode-hook))
+  :hook (php-mode-hook . my/php-mode-hook))
 
 (use-package composer
   :ensure t
-  )
+  :defer t)
 
 (use-package company-php
+  :disabled
   :ensure t
   :config
   (add-hook 'php-mode-hook
             '(lambda ()
-               (when (bound-and-true-p company-mode)
-                 (require 'company-php)
-                 (add-to-list (make-local-variable 'company-backends)
-                              'company-ac-php-backend)))))
+               (require 'company-php)
+               (company-mode t)
+               (add-to-list 'company-backends 'company-ac-php-backend ))))
 
 (use-package company-shell
   :ensure t
-)
+  :defer t)
+
+(use-package adjust-parens
+  :ensure t)
 
 (use-package ibuffer-vc
-  :disabled ;; causes a lot slow-down, music skips etc.
+  :disabled ;; TODO: causes a lot slow-down, music skips etc.
   :ensure t
+  :defer t
   :config
   ;; sort buffer list by repositories
   (add-hook 'ibuffer-hook
@@ -621,10 +603,10 @@
   (horizontal-scroll-bar-mode -1))
 (menu-bar-mode t)
 
-;; set my font
+;; Set Default font if present
 (let ((my-font-name "tamsyn-16"))
   (when (find-font (font-spec :name my-font-name))
-    (add-to-list 'default-frame-alist `(font . ,my-font-name ))
+    (add-to-list 'default-frame-alist `(font . ,my-font-name))
     (set-face-attribute 'default nil :font my-font-name)))
 
 ;; Maximize first frame
@@ -632,8 +614,8 @@
 
 ;; Setup clipboard options if running in X
 
-;; Graphical Eamcs seems to freeze when handeling clipboard, so
-;; dencrease the selection timeout so it won't wait for so long.
+;; Graphical Eamcs seems to freeze when handling clipboard, so
+;; decrease the selection timeout so it won't wait for so long.
 ;; https://omecha.info/blog/org-capture-freezes-emacs.html
 (when (eq system-type 'berkeley-unix)
   (setq x-selection-timeout 10))
@@ -824,16 +806,16 @@
         org-todo-keywords '((sequence "TODO(t)" "WIP(w!)" "|" "DONE(d@!)")
                             (sequence "|" "CANCELED(c@/!)")
                             (sequence "STALLED(s@/!)" "|")
-                            (sequence "PENDING(p@/!)" "|")))
-
-  (global-set-key (kbd "C-c l") 'org-store-link)
-
-  (global-set-key (kbd "C-c a") 'org-agenda)
-  (global-set-key (kbd "C-c b") 'org-iswitchb)
-
-  (add-hook 'message-mode-hook 'turn-on-orgstruct)
-  (add-hook 'message-mode-hook 'turn-on-orgstruct++)
-  (add-hook 'message-mode-hook 'turn-on-orgtbl)
+                            (sequence "PENDING(p@/!)" "|"))
+        ;; capture notes
+        org-default-notes-file (concat org-directory "notes.org"))
+  :bind (("C-c l" . org-store-link)
+         ("C-c a" . org-agenda)
+         ("C-c b" . org-iswitchb)
+         ("C-c c" . org-capture))
+  :hook ((message-mode . turn-on-orgstruct)
+         (message-mode . turn-on-orgstruct++)
+         (message-mode . turn-on-orgtbl))
 
   ;; (setq org-startup-indented 'f)
   ;; (setq org-directory "~/org")
@@ -844,10 +826,7 @@
   ;; (setq org-src-fontify-natively 't)
   ;; (setq org-src-tab-acts-natively t)
   ;; (setq org-src-window-setup 'current-window)
-
-  ;; capture notes
-  (setq org-default-notes-file (concat org-directory "notes.org"))
-  (global-set-key (kbd "C-c c") 'org-capture))
+  )
 
 ;;; ------------------------------
 ;;; Buffer management
@@ -907,7 +886,22 @@
 ;;; ERC
 ;;; ------------------------------
 (use-package erc
+  :hook ((erc-mode-hook . erc-services-mode)
+         (erc-mode-hook . erc-autojoin-mode)
+         (erc-mode-hook . erc-match-mode)
+         (erc-mode-hook . erc-track-mode)
+         (erc-mode-hook . erc-fill-mode)
+         (erc-mode-hook . erc-ring-mode)
+         (erc-mode-hook . erc-netsplit-mode)
+         (erc-mode-hook . erc-timestamp-mode)
+         (erc-mode-hook . erc-spelling-mode)
+         (erc-mode-hook . erc-notify-mode)
+         (erc-mode-hook . erc-pcomplete-mode)
+         (erc-mode-hook . erc-log-mode)
+         (erc-insert-post-hook . erc-save-buffer-in-logs)
+         (erc-insert-post-hook . erc-truncate-buffer))
   :config
+
   (setq erc-modules (append erc-modules '(services notify spelling log)))
   (erc-update-modules)
 
@@ -918,17 +912,6 @@
         erc-auto-query 'window-noselect
         erc-keywords '("zmyrgel" "tmy"))
 
-  (add-hook 'erc-mode-hook 'erc-services-mode)
-  (add-hook 'erc-mode-hook 'erc-autojoin-mode)
-  (add-hook 'erc-mode-hook 'erc-match-mode)
-  (add-hook 'erc-mode-hook 'erc-track-mode)
-  (add-hook 'erc-mode-hook 'erc-fill-mode)
-  (add-hook 'erc-mode-hook 'erc-ring-mode)
-  (add-hook 'erc-mode-hook 'erc-netsplit-mode)
-  (add-hook 'erc-mode-hook 'erc-timestamp-mode)
-  (add-hook 'erc-mode-hook 'erc-spelling-mode)
-  (add-hook 'erc-mode-hook 'erc-notify-mode)
-
   (setq erc-track-enable-keybindings t
         erc-track-remove-disconnected-buffers t
         erc-track-exclude-server-buffer t
@@ -936,19 +919,17 @@
                                   "324" "329" "332" "333" "353" "477"))
   (setq erc-timestamp-format "[%R-%m/%d]"
         erc-hide-timestamps nil)
-  (add-hook 'erc-mode-hook 'erc-pcomplete-mode)
+
   (pcomplete-erc-setup)
-  (setq erc-pcomplete-order-nickname-completions t)
-  (add-hook 'erc-mode-hook 'erc-log-mode)
-  (setq erc-log-channels-directory "~/.irclogs/"
+
+  (setq erc-pcomplete-order-nickname-completions t
+        erc-log-channels-directory "~/.irclogs/"
         erc-log-insert-log-on-open nil
         erc-log-file-coding-system 'utf-8-unix
-        erc-save-buffer-on-part t)
-  (add-hook 'erc-insert-post-hook 'erc-save-buffer-in-logs)
-  (setq erc-max-buffer-size 20000)
-  (defvar erc-insert-post-hook nil)
-  (add-hook 'erc-insert-post-hook 'erc-truncate-buffer)
-  (setq erc-truncate-buffer-on-save t))
+        erc-save-buffer-on-part t
+        erc-max-buffer-size 20000
+        erc-truncate-buffer-on-save t)
+  (defvar erc-insert-post-hook nil))
 
 ;;; ------------------------------
 ;;; Email settings
@@ -981,23 +962,16 @@
           (nnimap "work-gmail"
                   (nnimap-address "imap.gmail.com")
                   (nnimap-server-port "993")
-                  (nnimap-stream ssl)
-                  ;;(nnir-search-engine imap)
-                  )
-          (nnimap "wickedbsd"
-                  (nnimap-address "192.168.1.120")
                   (nnimap-stream ssl))
           (nnimap "fastmail"
                   (nnimap-address "imap.fastmail.com")
                   (nnimap-stream tls)))))
 
-
 ;; Web Browsing
 (use-package eww
   :config
   (setq eww-use-external-browser-for-content-type "\\`\\(video/\\|audio/\\|application/ogg\\|pdf\\)"
-)
-  (setq browse-url-browser-function 'eww-browse-url
+        browse-url-browser-function 'eww-browse-url
         browse-url-new-window-flag nil
         browse-url-firefox-new-window-is-tab t))
 
@@ -1015,7 +989,7 @@
   (setq ediff-window-setup-function 'ediff-setup-windows-plain
         ediff-split-window-function 'split-window-horizontally
         ediff-diff-options "-w")
-  (add-hook 'ediff-after-quit-hook-internal 'winner-undo))
+  :hook (ediff-after-quit-hook-internal . winner-undo))
 
 (setq diff-switches '("-u"))
 
@@ -1034,10 +1008,15 @@
   :ensure t)
 
 (use-package company-irony
-  :ensure t)
+  :disabled
+  :ensure t
+  :after irony
+  :config
+  (add-to-list 'company-backends 'company-irony))
 
 (use-package flycheck-irony
   :ensure t
+  :after irony
   :hook (flycheck-mode . flycheck-irony-setup))
 
 (use-package prog-mode
@@ -1049,25 +1028,19 @@
   (add-hook 'prog-mode-hook 'my/prog-mode-hook))
 
 (use-package cc-mode
+  :bind (:map c-mode-map
+              ("C-c m" . man-follow)
+              ("C-c C-d" . gdb)
+              ("C-m" . c-context-line-break)
+              ("C-c o" . ff-find-other-file))
+  :hook ((c-mode-common-hook . which-function-mode)
+         (c-mode-common-hook . cwarn-mode))
   :config
-  (define-key c-mode-map (kbd "C-c m") 'man-follow)
-  (define-key c-mode-map (kbd "C-c C-d") 'gdb)
-  (define-key c-mode-map (kbd "RET") 'c-context-line-break)
-  (define-key c-mode-map (kbd "C-c o") 'ff-find-other-file)
-
   (defun my/c-mode-common ()
     "Programming options shared for C-like languages."
-
-    (when (bound-and-true-p company-mode)
-      (add-to-list (make-local-variable 'company-backends)
-                   'company-irony))
-
     ;;(setq company-backends (delete 'company-semantic company-backends))
     (setq which-func-unknown "TOP LEVEL"
           compilation-scroll-output 'first-error))
-
-  (add-hook 'c-mode-common-hook 'which-function-mode)
-  (add-hook 'c-mode-common-hook 'cwarn-mode)
 
   (defun my/c-mode ()
     "My C programming options."
@@ -1106,22 +1079,23 @@
 (add-hook 'css-mode-hook 'my/css-mode-hook)
 
 (defun my/shared-lisp-hook ()
-  ;;(rainbow-delimiters-mode t)
+  (electric-pair-mode 1)
+  (adjust-parens-mode 1)
   (setq whitespace-line-column 80
         whitespace-style '(face lines-tail)))
 
 (use-package elisp-mode
-  :config
-  (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
-  (add-hook 'emacs-lisp-mode-hook 'my/shared-lisp-hook))
+  :hook ((emacs-lisp-mode-hook . eldoc-mode)
+         (emacs-lisp-mode-hook . my/shared-lisp-hook)))
 
 (use-package lisp-mode
-  :config
-  (add-hook 'lisp-mode-hook 'my/shared-lisp-hook))
+  :hook (lisp-mode . my/shared-lisp-hook))
 
-;; (use-package scheme-mode
-;;   :config
-;;   (add-hook 'scheme-mode-hook 'my/shared-lisp-hook))
+(use-package dumb-jump
+  :ensure t)
+
+(use-package scheme-mode
+  :hook (scheme-mode-hook . my/shared-lisp-hook))
 
 ;; ruby
 (use-package ruby-mode
