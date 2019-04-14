@@ -1,9 +1,9 @@
 ;;; init.el --- Emacs lisp initialization file
 ;;; -*- mode: emacs-lisp; coding: utf-8-unix; indent-tabs-mode: nil -*-
 ;;;
-;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
+;;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2019-02-21 07:45:33 (tmy)>
+;;; Time-stamp: <2019-04-14 10:29:31 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -14,6 +14,10 @@
 ;;; - add minor modes in hooks
 
 ;;; Code:
+
+;; Make startup faster by reducing the frequency of garbage
+;; collection.  The default is 800 kilobytes.  Measured in bytes.
+(setq gc-cons-threshold (* 50 1000 1000))
 
 (defconst elisp-dir (concat user-emacs-directory "elisp/"))
 (defconst elpa-dir (concat user-emacs-directory "elpa/"))
@@ -1295,6 +1299,18 @@ by using nxml's indentation rules."
         (backward-char) (insert "\n"))
       (indent-region begin end))
     (message "Ah, much better!"))
+
+;; Use a hook so the message doesn't get clobbered by other messages.
+(add-hook 'emacs-startup-hook
+          (lambda ()
+            (message "Emacs ready in %s with %d garbage collections."
+                     (format "%.2f seconds"
+                             (float-time
+                              (time-subtract after-init-time before-init-time)))
+                     gcs-done)))
+
+;; Make gc pauses faster by decreasing the threshold.
+(setq gc-cons-threshold (* 2 1000 1000))
 
 ;; Load optional local startup files
 (when (file-exists-p (concat user-emacs-directory "init-local.el"))
