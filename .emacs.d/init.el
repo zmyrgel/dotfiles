@@ -99,10 +99,10 @@
          ("C-'" . ivy-avy))
   :config
   (ivy-mode 1)
-  (setq ivy-use-virtual-buffers t                              ;; add ‘recentf-mode’ and bookmarks to ‘ivy-switch-buffer’.
-        ivy-height 10                                          ;; number of result lines to display
-        ;;ivy-count-format ""                                    ;; does not count candidates
-        ;;ivy-initial-inputs-alist nil                           ;; no regexp by default
+  (setq ivy-use-virtual-buffers t      ;; add ‘recentf-mode’ and bookmarks to ‘ivy-switch-buffer’.
+        ivy-height 10                  ;; number of result lines to display
+        ;;ivy-count-format ""          ;; does not count candidates
+        ;;ivy-initial-inputs-alist nil ;; no regexp by default
         ;;ivy-re-builders-alist '((t . ivy--regex-ignore-order)) ;; configure regexp engine. ;; allow input not in order
         ))
 
