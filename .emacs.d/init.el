@@ -240,40 +240,9 @@
         quack-smart-open-paren-p t
         quack-switch-to-scheme-method 'other-window))
 
-(use-package sly
-  ;;:disabled
-  :ensure t
-  :config
-  (add-to-list 'load-path (concat user-emacs-directory "elisp/sly/"))
-  (require 'sly-autoloads)
-  (setq inferior-lisp-program "/usr/local/bin/sbcl")
-  (setq sly-lisp-implementations '((sbcl ("sbcl" "--dynamic-space-size" "2048"))
-                                   (ecl ("ecl"))
-                                   (clisp ("clisp" "-ansi"))
-                                   (chicken ("csi"))
-                                   (abcl ("abcl"))))
-  (cond ((file-directory-p "/usr/local/share/doc/clisp-hyperspec")
-         (setq common-lisp-hyperspec-root "file:/usr/local/share/doc/clisp-hyperspec/"))
-        ((file-directory-p "~/lisp/docs/HyperSpec")
-         (setq common-lisp-hyperspec-root (concat "file:" (getenv "HOME") "/lisp/docs/HyperSpec/")))
-        (t (setq common-lisp-hyperspec-root
-                 "http://www.lispworks.com/documentation/HyperSpec/")))
-
-  (setq common-lisp-hyperspec-symbol-table
-        (concat common-lisp-hyperspec-root "Data/Map_Sym.txt"))
-  (add-hook 'lisp-mode-hook 'sly-mode)
-
-  (setq sly-use-autodoc-mode t)
-
-  (sly-setup '(sly-fancy))
-  )
-
-(use-package sly-repl-ansi-color
-  :ensure t
-  :config (push 'sly-repl-ansi-color sly-contribs))
-
 (use-package bongo
   :ensure t
+  :defer t
   :config
   (setq bongo-custom-backend-matchers
         `((mplayer
