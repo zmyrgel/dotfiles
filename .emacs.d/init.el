@@ -537,13 +537,6 @@
 (setq mouse-yank-at-point t)
 (mouse-wheel-mode t)
 
-;; Encoding
-;; (setq locale-coding-system 'utf-8)
-;; (set-selection-coding-system 'utf-8)
-;; (prefer-coding-system 'utf-8)
-;; (set-language-environment "UTF-8")
-;; (set-locale-environment "en_US.UTF-8")
-
 ;; Add Spell-check for select modes if spell-checker is installed
 (when (or (executable-find "aspell")
           (executable-find "ispell"))
