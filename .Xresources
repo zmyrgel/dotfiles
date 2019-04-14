@@ -2,14 +2,14 @@ ratmen.style:            snazzy
 ratmen.align:             left
 ratmen.background:         grey22
 ratmen.foreground:         darkorange
-!ratmen.font:            terminus-10
+ratmen.font:            tamsyn-16
 ratmen.mouse:             false
 ratmen.scrollOffset:         5
 ratmen.unfocusExit:         true
 
 ! -----------------------------------------
 ! Rofi resources
-rofi.font:		tamsyn 12
+rofi.font:		tamsyn 16
 rofi.kb-cancel:		Escape,Control+bracketleft,Control+g
 rofi.terminal:		xterm
 rofi.color-normal:	#fdf6e3,#002b36,#eee8d5,#586e75,#eee8d5
@@ -20,32 +20,11 @@ rofi.separator-style:	dash
 
 ! -----------------------------------------
 ! Emacs resources
-Emacs.backGround:               black
+Emacs.background:               #414141
 Emacs.menuBar:			off
 Emacs.verticalScrollBars:	off
 Emacs.toolBar:			off
-Emacs.font:                     terminus
-
-! -----------------------------------------
-! Colors
-*foreground: rgb:dd/dd/dd
-*background: rgb:11/11/11
-*color0:     rgb:00/00/00
-*color1:     rgb:b0/70/50
-*color2:     rgb:12/91/4e
-*color3:     rgb:a0/a0/70
-*color4:     rgb:3e/45/81
-*color5:     rgb:a0/70/a0
-*color6:     rgb:70/a0/a0
-*color7:     rgb:a0/a0/a0
-*color8:     rgb:60/60/60
-*color9:     rgb:b0/70/50
-*color10:    rgb:12/91/4e
-*color11:    rgb:c0/c0/90
-*color12:    rgb:3e/45/81
-*color13:    rgb:c0/90/c0
-*color14:    rgb:90/c0/c0
-*color15:    rgb:ff/ff/ff
+Emacs.font:                     tamsyn
 
 ! -----------------------------------------
 ! Xresources for applications not supporting fontconfig
@@ -62,45 +41,67 @@ Xcursor.theme: OpenZone
 Xcursor.size:  22
 
 ! -----------------------------------------
-! Xterm settings
+! Dzen2 settings
+dzen2.font:       -*-fixed-*-*-*-*-*-*-*-*-*-*-*-*
+dzen2.foreground: #bebebe
+dzen2.background: #373737
+
+! -----------------------------------------
+! Xterm setting
 xterm*termName: 	xterm-256color
 xterm*faceName:		tamsyn-16
 xterm*scrollBar: 	false
+xterm*fullscreen: 	never
 xterm*loginShell:	true
 xterm*saveLines:	4096
 xterm*bellIsUrgent:	true
 xterm*borderWidth:	0
-xterm*metaSendsEscape:  true
-xterm*eightBitInput:    false
+xterm*multiClickTime:	250
 xterm*backarrowKey:     false
 xterm*ttyModes:         erase ^?
+xterm*eightBitInput:	false
+xterm*metaSendsEscape:	true
 xterm*cursorUnderLine:	true
-xterm*selectToClipboard:true
-
+!xterm*background:	#414141
+xterm*background:	#373737
+xterm*foreground:	#bebebe
+xterm*cursorColor:	#aaaaaa
 
 ! xlock ----------------------------------------------------------------------
 xpdf*fontList:		-*-terminus-medium-r-normal--14-*-*-*-*-*-iso8859-1
-xpdf.initialZoom:	page
+xpdf.initialZoom:	width
 
 ! x11-ssh-askpass ------------------------------------------------------------
-ssh-askpass*font:                   -*-dina-medium-r-*-*-12-*-*-*-*-*-*-*
-ssh-askpass*background:             #000000
-ssh-askpass*foreground:             #ffffff
-ssh-askpass.Button*background:      #000000
-ssh-askpass.Indicator*foreground:   #ff9900
-ssh-askpass.Indicator*background:   #090909
+ssh-askpass*font:                   tamsyn-16
+ssh-askpass*background:             #414141
+ssh-askpass*foreground:             #bebebe
+ssh-askpass.Button*background:      #373737
+ssh-askpass.Indicator*foreground:   #bebebe
+ssh-askpass.Indicator*background:   #373737
 ssh-askpass*topShadowColor:         #000000
 ssh-askpass*bottomShadowColor:      #000000
 ssh-askpass.*borderWidth:           1
 
+! xidle ----------------------------------------------------------------------
+XIdle.timeout: 300
+
 ! xlock ----------------------------------------------------------------------
-XLock.font: 		-*-terminus-medium-r-normal--24-*-*-*-*-*-iso8859-1
-XLock.planfont: 	-*-terminus-medium-r-normal--24-*-*-*-*-*-iso8859-1
-XLock.mode:		blank
-XLock.blank.delay:	2000000
+XLock*font:             -misc-spleen-medium-r-normal--16-160-72-72-c-80-iso10646-1
+XLock*planfont:             -misc-spleen-medium-r-normal--16-160-72-72-c-80-iso10646-1
+!XLock.font: 		-*-terminus-medium-r-normal--24-*-*-*-*-*-iso8859-1
+!XLock.planfont: 	-*-terminus-medium-r-normal--24-*-*-*-*-*-iso8859-1
+!XLock.mode:		blank
+!XLock.blank.delay:	2000000
+!XLock.grabmouse:	on
+!XLock.mousemotion:	on
+!XLock.usefirst:		yes
+!XLock.lockdelay:	10
+!XLock.nice:		19
 
 ! XMessage -------------------------------------------------------------------
-Xmessage*font:                  -*-terminus-medium-r-*-*-14-*-*-*-*-*-*-*
+!Xmessage*font:                  -*-terminus-medium-r-*-*-14-*-*-*-*-*-*-*
+!Xmessage*font:             -misc-spleen-medium-r-normal--16-160-72-72-c-80-iso10646-1
+Xmessage*font:             -misc-spleen-medium-r-normal--16-160-72-72-c-80-iso10646-1
 Xmessage*background:            #242424
 Xmessage*foreground:            #CCCCCC
 Xmessage*form.*.shapeStyle:     rectangle
