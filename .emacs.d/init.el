@@ -56,8 +56,7 @@
 
 (use-package rainbow-delimiters
   :ensure t
-  :config
-  (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
+  :hook prog-mode)
 
 (use-package try
   :ensure t)
@@ -72,6 +71,7 @@
   :ensure t)
 
 (use-package which-key
+  :defer t
   :ensure t
   :config (which-key-mode))
 
@@ -132,16 +132,24 @@
 
 (use-package yaml-mode
   :ensure t
+  :mode "\\.yml$\\|\\.yaml$")
+
+(use-package slime-company
+  :ensure t
   :config
-  (add-to-list 'auto-mode-alist '("\\.yml$\\|\\.yaml$" . yaml-mode)))
+  :bind (:map company-active-map
+              ("C-n" . company-select-next)
+              ("C-p" . company-select-previous)
+              ("C-d" . company-show-doc-buffer)
+              ("M-." . company-show-location)))
 
 (use-package slime
-  :disabled
   :init
   (load (expand-file-name "~/quicklisp/slime-helper.el"))
+  (load "~/quicklisp/log4slime-setup.el")
+  (global-log4slime-mode 1)
   :config
   (defun my/slime-mode-hook ()
-    "Default Slime settings."
     (setq slime-description-autofocus t
           slime-repl-history-trim-whitespaces t
           slime-repl-wrap-history t
@@ -153,6 +161,7 @@
           slime-net-coding-system 'utf-8-unix))
 
   (add-hook 'slime-mode-hook 'my/slime-mode-hook)
+  (add-hook 'lisp-mode-hook 'slime-mode)
 
   ;; tweaks for windows-nt
   (if (eq system-type 'windows-nt)
@@ -166,31 +175,28 @@
                                        (abcl ("abcl")))))
 
   ;; try to find local hyperspec or fallback to use the default web site
-  (cond ((file-directory-p "/usr/local/share/doc/clisp-hyperspec")
-         (setq common-lisp-hyperspec-root "file:/usr/local/share/doc/clisp-hyperspec/"))
-        ((file-directory-p "~/lisp/docs/HyperSpec")
-         (setq common-lisp-hyperspec-root (concat "file:" (getenv "HOME") "/lisp/docs/HyperSpec/")))
-        (t (setq common-lisp-hyperspec-root
-                 "http://www.lispworks.com/documentation/HyperSpec/")))
-
   (setq common-lisp-hyperspec-symbol-table
-        (concat common-lisp-hyperspec-root "Data/Map_Sym.txt"))
-
-  (add-hook 'lisp-mode-hook 'slime-mode)
-  ;;(add-hook 'slime-repl-mode-hook 'paredit-mode)
+        (concat
+         (cond ((file-directory-p "/usr/local/share/doc/clisp-hyperspec")
+                "file:/usr/local/share/doc/clisp-hyperspec/")
+               ((file-directory-p "~/lisp/docs/HyperSpec")
+                (concat "file:" (getenv "HOME") "/lisp/docs/HyperSpec/"))
+               (t "http://www.lispworks.com/documentation/HyperSpec/"))
+         "Data/Map_Sym.txt"))
 
   (setq slime-use-autodoc-mode t)
-
   (slime-setup '(slime-asdf
                  slime-indentation
                  slime-tramp
                  slime-fancy
-                 slime-hyperdoc))
+                 slime-hyperdoc
+                 slime-company ;; check how to verify it is loaded
+                 ))
 
   (setq slime-complete-symbol*-fancy t
-        ;;slime-complete-symbol-function 'slime-fuzzy-complete-symbol
-        slime-complete-symbol-function 'counsel-cl)
-)
+        slime-complete-symbol-function (if (fboundp 'counsel-cl)
+                                           'counsel-cl
+                                         'slime-fuzzy-complete-symbol)))
 
 (use-package multi-term
   :ensure t
@@ -203,11 +209,10 @@
   :bind (("C-c t" . multi-term-next)
          ("C-c T" . multi-term)))
 
-(use-package tex
-  :defer t
-  :ensure auctex
+(use-package auctex
+  :ensure t
+  :hook (latex-mode-hook . auto-fill-mode)
   :config
-  (add-hook 'LaTeX-mode-hook 'auto-fill-mode)
   (setq TeX-auto-save t
         TeX-parse-self t
         TeX-insert-braces nil
@@ -217,7 +222,8 @@
 
 (use-package hungry-delete
   :ensure t
-  :config (global-hungry-delete-mode))
+  ;;:config (global-hungry-delete-mode)
+  )
 
 (use-package quack
   :disabled
