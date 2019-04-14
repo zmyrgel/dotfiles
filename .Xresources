@@ -1,3 +1,12 @@
+ratmen.style:            snazzy
+ratmen.align:             left
+ratmen.background:         grey22
+ratmen.foreground:         darkorange
+!ratmen.font:            terminus-10
+ratmen.mouse:             false
+ratmen.scrollOffset:         5
+ratmen.unfocusExit:         true
+
 ! -----------------------------------------
 ! Rofi resources
 rofi.font:		tamsyn 12
