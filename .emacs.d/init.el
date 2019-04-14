@@ -511,6 +511,9 @@
 (setq gnutls-min-prime-bits nil
       gnutls-verify-error nil)
 
+;; https://bugs.debian.org/766397
+(setq tls-program '("gnutls-cli --x509cafile %t -p %p %h"))
+
 ;; keep a little more history to see whats going on
 (setq message-log-max 16384)
 
@@ -577,9 +580,6 @@
 
 ;; enable disabled features
 (put 'narrow-to-region 'disabled nil)
-
-;; https://bugs.debian.org/766397
-(setq tls-program '("gnutls-cli --x509cafile %t -p %p %h"))
 
 ;;; ------------------------------
 ;;; Visual settings
