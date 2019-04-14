@@ -3,7 +3,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2019-04-14 10:29:31 (tmy)>
+;;; Time-stamp: <2019-04-14 18:18:10 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -41,22 +41,21 @@
   (package-refresh-contents)
   (package-install 'use-package))
 
-(use-package diminish
-  :ensure t)
-
 (use-package exec-path-from-shell
   :init
   (when (eq system-type 'berkeley-unix)
     (setq exec-path-from-shell-arguments '("-l")))
   (setq exec-path-from-shell-variables
-        '("PATH" "MANPATH" "JAVA_HOME" "GOPATH"))
+        '("PATH" "MANPATH"
+          "JAVA_HOME" "GOPATH"
+          "GERBIL_HOME"))
   :config
   (when (memq window-system '(mac ns x))
     (exec-path-from-shell-initialize)))
 
-(use-package rainbow-delimiters
-  :ensure t
-  :hook prog-mode)
+;; (use-package rainbow-delimiters
+;;   :ensure t
+;;   :hook prog-mode)
 
 (use-package try
   :ensure t)
@@ -71,7 +70,6 @@
   :ensure t)
 
 (use-package which-key
-  :defer t
   :ensure t
   :config (which-key-mode))
 
@@ -122,7 +120,6 @@
 
 (use-package slime-company
   :ensure t
-  :config
   :bind (:map company-active-map
               ("C-n" . company-select-next)
               ("C-p" . company-select-previous)
@@ -130,10 +127,12 @@
               ("M-." . company-show-location)))
 
 (use-package slime
+  :preface (defvar log4slime-mode nil)
   :init
   (load (expand-file-name "~/quicklisp/slime-helper.el"))
   (load "~/quicklisp/log4slime-setup.el")
   (global-log4slime-mode 1)
+  :hook ((lisp-mode-hook . slime-mode))
   :config
   (defun my/slime-mode-hook ()
     (setq slime-description-autofocus t
@@ -147,7 +146,6 @@
           slime-net-coding-system 'utf-8-unix))
 
   (add-hook 'slime-mode-hook 'my/slime-mode-hook)
-  (add-hook 'lisp-mode-hook 'slime-mode)
 
   ;; tweaks for windows-nt
   (if (eq system-type 'windows-nt)
@@ -283,8 +281,8 @@
   :config (setq company-dabbrev-downcase nil)
   :bind (("M-/" . company-complete)
          :map company-active-map
-         ("C-p" . company-select-next)
-         ("C-n" . company-select-previous)))
+         ("C-n" . company-select-next)
+         ("C-p" . company-select-previous)))
 
 (use-package company-go
   :ensure t
@@ -322,9 +320,8 @@
   :init (setq markdown-command "multimarkdown"))
 
 (use-package flycheck
-  :defer t
   :ensure t
-  :hook (after-init-hook . #'global-flycheck-mode)
+  :hook (after-init-hook . global-flycheck-mode)
   :config
   (setq flycheck-completion-system 'ivy
         flycheck-phpcs-standard "Zend"))
@@ -349,9 +346,9 @@
   :config
   (defun my/web-mode-hook ()
     "Hooks for Web mode."
-    (setq web-mode-markup-indent-offset 2)
-    (setq web-mode-css-indent-offset 2)
-    (setq web-mode-code-indent-offset 4))
+    (setq web-mode-markup-indent-offset 2
+          web-mode-css-indent-offset 2
+          web-mode-code-indent-offset 4))
   (add-hook 'web-mode-hook 'my/web-mode-hook))
 
 (use-package rvm
@@ -360,24 +357,18 @@
 
 (use-package go-mode
   :ensure t
-  :hook (before-save . gofmt-before-save)
+  :hook ((before-save . gofmt-before-save)
+         (go-mode-hook . company-mode)) ;; ensure company is loaded
+  :bind (:map go-mode-map
+              ("C-c m" . gofmt)
+              ("M-." . godef-jump)
+              ("C-c C-r" . go-remove-unused-imports)
+              ("C-c g i" . go-goto-imports)
+              ("C-c C-k" . godoc))
   :config
-  (defun my/go-mode-hook ()
-    "Options for Go language."
-    (when (not (string-match "go" compile-command))
-      (set (make-local-variable 'compile-command)
-           "go build -v && go test -v && go vet"))
-    (setq gofmt-command "goimports")
-    (local-set-key (kbd "C-c m") 'gofmt)
-    (set (make-local-variable 'company-backends) '(company-go))
-    (local-set-key (kbd "M-.") 'godef-jump)
-    (local-set-key (kbd "C-c C-r") 'go-remove-unused-imports)
-    (local-set-key (kbd "C-c g i") 'go-goto-imports)
-    (local-set-key (kbd "C-c C-k") 'godoc))
-
-  (add-hook 'go-mode-hook 'my/go-mode-hook)
-  (add-hook 'go-mode-hook 'company-mode)
-  )
+  (setq gofmt-command "goimports")
+  (set (make-local-variable 'compile-command) "go build -v && go test -v && go vet")
+  (set (make-local-variable 'company-backends) '(company-go)))
 
 (use-package go-eldoc
   :ensure t
@@ -403,7 +394,7 @@
 (use-package clojure-mode
   :ensure t
   :mode ("\\.clj\\'" . clojure-mode)
-  :config (add-hook 'clojure-mode-hook 'my/shared-lisp-hook))
+  :hook (clojure-mode-hook . my/shared-lisp-hook))
 
 (use-package cider
   :ensure t
@@ -411,9 +402,8 @@
   :config
   (setq cider-lein-parameters "repl :headless :host localhost")
   (setq nrepl-hide-special-buffers t)
-  :hook
-  (cider-mode-hook . eldoc-mode)
-  (cider-repl-mode-hook . subword-mode))
+  :hook ((cider-mode-hook . eldoc-mode)
+         (cider-repl-mode-hook . subword-mode)))
 
 (use-package geiser
   :disabled
@@ -429,6 +419,9 @@
   :disabled
   :hook ((racket-mode-hook . my/shared-lisp-hook)
          (racket-repl-mode-hook . my/shared-lisp-hook)))
+
+(use-package diminish
+  :ensure t)
 
 (use-package elfeed
   :ensure t
@@ -655,6 +648,10 @@
 ;;; ------------------------------
 
 (use-package calendar
+  :hook ((diary-list-entries-hook . diary-include-other-diary-files)
+         (diary-list-entries-hook . diary-sort-entries)
+         (diary-mark-entries-hook . diary-mark-included-diary-files)
+         (calendar-today-visible-hook . calendar-mark-today))
   :config
   ;; localize calendar for finland
   (setq calendar-week-start-day 1
@@ -673,16 +670,12 @@
   (setq calendar-mark-holidays-flag t
         calendar-view-diary-initially-flag t
         calendar-date-style 'european
-        calendar-mark-diary-entries-flag t    )
-  (add-hook 'calendar-today-visible-hook 'calendar-mark-today)
+        calendar-mark-diary-entries-flag t)
 
   (setq diary-show-holidays-flag t
         diary-file (concat user-emacs-directory "diary")
         diary-display-function 'diary-fancy-display ;; XXX: is this needed
-        diary-number-of-entries 7) ;; XXX: is this needed
-  (add-hook 'diary-list-entries-hook 'diary-include-other-diary-files)
-  (add-hook 'diary-list-entries-hook 'diary-sort-entries)
-  (add-hook 'diary-mark-entries-hook 'diary-mark-included-diary-files))
+        diary-number-of-entries 7)) ;; XXX: is this needed)
 
 ;; time utilities
 (setq time-stamp-active t
@@ -693,6 +686,7 @@
       display-time-day-and-date nil
       display-time-format nil
       display-time-use-mail-icon t)
+
 ;;; ------------------------------
 ;;; Session
 ;;; ------------------------------
@@ -721,12 +715,12 @@
   (savehist-mode t))
 
 (use-package abbrev
+  :hook (kill-emacs-hook . write-abbrev-file)
   :config
   (setq abbrev-file-name (concat user-emacs-directory "abbrev_defs")
         save-abbrevs t)
   (when (file-exists-p abbrev-file-name)
-    (quietly-read-abbrev-file))
-  (add-hook 'kill-emacs-hook 'write-abbrev-file))
+    (quietly-read-abbrev-file)))
 
 (setq backup-directory-alist (list `("." . ,(concat user-emacs-directory "backups/")))
       make-backup-files t
@@ -999,9 +993,8 @@
   "Generel programming mode options."
   (setq whitespace-line-column 80
         whitespace-style '(face lines-tail)))
-(add-hook 'prog-mode-hook 'my/prog-mode-hook)
 
-;;; CC-mode styles
+(add-hook 'prog-mode-hook 'my/prog-mode-hook)
 
 (use-package irony
   :disabled
@@ -1207,8 +1200,8 @@
 (global-set-key (kbd "M-z") 'zap-up-to-char)
 
 ;; enable regexp search by default
-(global-set-key (kbd "C-s") 'isearch-forward-regexp)
-(global-set-key (kbd "C-r") 'isearch-backward-regexp)
+;;(global-set-key (kbd "C-s") 'isearch-forward-regexp)
+;;(global-set-key (kbd "C-r") 'isearch-backward-regexp)
 
 ;; shortcuts
 (global-set-key (kbd "M-o") 'other-window)
