@@ -3,7 +3,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2019-04-28 16:44:17 (tmy)>
+;;; Time-stamp: <2019-05-02 23:40:20 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -642,42 +642,15 @@
 (use-package rainbow-delimiters
   :ensure t)
 
-(use-package slime-company
+(use-package sly
   :ensure t
-  :bind (:map company-active-map
-              ("C-n" . company-select-next)
-              ("C-p" . company-select-previous)
-              ("C-d" . company-show-doc-buffer)
-              ("M-." . company-show-location)))
-
-(use-package slime
-  :preface (defvar log4slime-mode nil)
-  :init
-  (load (expand-file-name "~/quicklisp/slime-helper.el"))
-  (load "~/quicklisp/log4slime-setup.el")
-  (global-log4slime-mode 1)
-  (defun my/slime-mode-hook ()
-    (setq slime-description-autofocus t
-          slime-repl-history-trim-whitespaces t
-          slime-repl-wrap-history t
-          slime-repl-history-file (concat user-emacs-directory "slime-history.eld")
-          slime-repl-history-remove-duplicates t
-          slime-ed-use-dedicated-frame t
-          slime-kill-without-query-p t
-          slime-startup-animation t
-          slime-net-coding-system 'utf-8-unix))
   :config
-  (setq slime-lisp-implementations
-        (if (eq system-type 'windows-nt)
-            (list (abcl ("java" "-cp" "C:\\abcl" "-jar" "C:\\abcl\\abcl.jar" "org.armedbear.lisp.Main"))
-                  (ccl (list (expand-file-name "~/../../ccl/wx86cl64.exe") "-K UTF-8")))
-        '((sbcl ("sbcl"))
-          (ecl ("ecl"))
-          (clisp ("clisp" "-ansi"))
-          (chicken ("csi"))
-          (abcl ("abcl")))))
+  (setq sly-lisp-implementations '((sbcl ("sbcl" "--dynamic-space-size" "2048"))
+                                   (ecl ("ecl"))
+                                   (clisp ("clisp" "-ansi"))
+                                   (chicken ("csi"))
+                                   (abcl ("abcl"))))
 
-  ;; try to find local hyperspec or fallback to use the default web site
   (setq common-lisp-hyperspec-symbol-table
         (concat
          (cond ((file-directory-p "/usr/local/share/doc/clisp-hyperspec")
@@ -687,18 +660,12 @@
                (t "http://www.lispworks.com/documentation/HyperSpec/"))
          "Data/Map_Sym.txt"))
 
-  (setq slime-use-autodoc-mode t)
-  (setq slime-contribs
-        '(slime-asdf
-          slime-indentation
-          slime-tramp
-          slime-fancy
-          slime-hyperdoc
-          slime-company))
+  (add-hook 'lisp-mode-hook 'sly-mode))
 
-  (setq slime-complete-symbol*-fancy t)
-  :hook ((lisp-mode-hook . slime-mode)
-         (slime-mode-hook . my/slime-mode-hook)))
+(use-package sly-repl-ansi-color
+  :ensure t
+  :after sly
+  :config (sly-enable-contrib 'sly-repl-ansi-color))
 
 (use-package quack
   :disabled
@@ -1114,19 +1081,19 @@
 (global-set-key (kbd "<f2>") 'rgrep)
 (global-set-key (kbd "<f11>") 'gnus)
 
-(case active-scheme-implementation
-  ((gambit)
-   (require 'gambit)
-   (add-hook 'inferior-scheme-mode-hook 'gambit-inferior-mode))
-  ((gerbil)
-   (autoload 'gerbil-mode "gerbil" "Gerbil editing mode." t)
-   (add-to-list 'auto-mode-alist '("\\.ss" . gerbil-mode))
-   (defvar gerbil-program-name
-     (expand-file-name "~/git/gerbil/bin/gxi")) ; Set this for your GERBIL_HOME
-   (setq scheme-program-name gerbil-program-name)
-   (let ((gerbil-el (expand-file-name "~/git/gerbil/etc/gerbil.el")))
-     (when (file-exists-p gerbil-el)
-       (load-file (concat user-emacs-directory "elisp/gerbil.el"))))))
+;; (case active-scheme-implementation
+;;   ((gambit)
+;;    (require 'gambit)
+;;    (add-hook 'inferior-scheme-mode-hook 'gambit-inferior-mode))
+;;   ((gerbil)
+;;    (autoload 'gerbil-mode "gerbil" "Gerbil editing mode." t)
+;;    (add-to-list 'auto-mode-alist '("\\.ss" . gerbil-mode))
+;;    (defvar gerbil-program-name
+;;      (expand-file-name "~/git/gerbil/bin/gxi")) ; Set this for your GERBIL_HOME
+;;    (setq scheme-program-name gerbil-program-name)
+;;    (let ((gerbil-el (expand-file-name "~/git/gerbil/etc/gerbil.el")))
+;;      (when (file-exists-p gerbil-el)
+;;        (load-file (concat user-emacs-directory "elisp/gerbil.el"))))))
 
 (defun bf-pretty-print-xml-region (begin end)
   "Pretty format XML markup in region. You need to have nxml-mode
