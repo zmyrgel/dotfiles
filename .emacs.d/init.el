@@ -975,6 +975,15 @@
   :ensure t
   :bind (("C-s" . swiper)))
 
+(use-package company
+  :ensure t
+  :bind (:map company-active-map
+              ("C-n" . company-select-next)
+              ("C-p" . company-select-previous)
+              ("C-d" . company-show-doc-buffer)
+              ("M-." . company-show-location))
+  :config (add-hook 'after-init-hook 'global-company-mode))
+
 (setq dabbrev-case-replace nil)
 
 (icomplete-mode t)
