@@ -1,158 +1,148 @@
 ;; -*- mode: lisp; coding: utf-8-unix; indent-tabs-mode: nil -*-
 ;; .stumpwmrc --- Main configuration file for StumpWM
 ;;
-;; Author: Timo Myyrä <timo.myyra@gmail.com>
+;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;
 ;; Created:
-;; Time-stamp: <2012-03-05 10:42:25 (tmy)>
-;; URL: http://www.wickedbsd.net/~zmyrgel/dotfiles/
+;; Time-stamp: <2019-12-15 14:44:47 (tmy)>
+;; URL: https://github.com/zmyrgel/dotfiles/
 ;; Copyright (C) 2012 Timo Myyrä
 ;;
 ;; ----------------------------------------------------------------------------
-;;
-;; Commentary:
-;;
-;; Basic config file copied from the samples from the StumpWM Fix
-;;
-;; -----------------------------------------------------------------:
 ;;  - Fix Webjump functionality
 ;;  - Fix Raise requests, cause StumpWM to crash
 ;;  - Rewrite contrib packages to more portable way
-;;  - Replace zmenu wrapper with function call
 ;;  - Scroll firefox without focusing its frame
 ;;  - Update hook + notify on IRC messages + other urgent messages
 ;;  - Prevent pop-ups from stealing focus from current frame
 ;;  - Remove useless keymaps somehow
-;;  - Fix MPD modeline on stopped state
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (in-package :stumpwm)
 
-;; #+sbcl
-;; (progn
-;;   (load "/home/tmy/.emacs.d/elisp/slime/swank-loader.lisp")
-;;   (swank-loader:init)
-;;   (defcommand swank () ()
-;;     (setf stumpwm:*top-level-error-action* :break)
-;;     (and (swank:create-server :port swank::default-server-port
-;;                               :style swank:*communication-style*
-;;                               :coding-system "utf-8-unix"
-;;                               :dont-close t))
-;;     (echo-string (current-screen) "Starting Swank")))
+#-quicklisp
+(let ((quicklisp-init (merge-pathnames "quicklisp/setup.lisp"
+                                       (user-homedir-pathname))))
+  (when (probe-file quicklisp-init)
+    (load quicklisp-init)))
+
+(ql:quickload 'slynk)
+
+(defcommand start-slynk () ()
+  (setf stumpwm:*top-level-error-action* :break)
+  (and (slynk:create-server)
+       (echo-string (current-screen) "Starting Slynk")))
 
 ;; ---------------------------------------
-;; Define the background window
-;; XXX: add check to see if directory exists
-(defvar *background-image-path* "/media/nfs/wallpapers/")
-(defun select-random-background-image ()
-  "Select a random image"
-  (let ((file-list (directory
-                    (concatenate 'string *background-image-path* "*.jpg")))
-        (*random-state* (make-random-state t)))
-    (namestring (nth (random (length file-list)) file-list))))
+;; Define global configurations
 
-;; ---------------------------------------
-;; Contrib modules
-(dolist (m '("mpd" "notifications" "battery" "maildir" "cpu" "net" "wifi"))
-  (load-module m))
+(defvar *font* "-*-spleen-medium-r-normal--16-*-*-*-*-*-iso10646-1"
+  "Font to use for displaying stumwm ui elements.")
+
+;;"-*-terminus-*-r-normal-*-16-*-*-*-*-*-*-*"
+
+(defvar *fg-color* "gainsboro")
+
+(defvar *bg-color* "gray7")
+
+(defvar *contrib-path* (merge-pathnames ".stumpwm.d/contrib"
+                                        (user-homedir-pathname)))
+
+(defvar *wallpaper-path* (merge-pathnames "wallpapers"
+                                          (user-homedir-pathname)))
+(defvar *wallpaper-extensions* (list "png" "jpg" "jpeg"))
+
+(defvar *local-display* "eDP"
+  "Display used for main display as given by xrandr.")
+
+(defvar *x-lock-command*
+  (if (member :openbsd *features*)
+      "xlock -mode blank"
+      "xscreensaver-command -lock")
+  "Command used to lock X session.")
+
+(defvar *browser* "firefox"
+  "Default web browser to use.")
 
 ;; ---------------------------------------
 ;; Misc options
 
 (setf *mouse-focus-policy* :click)
-(setf *data-dir* "/home/tmy/.stumpwm.d/")
-(set-contrib-dir (concatenate 'string *data-dir* "contrib"))
-(setf *shell-program* (stumpwm::getenv "SHELL"))
 
 ;; Append colors to color map
 ;; XXX: add function to return name for hex value
 ;;      and to convert other color formats too
-(setf *colors*
-      (append *colors*
-              (list "gainsboro" "MidnightBlue")))
-(update-color-map (current-screen))
-
-;; ---------------------------------------
-;; MPD options
-
-(setf *mpd-current-song-fmt* "%a - %t"
-      *mpd-modeline-fmt* "%S: %a - %t (%e/%l)"
-      *menu-maximum-height* 50
-      *mpd-collapse-album-length* 20
-      *mpd-collapse-all-length* 40)
-;;(mpd-connect)
+;; (setf *colors*
+;;       (append *colors*
+;;               (list *fg-color* "MidnightBlue")))
+;; (update-color-map (current-screen))
 
 ;; ---------------------------------------
 ;; Message and Input Bar options
 
-(set-fg-color "gainsboro")
-(set-bg-color "gray7")
-(set-border-color "gainsboro")
-(set-msg-border-width 1)
-(set-font "-*-terminus-*-r-normal-*-16-*-*-*-*-*-*-*")
-(setf *message-window-padding* 20
-      *message-window-gravity* :top-rigth
-      *timeout-wait* 1
-      *input-window-gravity* :top-rigth)
+;; (set-fg-color *fg-color*)
+;; (set-bg-color *bg-color*)
+;; (set-border-color *fg-color*)
+;; (set-msg-border-width 1)
+(when *font*
+  (set-font *font*))
+
+;; (setf *message-window-padding* 20
+;;       *message-window-gravity* :top-rigth
+;;       *timeout-wait* 1
+;;       *input-window-gravity* :top-rigth)
 
 ;; ---------------------------------------
 ;; Window options
 
-(setf *window-format* "%m%n%s%20t"
-      *maxsize-border-width* 1
-      *transient-border-width* 1
-      *normal-border-width* 1
-      *window-border-style* :thin
-      *window-name-source* :title)
-(set-win-bg-color "gray7")
-(set-focus-color "MidnightBlue")
-(set-unfocus-color "gainsboro")
-(set-normal-gravity :top)
-(set-maxsize-gravity :center)
-(set-transient-gravity :center)
+;; (setf *window-format* "%m%n%s%20t"
+;;       *maxsize-border-width* 1
+;;       *transient-border-width* 1
+;;       *normal-border-width* 1
+;;       *window-border-style* :thin
+;;       *window-name-source* :title)
+;; (set-win-bg-color *bg-color*)
+;; (set-focus-color "MidnightBlue")
+;; (set-unfocus-color *fg-color*)
+;; (set-normal-gravity :top)
+;; (set-maxsize-gravity :center)
+;; (set-transient-gravity :center)
 
 ;; ---------------------------------------
 ;; Modeline options
 
-(setf *screen-mode-line-format*
-      "[^9*^B%n^b^n] %W
-%d | %m %N ")
-(setf *mode-line-position* :bottom
-      *mode-line-border-width* 1
-      *mode-line-pad-x* 1
-      *mode-line-pad-y* 1
-      *mode-line-background-color* "gray7"
-      *mode-line-foreground-color* "gainsboro"
-      *mode-line-border-color* "gray7"
-      *mode-line-timeout* 1)
-
-;; Switch mode-line on only if needed. Found at:
-;; http://hcl-club.lu/svn/development/lisp/.stumpwmrc
-(when (not (head-mode-line (current-head)))
-  (toggle-mode-line (current-screen) (current-head)))
+;; (setf *screen-mode-line-format*
+;;       "[^9*^B%n^b^n] %W
+;; %d | %m %N ")
+;; (setf *mode-line-position* :bottom
+;;       *mode-line-border-width* 1
+;;       *mode-line-pad-x* 1
+;;       *mode-line-pad-y* 1
+;;       *mode-line-background-color* "gray7"
+;;       *mode-line-foreground-color* "gainsboro"
+;;       *mode-line-border-color* "gray7"
+;;       *mode-line-timeout* 1)
 
 ;; ---------------------------------------
 ;; Group options
 
-;; Rename the first group to Emacs and create the other groups.
-;; Found at: http://en.wikipedia.org/wiki/User:Gwern/.stumpwmrc
-(setf (group-name (first (screen-groups (current-screen)))) "Emacs")
-(run-commands "gnewbg Web"
-              "gnewbg Term"
-              "gnewbg Mail"
-              "gnewbg IM"
-              "gnewbg Misc"
-              "gnewbg Remote")
+(defun set-stumpwm-groups ()
+  "Rename the first group to Emacs and create the other groups."
+  (setf (group-name (first (screen-groups (current-screen)))) "Emacs")
+  (run-commands "gnewbg Web"
+                "gnewbg IM"
+                "gnewbg Misc"
+                "gnewbg Remote"))
 
 ;; ---------------------------------------
 ;; Frame options
 
-;; See: http://lists.gnu.org/archive/html/stumpwm-devel/2006-08/msg00002.html
-;; Found at: http://en.wikipedia.org/wiki/User:Gwern/.stumpwmrc
+;; start numbering from 1 instead of 0
 (setf *frame-number-map* "1234567890"
-      *window-number-map* "1234567890"
-      *suppress-frame-indicator* t)
+      *window-number-map* "1234567890")
+
+(setf *suppress-frame-indicator* t)
 
 ;; Controlling Raise And Map Requests
 ;; Deny the firefox window from taking focus when clicked upon.
@@ -175,14 +165,8 @@
 (define-frame-preference "Web"
     (1 t t :class "Firefox"))
 
-(define-frame-preference "Term"
-    (1 t t :class "Xterm"))
-
-(define-frame-preference "Mail"
-    (1 t t :class "GroupWise"))
-
 (define-frame-preference "IM"
-    (1 t t :class "skype" :role "MainWindow")
+  (1 t t :class "skype" :role "MainWindow")
   (2 t t :class "skype" :role "Chats"))
 
 (define-frame-preference "Remote"
@@ -191,228 +175,271 @@
 ;; ---------------------------------------
 ;; Functions
 
-(defun shell-command (command)
-  "Run a shell command and display output to screen.
-   This must be used in a functional side-effects-free style!
-   If a program does not exit of its own accord, Stumpwm might hang!"
-  (check-type command string)
-  (echo-string (current-screen) (run-shell-command command t)))
+(defun select-random-background-image ()
+  "Select a random image from wallpapers directory."
+  (let ((file-list (remove-if-not (lambda (x)
+                                    (member (pathname-type x) *wallpaper-extensions* :test #'string=))
+                                  (list-directory *wallpaper-path*)))
+        (*random-state* (make-random-state t)))
+    (namestring (nth (random (length file-list)) file-list))))
+
+(defun audio-volume-down ()
+  "Tell OS audio to lower its volume."
+  (let ((cmd (if (member :openbsd *features*)
+                 "mixerctl outputs.master=-10"
+                 "pactl set-sink-mute @DEFAULT_SINK@ false; pactl set-sink-volume @DEFAULT_SINK@ -5%")))
+    (uiop:run-program cmd :force-shell t)))
+
+(defun audio-volume-up ()
+  "Tell OS audio to raise its volume."
+  (let ((cmd (if (member :openbsd *features*)
+                 "mixerctl outputs.master=+10"
+                 "pactl set-sink-mute @DEFAULT_SINK@ false; pactl set-sink-volume @DEFAULT_SINK@ +5%")))
+    (uiop:run-program cmd :force-shell t)))
+
+(defun audio-toggle-mute ()
+  "Toggle audio mute state."
+  (let ((cmd (if (member :openbsd *features*)
+                 "mixerctl -t outputs.master.mute"
+                 "pactl set-sink-mute @DEFAULT_SINK@ toggle")))
+    (uiop:run-program cmd :force-shell nil)))
+
+(defun control-volume (action)
+  "Function to control volume by given ACTION. Action is keywword :up, :down or :mute."
+  (ecase action
+    (:up (audio-volume-up))
+    (:down (audio-volume-down))
+    (:mute (audio-toggle-mute))))
+
+(defun xrandr-connected-displays ()
+  "Return a list of connected display names as noticed by xrandr."
+  (let ((result nil))
+    (ppcre:do-register-groups (disp)
+        ("([a-zA-Z0-9]+) connected" (uiop:run-program "xrandr --query" :force-shell nil :output :string))
+      (push disp result))
+    result))
+
+(defun display-mode (display-name mode)
+  "Set the display status to MODE on the given DISPLAY-NAME."
+  (uiop:run-program (format nil "xrandr --output ~a --~a" display-name mode)))
+
+(defun work-displays-p (displays)
+  "Returns t when displays match the set used at work."
+  (and displays
+       (member "eDP1" displays :test #'string=)
+       (member "HDMI2" displays :test #'string=)))
+
+;; at-work-p: run slack/firefox/emacs
+
+(defun multiple-connected-p (displays)
+  "Return T if there are multiple connected displays."
+  (and displays (> 2 (length displays))))
+
+(defun internal-display (displays)
+  "Return the internal display as string from given list of displays."
+  (loop for d in displays
+        when (string= d "eDP1")
+          return d))
+
+(defun set-displays ()
+  "If external display is connected to laptop, turn off laptop and set
+external display to auto mode."
+  (let ((displays (xrandr-connected-displays)))
+    (when (and displays
+               (member "eDP1" displays :test #'string=)
+               (member "HDMI2" displays :test #'string=))
+      (display-mode "HDMI2" "auto")
+      (display-mode "eDP1" "off"))))
+
+(defun set-wallpaper ()
+  (run-shell-command "xwallpaper --maximize ~/wallpapers/pluto_blueskies.png"))
+
+(defun set-input ()
+  (run-shell-command "setxkbmap -layout us -variant altgr-intl -option ctrl:nocaps"))
+
+(defun start-initial-apps ()
+  (loop for app in (list "xsetroot -solid rgb:11/11/11"
+                         "xsetroot -cursor_name left_ptr -fg black -bg white"
+                         "wmname LG3D"
+                         "pgrep mpd || mpd ~/.mpdconf")
+        do (run-shell-command app)))
+
+(defun nm-list-connections ()
+  "List connections known by NM."
+  (run-shell-command "nmcli con show" t))
+
+;; ---------------------------------------
+;; MODULES
+
+;; (load-module "stumptray")
+;; (stumptray::stumptray)
 
 ;; ---------------------------------------
 ;; Commands
 
-;; XXX: WIP
-;; (defcommand ssh (host)
-;;   ((:string "SSH to: "))
-;;   (run-shell-command (concatenate 'string "/usr/bin/ssh " host) t))
-
-(defcommand gselect-or-create (group-number)
-  ((:number "Group number: "))
-  (gselect
-   (or (select-group (current-screen) (format nil "~A" group-number) )
-       (let ((group (add-group (current-screen) (format nil "~A" group-number))))
-         (setf (group-number group) group-number)
-         group))))
-
-(defcommand shell-command (command)
-  ((:string "sh: "))
-  (check-type command string)
-  (shell-command command))
-
 ;; prompt the user for an interactive command. The first arg is an
 ;; optional initial contents.
-(defcommand colon1 (&optional (initial ""))
-  (:rest)
-  (let ((cmd (read-one-line (current-screen) ": " initial)))
+(defcommand colon1 (&optional (initial "")) (:rest)
+  (let ((cmd (read-one-line (current-screen) ": " :initial-input initial)))
     (when cmd
       (eval-command cmd t))))
-
-(defcommand pull-window-from-list (&optional (fmt *window-format*)) (:rest)
-            "Allow the user to Select a window from the list of windows and pull
-the selected window into the current frame. For information of menu bindings
-@xref{Menus}. The optional argument @var{fmt} can be specified to
-override the default window formatting."
-            (if (null (group-windows (current-group)))
-                (message "No Managed windows")
-                (let* ((group (current-group))
-                       (window (second (select-from-menu
-                                        (current-screen)
-                                        (mapcar
-                                         (lambda (w)
-                                           (list
-                                            (format-expand *window-formatters* fmt w) w))
-                                         (sort-windows group))))))
-                  (if window
-                      (pull-window window)
-                      (throw 'error :abort)))))
 
 (defcommand paste-x-selection () (:rest)
   "Universal rat-less X paste."
   (let ((cmd (concatenate 'string "insert " (get-x-selection))))
     (eval-command cmd)))
 
-(define-stumpwm-type :password (input prompt)
-  (let ((history *input-history*)
-        (arg (argument-pop input))
-        (fn (symbol-function 'draw-input-bucket)))
-    (unless arg
-      (unwind-protect
-           (setf (symbol-function 'draw-input-bucket)
-                 (lambda (screen prompt input &optional errorp)
-                   (let ((i (copy-structure input)))
-                     (setf (input-line-string i)
-                           (make-string (length (input-line-string i))
-                                        :initial-element #\*))
-                     (funcall fn screen prompt i)))
-                 arg (read-one-line (current-screen) prompt))
-        (setf (symbol-function 'draw-input-bucket) fn
-              *input-history* history))
-      arg)))
-
-;;; Found in git://github.com/kitokitoki/stumpwmrc.git
-(defmacro define-sudo-command (name command &key output)
-  (let ((cmd (gensym)))
-    `(defcommand ,name (password) ((:password "sudo password: "))
-                 (let ((,cmd (concatenate 'string "echo '" password "' | sudo -S " ,command)))
-                   ,(if output
-                        `(run-prog-collect-output *shell-program* "-c" ,cmd)
-                        `(run-prog *shell-program* :args (list "-c" ,cmd) :wait nil))))))
-
-(define-sudo-command reboot "reboot")
-(define-sudo-command shutdown "shutdown -h now")
-
-(defmacro define-web-jump (name url-prefix)
-  `(defcommand ,name (search)
-     ((:rest ,(string-capitalize
-               (string-downcase
-                (concatenate 'string (symbol-name name) ": ")))))
-     (run-shell-command (format nil "firefox '~A~A'"
-                                ,url-prefix (substitute #\+ #\Space search)))))
-
-;;(format t "firefox '~A~A'" ,url-prefix (substitute #\+ #\Space search))
-(define-web-jump imdb "http://www.imdb.com/find?q")
-(define-web-jump google "http://www.google.fi/search?q")
-(define-web-jump wikipedia "http://en.wikipedia.org/wiki/Special:Search?fulltext=Search&search")
-
 (defcommand firefox () ()
   "run firefox"
   (run-or-raise "firefox" '(:class "Firefox")))
 
-;; ---------------------------------------
-;; Hooks
+#+linux
+(progn
+  (defcommand slack () ()
+    "Start Slack or switch to it, if it is already running."
+    (run-or-raise "slack" '(:class "slack"))))
 
-(add-hook *start-hook*
-          (lambda ()
-            (run-shell-command "xsetroot -solid rgb:11/11/11")
-            (run-shell-command "xsetroot -cursor_name left_ptr -fg black -bg white")
-            ;;(run-shell-command "wmname LG3D")
-            (run-shell-command "pgrep mpd || mpd ~/.mpdconf")))
+;; Web jump (works for Google and Imdb)
+(defmacro make-web-jump (name prefix)
+  `(defcommand ,(intern name) (search) ((:rest ,(concatenate 'string name " search: ")))
+    (substitute #\+ #\Space search)
+    (run-shell-command (concatenate 'string ,prefix search))))
+
+(make-web-jump "google" (concatenate 'string *browser* " http://www.google.fr/search?q="))
+(make-web-jump "imdb" (concatenate 'string *browser* " http://www.imdb.com/find?q="))
 
 ;; ---------------------------------------
-;; Key bindinds
+;; HOOKS
+
+;(add-hook *start-hook* #'set-displays)
+(add-hook *start-hook* #'set-stumpwm-groups)
+(add-hook *start-hook* #'set-wallpaper)
+
+;; ---------------------------------------
+;; KEYBINDINGS
+
+;; Browse somewhere
+(define-key *root-map* (kbd "C-b") (uiop:strcat "colon1 exec " *browser* " https://www."))
+;; Ssh somewhere
+(define-key *root-map* (kbd "C-s") "colon1 exec xterm -e ssh ")
+
+;(define-key *root-map* (kbd "s") "slack"))
+
+;; C-t M-s is a terrble binding, but you get the idea.
+(define-key *root-map* (kbd "M-s") "google")
+(define-key *root-map* (kbd "i") "imdb")
+
+;; allow locking x
+(define-key *root-map* (kbd "L") (uiop:strcat "exec " *x-lock-command*))
+
+;; Emacs Style Frame Splitting
+(loop for n below 10
+      do (undefine-key *root-map* (kbd (write-to-string n))))
+(define-key *root-map* (kbd "0") "remove")
+(define-key *root-map* (kbd "1") "only")
+(define-key *root-map* (kbd "2") "vsplit")
+(define-key *root-map* (kbd "3") "hsplit")
+
+(define-remapped-keys
+    '(("(Firefox|Chrome)"
+       ("C-n"   . "Down")
+       ("C-p"   . "Up")
+       ("C-f"   . "Right")
+       ("C-b"   . "Left")
+       ("C-v"   . "Next")
+       ("M-v"   . "Prior")
+       ("M-w"   . "C-c")
+       ("C-w"   . "C-x")
+       ("C-y"   . "C-v")
+       ("M-<"   . "Home")
+       ("M->"   . "End")
+       ("C-M-b" . "M-Left")
+       ("C-M-f" . "M-Right")
+       ("C-k"   . ("C-S-End" "C-x")))))
+
+(define-key *root-map* (kbd "C-q") "send-raw-key")
+
+(define-key *root-map* (kbd "B") "mode-line")
 
 ;; s-[0-9] moves to a numbered group.
 (loop for i from 1 to 9
    do (define-key *top-map* (kbd (format nil "s-~A" i))
 	(format nil "gselect ~A" i)))
 
-;; Query addresses
-(defvar *query-map* nil
-  "The keymap with net queries (e.g. IMDB)")
+;; ;; Query addresses
+;; (defvar *query-map* nil
+;;   "The keymap with net queries (e.g. IMDB)")
 
-(setf *query-map*
-      (let ((m (make-sparse-keymap)))
-        (define-key m (kbd "i") "imdb")
-        (define-key m (kbd "g") "google")
-        (define-key m (kbd "w") "wikipedia")
-        m))
+;; (setf *query-map*
+;;       (let ((m (make-sparse-keymap)))
+;;         (define-key m (kbd "i") "imdb")
+;;         (define-key m (kbd "g") "google")
+;;         (define-key m (kbd "w") "wikipedia")
+;;         m))
 
 ;; Swap quoteright and " in commands
 (define-key *groups-map* (kbd "quoteright") "grouplist")
 (define-key *groups-map* (kbd "\"") "gselect")
+(define-key *groups-map* (kbd "quoteright") "windowlist")
+(define-key *groups-map* (kbd "\"") "select")
 
-(setf *root-map*
-      (let ((m (make-sparse-keymap)))
-        (define-key m (kbd "c") "exec xterm")
-        (define-key m (kbd "e") "emacs")
-        (define-key m (kbd "b") "banish")
-        (define-key m (kbd "a") "time")
-        (define-key m (kbd "C-g") "abort")
-        (define-key m (kbd "t") "send-escape")
-        (define-key m (kbd ";") "colon")
-        (define-key m (kbd ":") "eval")
-        (define-key m (kbd "C-m") "lastmsg")
-        (define-key m (kbd "G") "vgroups")
-        (define-key m (kbd "g") '*groups-map*)
-        (define-key m (kbd "h") '*help-map*)
-        (define-key m (kbd "m") '*mpd-map*)
-        (define-key m (kbd "q") '*query-map*)
-        (define-key m (kbd "N") '*notifications-map*)
-        (define-key m (kbd "!") "exec dmenu_run")
-        (define-key m (kbd "quoteright") "windowlist")
-        (define-key m (kbd "\"") "select")
-        (define-key m (kbd "n") "pull-hidden-next")
-        (define-key m (kbd "p") "pull-hidden-previous")
-        (define-key m (kbd "M-n") "next")
-        (define-key m (kbd "M-p") "prev")
-        (define-key m (kbd "C-M-n") "next-in-frame")
-        (define-key m (kbd "C-M-p") "prev-in-frame")
-        (define-key m (kbd "W") "place-existing-windowns")
-        (define-key m (kbd "C-t") "pull-hidden-other")
-        (define-key m (kbd "M-t") "other-in-frame")
-        (define-key m (kbd "R") "remove")
-        (define-key m (kbd "s") "vsplit")
-        (define-key m (kbd "S") "hsplit")
-        (define-key m (kbd "r") "iresize")
-        (define-key m (kbd "o") "fnext")
-        (define-key m (kbd "M-TAB") "fprev")
-        (define-key m (kbd "f") "fselect")
-        (define-key m (kbd "F") "curframe")
-        (define-key m (kbd "-") "fclear")
-        (define-key m (kbd "Q") "only")
-        ;; (define-key m (kbd "Up") "move-focus up")
-        ;; (define-key m (kbd "Down") "move-focus down")
-        ;; (define-key m (kbd "Left") "move-focus left")
-        ;; (define-key m (kbd "Right") "move-focus right")
-        ;; (define-key m (kbd "M-Up") "move-window up")
-        ;; (define-key m (kbd "M-Up") "move-window down")
-        ;; (define-key m (kbd "M-up") "move-window left")
-        ;; (define-key m (kbd "M-Up") "move-window right")
-        (define-key m (kbd "+") "balance-frames")
-        (define-key m (kbd "l") "redisplay")
-        (define-key m (kbd "L") "exec xlock -mode blank")
-        (define-key m (kbd "C-u") "next-urgert")
-        (define-key m (kbd "w") "windows")
-        (define-key m (kbd "k") "delete")
-        (define-key m (kbd "K") "kill")
-        (define-key m (kbd "C-N") "number")
-        (define-key m (kbd "#") "mark")
-        (define-key m (kbd "C-F") "fullscreen")
-        (define-key m (kbd "A") "title")
-        (define-key m (kbd "i") "info")
-        m))
-
-(define-key *root-map* (kbd "m") '*mpd-map*)
-(setf *mpd-playlist-menu-map*
-      (let ((m (make-sparse-keymap)))
-        (define-key m (kbd "C-p") 'menu-up)
-        (define-key m (kbd "C-n") 'menu-down)
-        (define-key m (kbd "C-g") 'menu-abort)
-        (define-key m (kbd "ESC") 'menu-abort)
-        (define-key m (kbd "M-p") (mpd-menu-action :mpd-playlist-move-up))
-        (define-key m (kbd "M-n") (mpd-menu-action :mpd-playlist-move-down))
-        (define-key m (kbd "d") (mpd-menu-action :mpd-playlist-delete))
-        (define-key m (kbd "RET") (mpd-menu-action :mpd-playlist-play))
-        m))
-
-(setf *mpd-browse-menu-map*
-      (let ((m (make-sparse-keymap)))
-        (define-key m (kbd "C-p") 'menu-up)
-        (define-key m (kbd "C-n") 'menu-down)
-        (define-key m (kbd "C-g") 'menu-abort)
-        (define-key m (kbd "ESC") 'menu-abort)
-        (define-key m (kbd "RET") (mpd-menu-action :mpd-browse-add-and-quit))
-        (define-key m (kbd "S-RET") (mpd-menu-action :mpd-browse-add))
-        (define-key m (kbd "C-f") (mpd-menu-action :mpd-browse-next))
-        (define-key m (kbd "C-b") (mpd-menu-action :mpd-browse-previous))
-        m))
+;; (setf *root-map*
+;;       (let ((m (make-sparse-keymap)))
+;;         (define-key m (kbd "c") "exec xterm")
+;;         (define-key m (kbd "e") "emacs")
+;;         (define-key m (kbd "b") "banish")
+;;         (define-key m (kbd "a") "time")
+;;         (define-key m (kbd "C-g") "abort")
+;;         (define-key m (kbd "t") "send-escape")
+;;         (define-key m (kbd ";") "colon")
+;;         (define-key m (kbd ":") "eval")
+;;         (define-key m (kbd "C-m") "lastmsg")
+;;         (define-key m (kbd "G") "vgroups")
+;;         (define-key m (kbd "g") '*groups-map*)
+;;         (define-key m (kbd "h") '*help-map*)
+;;         (define-key m (kbd "m") '*mpd-map*)
+;;         (define-key m (kbd "q") '*query-map*)
+;;         (define-key m (kbd "N") '*notifications-map*)
+;;         (define-key m (kbd "!") "exec dmenu_run")
+;;         (define-key m (kbd "quoteright") "windowlist")
+;;         (define-key m (kbd "\"") "select")
+;;         (define-key m (kbd "n") "pull-hidden-next")
+;;         (define-key m (kbd "p") "pull-hidden-previous")
+;;         (define-key m (kbd "M-n") "next")
+;;         (define-key m (kbd "M-p") "prev")
+;;         (define-key m (kbd "C-M-n") "next-in-frame")
+;;         (define-key m (kbd "C-M-p") "prev-in-frame")
+;;         (define-key m (kbd "W") "place-existing-windowns")
+;;         (define-key m (kbd "C-t") "pull-hidden-other")
+;;         (define-key m (kbd "M-t") "other-in-frame")
+;;         (define-key m (kbd "R") "remove")
+;;         (define-key m (kbd "s") "vsplit")
+;;         (define-key m (kbd "S") "hsplit")
+;;         (define-key m (kbd "r") "iresize")
+;;         (define-key m (kbd "o") "fnext")
+;;         (define-key m (kbd "M-TAB") "fprev")
+;;         (define-key m (kbd "f") "fselect")
+;;         (define-key m (kbd "F") "curframe")
+;;         (define-key m (kbd "-") "fclear")
+;;         (define-key m (kbd "Q") "only")
+;;         ;; (define-key m (kbd "Up") "move-focus up")
+;;         ;; (define-key m (kbd "Down") "move-focus down")
+;;         ;; (define-key m (kbd "Left") "move-focus left")
+;;         ;; (define-key m (kbd "Right") "move-focus right")
+;;         ;; (define-key m (kbd "M-Up") "move-window up")
+;;         ;; (define-key m (kbd "M-Up") "move-window down")
+;;         ;; (define-key m (kbd "M-up") "move-window left")
+;;         ;; (define-key m (kbd "M-Up") "move-window right")
+;;         (define-key m (kbd "+") "balance-frames")
+;;         (define-key m (kbd "l") "redisplay")
+;;         (define-key m (kbd "L") "exec xlock -mode blank")
+;;         (define-key m (kbd "C-u") "next-urgert")
+;;         (define-key m (kbd "w") "windows")
+;;         (define-key m (kbd "k") "delete")
+;;         (define-key m (kbd "K") "kill")
+;;         (define-key m (kbd "C-N") "number")
+;;         (define-key m (kbd "#") "mark")
+;;         (define-key m (kbd "C-F") "fullscreen")
+;;         (define-key m (kbd "A") "title")
+;;         (define-key m (kbd "i") "info")
+;;         m))
