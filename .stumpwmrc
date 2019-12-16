@@ -4,7 +4,7 @@
 ;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;
 ;; Created:
-;; Time-stamp: <2019-12-15 14:44:47 (tmy)>
+;; Time-stamp: <2019-12-16 18:01:22 (tmy)>
 ;; URL: https://github.com/zmyrgel/dotfiles/
 ;; Copyright (C) 2012 Timo Myyrä
 ;;
@@ -27,12 +27,11 @@
   (when (probe-file quicklisp-init)
     (load quicklisp-init)))
 
-(ql:quickload 'slynk)
+(ql:quickload '(slynk quri))
 
 (defcommand start-slynk () ()
   (setf stumpwm:*top-level-error-action* :break)
-  (and (slynk:create-server)
-       (echo-string (current-screen) "Starting Slynk")))
+  (slynk:create-server))
 
 ;; ---------------------------------------
 ;; Define global configurations
@@ -112,6 +111,9 @@
 ;; ---------------------------------------
 ;; Modeline options
 
+(unless (head-mode-line (current-head))
+  (toggle-mode-line (current-screen) (current-head)))
+
 ;; (setf *screen-mode-line-format*
 ;;       "[^9*^B%n^b^n] %W
 ;; %d | %m %N ")
@@ -183,39 +185,43 @@
         (*random-state* (make-random-state t)))
     (namestring (nth (random (length file-list)) file-list))))
 
-(defun audio-volume-down ()
-  "Tell OS audio to lower its volume."
-  (let ((cmd (if (member :openbsd *features*)
-                 "mixerctl outputs.master=-10"
-                 "pactl set-sink-mute @DEFAULT_SINK@ false; pactl set-sink-volume @DEFAULT_SINK@ -5%")))
-    (uiop:run-program cmd :force-shell t)))
+;; (defun audio-volume-down ()
+;;   "Tell OS audio to lower its volume."
+;;   (let ((cmd (if (member :openbsd *features*)
+;;                  "mixerctl outputs.master=-10"
+;;                  "pactl set-sink-mute @DEFAULT_SINK@ false; pactl set-sink-volume @DEFAULT_SINK@ -5%")))
+;;     (uiop:run-program cmd :force-shell t)))
 
-(defun audio-volume-up ()
-  "Tell OS audio to raise its volume."
-  (let ((cmd (if (member :openbsd *features*)
-                 "mixerctl outputs.master=+10"
-                 "pactl set-sink-mute @DEFAULT_SINK@ false; pactl set-sink-volume @DEFAULT_SINK@ +5%")))
-    (uiop:run-program cmd :force-shell t)))
+;; (defun audio-volume-up ()
+;;   "Tell OS audio to raise its volume."
+;;   (let ((cmd (if (member :openbsd *features*)
+;;                  "mixerctl outputs.master=+10"
+;;                  "pactl set-sink-mute @DEFAULT_SINK@ false; pactl set-sink-volume @DEFAULT_SINK@ +5%")))
+;;     (uiop:run-program cmd :force-shell t)))
 
-(defun audio-toggle-mute ()
-  "Toggle audio mute state."
-  (let ((cmd (if (member :openbsd *features*)
-                 "mixerctl -t outputs.master.mute"
-                 "pactl set-sink-mute @DEFAULT_SINK@ toggle")))
-    (uiop:run-program cmd :force-shell nil)))
+;; (defun audio-toggle-mute ()
+;;   "Toggle audio mute state."
+;;   (let ((cmd (if (member :openbsd *features*)
+;;                  "mixerctl -t outputs.master.mute"
+;;                  "pactl set-sink-mute @DEFAULT_SINK@ toggle")))
+;;     (uiop:run-program cmd :force-shell nil)))
 
-(defun control-volume (action)
-  "Function to control volume by given ACTION. Action is keywword :up, :down or :mute."
-  (ecase action
-    (:up (audio-volume-up))
-    (:down (audio-volume-down))
-    (:mute (audio-toggle-mute))))
+;; (defun control-volume (action)
+;;   "Function to control volume by given ACTION. Action is keywword :up, :down or :mute."
+;;   (ecase action
+;;     (:up (audio-volume-up))
+;;     (:down (audio-volume-down))
+;;     (:mute (audio-toggle-mute))))
+
+;;(define-key *top-map* (kbd "XF86AudioLowerVolume") (control-volume :down))
+;;(define-key *top-map* (kbd "XF86AudioRaiseVolume") (control-volume :up))
+;;(define-key *top-map* (kbd "XF86AudioMute") (control-volume :mute-toggle))
 
 (defun xrandr-connected-displays ()
   "Return a list of connected display names as noticed by xrandr."
   (let ((result nil))
     (ppcre:do-register-groups (disp)
-        ("([a-zA-Z0-9]+) connected" (uiop:run-program "xrandr --query" :force-shell nil :output :string))
+        ("([a-zA-Z0-9]+) connected" (uiop:run-program "xrandr --query" :output :string))
       (push disp result))
     result))
 
@@ -229,11 +235,9 @@
        (member "eDP1" displays :test #'string=)
        (member "HDMI2" displays :test #'string=)))
 
-;; at-work-p: run slack/firefox/emacs
-
 (defun multiple-connected-p (displays)
   "Return T if there are multiple connected displays."
-  (and displays (> 2 (length displays))))
+  (and displays (>= 2 (length displays))))
 
 (defun internal-display (displays)
   "Return the internal display as string from given list of displays."
@@ -251,11 +255,21 @@ external display to auto mode."
       (display-mode "HDMI2" "auto")
       (display-mode "eDP1" "off"))))
 
+(defun get-monitors ()
+  (let (int-disp ext-disp)
+    (dolist (disp (xrandr-connected-displays))
+      (cond ((string= (subseq disp 0 3) "eDP") (setf int-disp disp))
+            ((string= (subseq disp 0 4) "HDMI") (setf ext-disp disp))))
+    (values int-disp ext-disp)))
+
 (defun set-wallpaper ()
   (run-shell-command "xwallpaper --maximize ~/wallpapers/pluto_blueskies.png"))
 
-(defun set-input ()
+(defun set-qwerty-input ()
   (run-shell-command "setxkbmap -layout us -variant altgr-intl -option ctrl:nocaps"))
+
+(defun set-dvorak-input ()
+  (run-shell-command "setxkbmap -layout us -variant dvorak -option ctrl:nocaps"))
 
 (defun start-initial-apps ()
   (loop for app in (list "xsetroot -solid rgb:11/11/11"
@@ -302,11 +316,9 @@ external display to auto mode."
 ;; Web jump (works for Google and Imdb)
 (defmacro make-web-jump (name prefix)
   `(defcommand ,(intern name) (search) ((:rest ,(concatenate 'string name " search: ")))
-    (substitute #\+ #\Space search)
-    (run-shell-command (concatenate 'string ,prefix search))))
+    (run-shell-command (concatenate 'string ,*browser* " " ,prefix (quri:url-encode search)))))
 
-(make-web-jump "google" (concatenate 'string *browser* " http://www.google.fr/search?q="))
-(make-web-jump "imdb" (concatenate 'string *browser* " http://www.imdb.com/find?q="))
+(make-web-jump "ddg" "https://www.duckduckgo.com?q=")
 
 ;; ---------------------------------------
 ;; HOOKS
@@ -326,8 +338,7 @@ external display to auto mode."
 ;(define-key *root-map* (kbd "s") "slack"))
 
 ;; C-t M-s is a terrble binding, but you get the idea.
-(define-key *root-map* (kbd "M-s") "google")
-(define-key *root-map* (kbd "i") "imdb")
+(define-key *root-map* (kbd "i") "ddg")
 
 ;; allow locking x
 (define-key *root-map* (kbd "L") (uiop:strcat "exec " *x-lock-command*))
