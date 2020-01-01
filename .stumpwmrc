@@ -1,16 +1,13 @@
 ;; -*- mode: lisp; coding: utf-8-unix; indent-tabs-mode: nil -*-
-;; .stumpwmrc --- Main configuration file for StumpWM
+;; Main configuration file for StumpWM
 ;;
 ;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
-;;
-;; Created:
-;; Time-stamp: <2019-12-16 18:01:22 (tmy)>
+;; Time-stamp: <2020-01-01 13:00:07 (tmy)>
 ;; URL: https://github.com/zmyrgel/dotfiles/
 ;; Copyright (C) 2012 Timo Myyrä
 ;;
 ;; ----------------------------------------------------------------------------
 ;;  - Fix Webjump functionality
-;;  - Fix Raise requests, cause StumpWM to crash
 ;;  - Rewrite contrib packages to more portable way
 ;;  - Scroll firefox without focusing its frame
 ;;  - Update hook + notify on IRC messages + other urgent messages
@@ -67,6 +64,29 @@
 ;; ---------------------------------------
 ;; Misc options
 
+(defun update-window-title (window)
+  "If the window comes up with no title, set the user title to the
+window's instance name so it doesn't appear with no context on the
+mode-line"
+  (when (equal "" (window-title window))
+    (setf (window-user-title window) (window-res window))))
+
+(add-hook *new-window-hook* #'update-window-title)
+
+;; ;; Set the font. Note that since I'm using a TTF font, I need to first
+;; ;; load the ttf-fonts module, then (and this was hard to figure out!)
+;; ;; I need to call xft:cache-fonts or xft is unable to locate the
+;; ;; Monoid font.
+;; (load-stump-contrib-module "util/ttf-fonts")
+;; (xft:cache-fonts)
+
+;; (defparameter *font*
+;;   (make-instance 'xft:font :family "Monoid" :subfamily "Retina" :size 12)
+;;   "Font specification for stumpwm windows.")
+
+;; (set-font *font*)
+
+
 (setf *mouse-focus-policy* :click)
 
 ;; Append colors to color map
@@ -82,15 +102,18 @@
 
 ;; (set-fg-color *fg-color*)
 ;; (set-bg-color *bg-color*)
+
 ;; (set-border-color *fg-color*)
-;; (set-msg-border-width 1)
+
+(set-msg-border-width 1)
+
 (when *font*
   (set-font *font*))
 
-;; (setf *message-window-padding* 20
-;;       *message-window-gravity* :top-rigth
-;;       *timeout-wait* 1
-;;       *input-window-gravity* :top-rigth)
+(setf *message-window-padding* 10
+      *message-window-gravity* :top-right
+      *timeout-wait* 1
+      *input-window-gravity* :top-right)
 
 ;; ---------------------------------------
 ;; Window options
@@ -101,12 +124,14 @@
 ;;       *normal-border-width* 1
 ;;       *window-border-style* :thin
 ;;       *window-name-source* :title)
-;; (set-win-bg-color *bg-color*)
-;; (set-focus-color "MidnightBlue")
-;; (set-unfocus-color *fg-color*)
 ;; (set-normal-gravity :top)
 ;; (set-maxsize-gravity :center)
 ;; (set-transient-gravity :center)
+
+;; (set-win-bg-color *bg-color*)
+;; (set-focus-color "MidnightBlue")
+;; (set-unfocus-color *fg-color*)
+
 
 ;; ---------------------------------------
 ;; Modeline options
@@ -146,33 +171,28 @@
 
 (setf *suppress-frame-indicator* t)
 
-;; Controlling Raise And Map Requests
-;; Deny the firefox window from taking focus when clicked upon.
-;;(push '(:class "gecko") *deny-raise-request*)
+;; Deny the browser windows from taking focus when started
+;;(push '(:role "browser") stumpwm:*deny-map-request*)
 
-;; Deny transient raise requests
-;;(push '(:transient) *deny-map-request*)
-
-;; Deny the all windows in the xterm class from taking focus.
-;;(push '(:class "Xterm") *deny-raise-request*)
-;;(push '(:class "UXterm") *deny-raise-request*)
-;;(push '(:class "URxvt") *deny-raise-request*)
+;; Deny the slack windows from taking focus when started
+;;(push '(:class "Slack") stumpwm:*deny-map-request*)
 
 ;; Window placement rules
 (clear-window-placement-rules)
 
 (define-frame-preference "Emacs"
-    (1 t t :class "Emacs"))
+  (1 t t :class "Emacs"))
 
 (define-frame-preference "Web"
-    (1 t t :class "Firefox"))
+  (2 t t :role "browser"))
 
 (define-frame-preference "IM"
-  (1 t t :class "skype" :role "MainWindow")
-  (2 t t :class "skype" :role "Chats"))
+  (3 t t :class "skype" :role "MainWindow")
+  (3 t t :class "skype" :role "Chats")
+  (3 t t :class "Slack"))
 
 (define-frame-preference "Remote"
-    (1 t t :class "Remmina"))
+  (5 t t :class "Remmina"))
 
 ;; ---------------------------------------
 ;; Functions
@@ -311,12 +331,18 @@ external display to auto mode."
 (progn
   (defcommand slack () ()
     "Start Slack or switch to it, if it is already running."
-    (run-or-raise "slack" '(:class "slack"))))
+    (run-or-raise "slack" '(:class "slack")))
+
+  (defcommand steam () ()
+    "Start Steam or switch to it, if it is already running."
+    (run-or-raise "steam" '(:class "steam")))
+  )
 
 ;; Web jump (works for Google and Imdb)
 (defmacro make-web-jump (name prefix)
   `(defcommand ,(intern name) (search) ((:rest ,(concatenate 'string name " search: ")))
-    (run-shell-command (concatenate 'string ,*browser* " " ,prefix (quri:url-encode search)))))
+               (when (string/= search "")
+                 (run-shell-command (concatengate 'string ,*browser* " " ,prefix (quri:url-encode search))))))
 
 (make-web-jump "ddg" "https://www.duckduckgo.com?q=")
 
@@ -335,6 +361,9 @@ external display to auto mode."
 ;; Ssh somewhere
 (define-key *root-map* (kbd "C-s") "colon1 exec xterm -e ssh ")
 
+;; paste
+(define-key *root-map* (kbd "y") "paste-x-selection")
+
 ;(define-key *root-map* (kbd "s") "slack"))
 
 ;; C-t M-s is a terrble binding, but you get the idea.
@@ -345,11 +374,12 @@ external display to auto mode."
 
 ;; Emacs Style Frame Splitting
 (loop for n below 10
-      do (undefine-key *root-map* (kbd (write-to-string n))))
-(define-key *root-map* (kbd "0") "remove")
-(define-key *root-map* (kbd "1") "only")
-(define-key *root-map* (kbd "2") "vsplit")
-(define-key *root-map* (kbd "3") "hsplit")
+   do (undefine-key *root-map* (kbd (write-to-string n))))
+
+;;(define-key *root-map* (kbd "0") "remove")
+;;(define-key *root-map* (kbd "1") "only")
+;;(define-key *root-map* (kbd "2") "vsplit")
+;;(define-key *root-map* (kbd "3") "hsplit")
 
 (define-remapped-keys
     '(("(Firefox|Chrome)"
