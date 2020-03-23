@@ -259,7 +259,7 @@
 ;; time utilities
 (setq time-stamp-active t
       time-stamp-line-limit 10
-      time-stamp-format "%04y-%02m-%02d %02H:%02M:%02S (%u)")
+      time-stamp-format "%Y-%02m-%02d %02H:%02M:%02S (%u)")
 
 (setq display-time-24hr-format t
       display-time-day-and-date nil
