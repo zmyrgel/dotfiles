@@ -193,9 +193,7 @@
 ;; decrease the selection timeout so it won't wait for so long.
 ;; https://omecha.info/blog/org-capture-freezes-emacs.html
 (when (eq system-type 'berkeley-unix)
-  ;;(setq selection-coding-system 'utf-8)
-  (setq x-selection-timeout 10)
-  )
+  (setq x-selection-timeout 10))
 
 ;; disable dialog boxes
 (setq use-file-dialog nil
@@ -389,12 +387,15 @@
                             (sequence "STALLED(s@/!)" "|")
                             (sequence "PENDING(p@/!)" "|"))
         ;; capture notes
-        org-default-notes-file (concat org-directory "notes.org"))
+        org-default-notes-file (concat org-directory "/notes.org"))
   :bind (("C-c l" . org-store-link)
          ("C-c a" . org-agenda)
          ("C-c b" . org-iswitchb)
          ("C-c c" . org-capture))
-  :hook ((turn-on-orgstruct turn-on-orgstruct++ turn-on-orgtbl) . message-mode))
+  :hook ((message-mode . turn-on-orgstruct)
+         (message-mode . turn-on-orgstruct++)
+         (message-mode . turn-on-orgtbl)))
+
 
 ;;; ------------------------------
 ;;; Buffer management
@@ -407,7 +408,7 @@
       uniquify-ignore-buffers-re "^\\*")
 
 (use-package ibuffer
-  :config
+  :init
   (defalias 'list-buffers 'ibuffer)
   (defun my/ibuffer-mode-hook ()
     "Handle Ibuffer settings."
@@ -444,8 +445,8 @@
                        (mode . gnus-article-mode)
                        (name . "^\\.bbdb$")
                        (name . "^\\.newsrc-dribble"))))))
-  :hook ((ibuffer-mode-hook . my/ibuffer-mode-hook)
-         (ibuffer-mode-hook . ibuffer-auto-mode))
+  :hook ((ibuffer-mode-hook . ibuffer-auto-mode)
+         (ibuffer-mode-hook . my/ibuffer-mode-hook))
   :bind (:map ibuffer-mode-map
               ("C-x C-f" . counsel-find-file)))
 
@@ -499,7 +500,8 @@
 
   (setq rcirc-omit-responses '("JOIN" "PART" "QUIT" "NICK" "AWAY"))
   ;;(setq rcirc-time-format "%Y-%m-%d %H:%M ")
-  :hook ((rcirc-track-minor-mode flyspell-mode) . rcirc-mode-hook))
+  :hook ((rcirc-mode-hook . rcirc-track-minor-mode)
+         (rcirc-mode-hook . flyspell-mode)))
 
 (use-package erc
   :hook ((erc-mode-hook . erc-services-mode)
@@ -645,6 +647,8 @@
 (use-package sly
   :ensure t
   :config
+  (when (eq system-type 'gnu/linux)
+    (setenv "SBCL_HOME" (concat (getenv "HOME") "/lib/sbcl")))
   (setq sly-lisp-implementations '((sbcl ("sbcl" "--dynamic-space-size" "2048"))
                                    (ecl ("ecl"))
                                    (clisp ("clisp" "-ansi"))
@@ -734,7 +738,9 @@
               ("C-c C-d" . gdb)
               ("C-m" . c-context-line-break)
               ("C-c o" . ff-find-other-file))
-  :init
+  :hook ((c-mode-common-hook . which-function-mode)
+         (c-mode-common-hook . cwarn-mode))
+  :config
   (defun my/c-mode-common ()
     "Programming options shared for C-like languages."
     ;;(setq company-backends (delete 'company-semantic company-backends))
@@ -1040,6 +1046,19 @@
 ;;; Functions
 ;;; ------------------------------
 
+(defun bf-pretty-print-xml-region (begin end)
+  "Pretty format XML markup in region.  The function inserts
+linebreaks to separate tags that have nothing but whitespace
+between them."
+  (interactive "r")
+  (save-excursion
+    (nxml-mode)
+    (goto-char begin)
+    (while (search-forward-regexp "\>[ \\t]*\<" nil t)
+      (backward-char) (insert "\n"))
+    (indent-region begin end))
+  (message "Ah, much better!"))
+
 (defun rename-current-file-or-buffer ()
   "Rename current buffer."
   (interactive)
@@ -1073,42 +1092,20 @@
 (global-set-key (kbd "C-w") 'backward-kill-word)
 (global-set-key (kbd "C-c C-j") 'join-line)
 (global-set-key (kbd "C-c R") 'rename-current-file-or-buffer)
+
 (global-set-key (kbd "M-z") 'zap-up-to-char)
+
+;; enable regexp search by default
+;;(global-set-key (kbd "C-s") 'isearch-forward-regexp)
+;;(global-set-key (kbd "C-r") 'isearch-backward-regexp)
 
 ;; shortcuts
 (global-set-key (kbd "M-o") 'other-window)
 (global-set-key (kbd "<f1>") 'eshell)
 (global-set-key (kbd "<f2>") 'rgrep)
+(global-set-key (kbd "<f6>") 'magit-status)
 (global-set-key (kbd "<f11>") 'gnus)
-
-;; (case active-scheme-implementation
-;;   ((gambit)
-;;    (require 'gambit)
-;;    (add-hook 'inferior-scheme-mode-hook 'gambit-inferior-mode))
-;;   ((gerbil)
-;;    (autoload 'gerbil-mode "gerbil" "Gerbil editing mode." t)
-;;    (add-to-list 'auto-mode-alist '("\\.ss" . gerbil-mode))
-;;    (defvar gerbil-program-name
-;;      (expand-file-name "~/git/gerbil/bin/gxi")) ; Set this for your GERBIL_HOME
-;;    (setq scheme-program-name gerbil-program-name)
-;;    (let ((gerbil-el (expand-file-name "~/git/gerbil/etc/gerbil.el")))
-;;      (when (file-exists-p gerbil-el)
-;;        (load-file (concat user-emacs-directory "elisp/gerbil.el"))))))
-
-(defun bf-pretty-print-xml-region (begin end)
-  "Pretty format XML markup in region. You need to have nxml-mode
-http://www.emacswiki.org/cgi-bin/wiki/NxmlMode installed to do
-this.  The function inserts linebreaks to separate tags that have
-nothing but whitespace between them.  It then indents the markup
-by using nxml's indentation rules."
-  (interactive "r")
-  (save-excursion
-    (nxml-mode)
-    (goto-char begin)
-    (while (search-forward-regexp "\>[ \\t]*\<" nil t)
-      (backward-char) (insert "\n"))
-    (indent-region begin end))
-  (message "Ah, much better!"))
+(global-set-key (kbd "<f12>") 'bookmark-bmenu-list)
 
 ;; Use a hook so the message doesn't get clobbered by other messages.
 (add-hook 'emacs-startup-hook
@@ -1125,6 +1122,8 @@ by using nxml's indentation rules."
 ;; Load optional local startup files
 (when (file-exists-p (concat user-emacs-directory "init-local.el"))
   (load (concat user-emacs-directory "init-local.el")))
+
+(server-start)
 
 (provide 'init)
 
