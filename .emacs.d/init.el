@@ -3,7 +3,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2019-05-02 23:40:20 (tmy)>
+;;; Time-stamp: <2020-03-23 20:29:09 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -81,12 +81,384 @@
   :ensure t
   :bind ("C-:" . avy-goto-char))
 
+(use-package magit
+  :ensure t
+  :config
+  (setq magit-completing-read-function 'ivy-completing-read)
+  :bind ("C-x v /" . magit-status))
+
+(use-package smex
+  :ensure t)
+
+(use-package flx
+  :ensure t)
+
+(use-package ivy
+  :ensure t
+  :diminish (ivy-mode . "")
+  :bind (("C-c C-r" . ivy-resume)
+         :map ivy-mode-map
+         ("C-'" . ivy-avy))
+  :config
+  (ivy-mode 1)
+  (setq ivy-use-virtual-buffers t      ;; add ‘recentf-mode’ and bookmarks to ‘ivy-switch-buffer’.
+        ivy-height 10                  ;; number of result lines to display
+        ;;ivy-count-format ""          ;; does not count candidates
+        ;;ivy-initial-inputs-alist nil ;; no regexp by default
+        ;;ivy-re-builders-alist '((t . ivy--regex-ignore-order)) ;; configure regexp engine. ;; allow input not in order
+        ))
+
+(use-package counsel
+  :ensure t
+  :diminish t
+  :config
+  (counsel-mode))
+
+(use-package swiper
+  :ensure t
+  :bind (("C-s" . swiper)))
+
+(use-package yaml-mode
+  :ensure t
+  :mode "\\.yml$\\|\\.yaml$"
+  :config
+  (add-to-list 'magic-mode-alist '("---" . yaml-mode) )
+)
+
+(use-package multi-term
+  :ensure t
+  :config
+  (setq multi-term-program (case system-type
+                             (gnu/linux "/bin/bash")
+                             (windows-nt "C:\\bin\\cmd.exe")
+                             (berkeley-unix "/bin/ksh")
+                             (usg-unix-v "/bin/ksh")))
+  :bind (("C-c t" . multi-term-next)
+         ("C-c T" . multi-term)))
+
+(use-package tex
+  :defer t
+  :ensure auctex
+  :hook (latex-mode-hook . auto-fill-mode)
+  :config
+  (setq TeX-auto-save t
+        TeX-parse-self t
+        TeX-insert-braces nil
+        TeX-electric-escape t
+        TeX-electric-macro t
+        TeX-newline-function 'reindent-then-newline-and-indent))
+
+(use-package hungry-delete
+  :ensure t
+  :config (global-hungry-delete-mode))
+
+(use-package quack
+  :disabled
+  :ensure t
+  :config
+  (setq quack-default-program "csi"
+        quack-dir (concat user-emacs-directory "quack/")
+        quack-fontify-style nil
+        quack-newline-behavior 'indent-newline-indent
+        quack-pretty-lambda-p nil
+        quack-remap-find-file-bindings-p nil
+        quack-run-scheme-always-prompts-p nil
+        quack-run-scheme-prompt-defaults-to-last-p t
+        quack-smart-open-paren-p t
+        quack-switch-to-scheme-method 'other-window))
+
+(use-package bongo
+  :ensure t
+  :defer t
+  :config
+  (setq bongo-custom-backend-matchers
+        `((mplayer
+           (local-file "file:" "http:" "ftp:")
+           "ogg" "flac" "mp3" "m4a" "mka" "wav" "wma" "mpg" "mpeg" "vob" "avi" "ogm" "mp4" "m4v" "mkv" "flv" "mov" "asf" "wmv" "rm" "rmvb" "ts")))
+
+  ;; don't autoplay next track if playing video
+  (add-hook 'bongo-player-started-hook
+            (lambda ()
+              (with-bongo-playlist-buffer
+               (when (bongo-video-file-name-p
+                      (bongo-player-get bongo-player 'file-name))
+                 (setq bongo-next-action 'bongo-stop))))))
+
+(use-package suomalainen-kalenteri
+  :ensure t)
+
+(use-package smart-mode-line
+  :ensure t
+  :config (sml/setup))
+
+(use-package smart-mode-line-powerline-theme
+  :ensure t
+  :config (sml/apply-theme 'powerline))
+
+(use-package smartparens
+  :disabled
+  :defer t
+  :ensure t
+  :init (require 'smartparens-config)
+  :config
+  (smartparens-global-strict-mode 1)
+  (add-to-list 'sp-lisp-modes 'sly-mrepl-mode)
+  (add-to-list 'sp-lisp-modes 'sly-mode)
+  (sp-local-pair #'sly-mrepl-mode "'" nil :actions nil))
+
+(use-package projectile
+  :ensure t
+  :config
+  (projectile-global-mode)
+  (setq projectile-enable-caching t)
+  (setq projectile-completion-system 'ivy))
+
+(use-package counsel-projectile
+  :ensure t
+  :hook (after-init-hook . counsel-projectile-mode))
+
+(use-package company
+  :ensure t
+  :hook (after-init . global-company-mode)
+  :config (setq company-dabbrev-downcase nil)
+  :bind (("M-/" . company-complete)
+         :map company-active-map
+         ("C-n" . company-select-next)
+         ("C-p" . company-select-previous)))
+
+(use-package company-go
+  :ensure t
+  :defer t
+  :config
+  (add-to-list 'company-backends 'company-go))
+
+ (use-package zenburn-theme
+   :ensure t
+   :config (load-theme 'zenburn t))
+
+ (use-package base16-theme
+   :ensure t)
+
+(use-package flatland-theme
+  :ensure t)
+
+(use-package lsp-mode
+  :init (setq lsp-keymap-prefix "C-c l")
+  :hook ((typescript-mode . lsp-deferred)
+         (lsp-mode . lsp-enable-which-key-integration))
+  :commands lsp)
+
+;; optionally
+(use-package lsp-ui
+  :ensure t
+  :commands lsp-ui-mode)
+
+(use-package company-lsp
+  :ensure t
+  :commands company-lsp)
+
+(use-package lsp-ivy
+  :ensure t
+  :commands lsp-ivy-workspace-symbol)
+
+;; optionally if you want to use debugger
+(use-package dap-mode
+  :ensure t)
+
+(use-package tide
+  :ensure t
+  :after (typescript-mode company flycheck)
+  :hook ((typescript-mode . zmg/tide-mode-hook)
+         (before-save . tide-format-before-save))
+  :init (defun zmg/tide-mode-hook ()
+            (tide-setup)
+            (flycheck-mode +1)
+            (setq flycheck-check-syntax-automatically '(save mode-enabled))
+            (eldoc-mode +1)
+            (tide-hl-identifier-mode +1)
+            (company-mode +1)))
+
+(use-package markdown-mode
+  :ensure t
+  :commands (markdown-mode gfm-mode)
+  :mode (("README\\.md\\'" . gfm-mode)
+         ("\\.md\\'" . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode))
+  :init (setq markdown-command "multimarkdown"))
+
+(use-package flycheck
+  :ensure t
+  :hook (after-init-hook . global-flycheck-mode)
+  :config
+  (setq flycheck-completion-system 'ivy
+        flycheck-phpcs-standard "Zend")
+  (flycheck-add-mode 'typescript-tslint 'web-mode))
+
+(use-package yasnippet
+  :ensure t
+  :if (not noninteractive)
+  :diminish yas-minor-mode
+  :commands (yas-global-mode yas-minor-mode))
+
+(use-package rainbow-mode
+  :ensure t)
+
+(use-package web-mode
+  :ensure t
+  :after flycheck-mode
+  :mode (("\\.jsp\\'" . web-mode)
+         ("\\.ap[cp]x\\'" . web-mode)
+         ("\\.erb\\'" . web-mode)
+         ("\\.rhtml\\'" . web-mode)
+         ("\\.mustache\\'" . web-mode)
+         ("\\.djhtml\\'" . web-mode)
+         ("\\.tsx\\'" . web-mode)
+         ("\\.jsx\\'" . web-mode))
+  :config
+  (defun my/web-mode-hook ()
+    "Hooks for Web mode."
+    (setq web-mode-markup-indent-offset 2
+          web-mode-css-indent-offset 2
+          web-mode-code-indent-offset 4)
+    (when (member (file-name-extension buffer-file-name) '("tsx" "jsx"))
+      (setup-tide-mode)))
+  (flycheck-add-mode 'typescript-tslint 'web-mode)
+  (flycheck-add-mode 'javascript-eslint 'web-mode)
+  (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
+  (add-hook 'web-mode-hook 'my/web-mode-hook))
+
+(use-package rvm
+  :ensure t
+  :config (rvm-use-default))
+
+(use-package go-mode
+  :ensure t
+  :hook ((before-save . gofmt-before-save)
+         (go-mode-hook . company-mode)) ;; ensure company is loaded
+  :bind (:map go-mode-map
+              ("C-c m" . gofmt)
+              ("M-." . godef-jump)
+              ("C-c C-r" . go-remove-unused-imports)
+              ("C-c g i" . go-goto-imports)
+              ("C-c C-k" . godoc))
+  :config
+  (setq gofmt-command "goimports")
+  (set (make-local-variable 'compile-command) "go build -v && go test -v && go vet")
+  (set (make-local-variable 'company-backends) '(company-go)))
+
+(use-package go-eldoc
+  :ensure t
+  :hook (go-mode-hook . go-eldoc-setup))
+
+(use-package godoctor
+  :ensure t
+  :defer t)
+
+(use-package go-guru
+  :ensure t
+  :defer t)
+
+(use-package go-errcheck
+  :ensure t
+  :defer t)
+
+(use-package projectile-rails
+  :ensure t
+  :defer t
+  :hook (projectile-mode-hook . projectile-rails-on))
+
+(use-package clojure-mode
+  :ensure t
+  :mode ("\\.clj\\'" . clojure-mode)
+  :hook (clojure-mode-hook . my/shared-lisp-hook))
+
+(use-package cider
+  :ensure t
+  :defer t
+  :config
+  (setq cider-lein-parameters "repl :headless :host localhost")
+  (setq nrepl-hide-special-buffers t)
+  :hook ((cider-mode-hook . eldoc-mode)
+         (cider-repl-mode-hook . subword-mode)))
+
+(use-package geiser
+  :disabled
+  :ensure t
+  :config
+  (when (eq system-type 'berkeley-unix)
+    (setq geiser-chicken-binary "chicken-csi"
+          geiser-guile-binary "guile2")))
+
+(use-package racket-mode
+  :disabled
+  :hook ((racket-mode-hook . my/shared-lisp-hook)
+         (racket-repl-mode-hook . my/shared-lisp-hook)))
+
+(use-package diminish
+  :ensure t)
+
+(use-package elfeed
+  :ensure t
+  :defer t
+  :config
+  (setq elfeed-use-curl t
+        elfeed-feeds
+        '("http://nullprogram.com/feed/"
+          "http://planet.emacsen.org/atom.xml"
+          "https://news.ycombinator.com/rss"
+          "http://www.tedunangst.com/flak/rss"
+          "https://undeadly.org/cgi?action=rss"
+          "https://www.phoronix.com/rss.php"
+          "http://planetsysadmin.com/atom.xml"
+          "https://planet.lisp.org/rss20.xml"
+          "https://lobste.rs/t/emacs.lisp.security.ask.ai.openbsd.programming.rss")))
+
+(use-package php-mode
+  :ensure t
+  :after company-php
+  :mode (("\\.php[345]?\\'\\|\\.phtml\\'" . php-mode))
+  :config
+  (defun my/php-mode-hook ()
+    (require 'company-php)
+    (company-mode t)
+    (add-to-list 'company-backends 'company-ac-php-backend)
+    (setq php-site-url "http://fi2.php.net/")
+    (php-enable-symfony2-coding-style)
+    (define-abbrev php-mode-abbrev-table "ex" "extends")
+    (setq indent-tabs-mode nil
+          tab-width 4
+          c-basic-offset 4))
+  :hook (php-mode-hook . my/php-mode-hook))
+
+(use-package composer
+  :ensure t
+  :defer t)
+
+(use-package company-php
+  :ensure t)
+
+(use-package company-shell
+  :ensure t
+  :defer t)
+
+(use-package adjust-parens
+  :ensure t)
+
+;;; ------------------------------
+;;; General
+;;; ------------------------------
+
 ;; silence gnutls warnings
 (setq gnutls-min-prime-bits nil
       gnutls-verify-error nil)
 
+;; TODO: workaround for emacs bug, fixed in 26.3+
+(when (version<= emacs-version "26.3")
+  (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
+
 ;; https://bugs.debian.org/766397
-(setq tls-program '("gnutls-cli --x509cafile %t -p %p %h"))
+(when (version<= emacs-version "27")
+  (setq tls-program '("gnutls-cli --x509cafile %t -p %p %h")))
 
 ;; keep a little more history to see whats going on
 (setq message-log-max 16384)
@@ -753,10 +1125,12 @@
     "My C++ programming options."
     (setq fill-column 100)
     (c-set-style "stroustrup")
-    (setq whitespace-line-column 100))
-  :hook ((c-mode-common-hook . my/c-mode-common)
-         (c-mode-hook . my/c-mode )
-         (c-mode-hook . my/c++-mode)))
+    (setq whitespace-line-column 100
+          whitespace-style '(face lines-tail)))
+
+  ;;(add-hook 'c-mode-common-hook 'my/c-mode-common)
+  (add-hook 'c-mode-hook 'my/c-mode)
+  (add-hook 'c++-mode-hook 'my/c++-mode))
 
 (use-package cperl-mode
   :init
@@ -777,6 +1151,7 @@
 
 (use-package web-mode
   :ensure t
+  :after flycheck
   :mode (("\\.jsp\\'" . web-mode)
          ("\\.ap[cp]x\\'" . web-mode)
          ("\\.erb\\'" . web-mode)
@@ -955,7 +1330,9 @@
               ("C-p" . company-select-previous)
               ("C-d" . company-show-doc-buffer)
               ("M-." . company-show-location))
-  :config (add-hook 'after-init-hook 'global-company-mode))
+  :config (add-hook 'after-init-hook 'global-company-mode)
+  ;; aligns annotation to the right hand side
+  (setq company-tooltip-align-annotations t))
 
 (setq dabbrev-case-replace nil)
 
