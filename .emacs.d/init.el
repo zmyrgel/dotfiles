@@ -3,7 +3,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2020-03-23 20:29:09 (tmy)>
+;;; Time-stamp: <2020-03-23 20:51:03 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -24,16 +24,14 @@
 (setq custom-file (concat user-emacs-directory "custom.el"))
 (load custom-file 'noerror)
 
-;; Ensure ELPA exists
-(when (not (file-directory-p elpa-dir))
-  (make-directory elpa-dir t))
-
 (require 'package)
 
-(add-to-list 'load-path elisp-dir)
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+(add-to-list 'package-archives
+             '("melpa" . "https://melpa.org/packages/"))
 
-(package-initialize)
+;; avoid re-initializing packages
+(when (version< emacs-version "27")
+  (package-initialize))
 
 ;; load of use-package to handle rest of package initialization.
 (unless (package-installed-p 'use-package)
@@ -499,6 +497,7 @@
 (add-hook 'org-mode-hook 'flyspell-mode)
 (add-hook 'change-log-mode-hook 'my/disable-flyspell)
 (add-hook 'log-edit-mode-hook 'my/disable-flyspell)
+
 (setq flyspell-issue-message-flag nil)
 
 (defun my/text-mode-hook ()
@@ -780,7 +779,7 @@
       uniquify-ignore-buffers-re "^\\*")
 
 (use-package ibuffer
-  :init
+  :config
   (defalias 'list-buffers 'ibuffer)
   (defun my/ibuffer-mode-hook ()
     "Handle Ibuffer settings."
@@ -939,7 +938,7 @@
 ;; gnus
 (use-package gnus
   :config
-  (setq gnus-select-method '(nntp "news.gmane.org")
+  (setq gnus-select-method '(nntp "news.gmane.io")
         gnus-treat-hide-citation t
         gnus-cited-lines-visible '(0 . 5)
         gnus-always-read-dribble-file t
