@@ -3,7 +3,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2020-07-29 07:26:31 (tmy)>
+;;; Time-stamp: <2020-07-29 22:58:57 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -59,6 +59,7 @@
 
 (use-package which-key
   :ensure t
+  :diminish which-key-mode
   :config (which-key-mode))
 
 (use-package gnutls
@@ -68,11 +69,7 @@
         gnutls-verify-error nil)
   ;; TODO: workaround for emacs bug, fixed in 26.3+
   (when (version<= emacs-version "26.3")
-  (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")))
-
-;;; ------------------------------
-;;; General
-;;; ------------------------------
+    (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")))
 
 ;; https://bugs.debian.org/766397
 (when (version<= emacs-version "27")
@@ -90,44 +87,35 @@
 ;; confirm before exiting emacs
 (setq confirm-kill-emacs 'y-or-n-p)
 
-;; Search and replace
-(setq search-highlight t
-      query-replace-highlight t
-      case-fold-search t)
+(use-package isearch
+  :config (setq search-highlight t))
 
-;; Startup
-(setq initial-scratch-message ""
-      inhibit-startup-screen t
-      inhibit-startup-echo-area-message t)
+(setq query-replace-highlight t)
 
 ;; Misc options
 (auto-compression-mode 1)
-(setq set-mark-command-repeat-pop t)
 
 ;; mouse options
 (setq mouse-yank-at-point t)
 (mouse-wheel-mode t)
 
-;; enable flyspell for most text-based buffers
-(defun my/disable-flyspell-hook ()
-  "Disable flyspell mode."
-  (flyspell-mode -1))
-
-(add-hook 'text-mode-hook 'flyspell-mode)
-(add-hook 'org-mode-hook 'flyspell-mode)
-(add-hook 'change-log-mode-hook 'my/disable-flyspell)
-(add-hook 'log-edit-mode-hook 'my/disable-flyspell)
-
-(setq flyspell-issue-message-flag nil)
-
 (defun my/text-mode-hook ()
   "Default settings for Text."
   (set-fill-column 80))
+
+(use-package flyspell
+  :hook ((change-log-mode-hook . 'flyspell-mode-off)
+         (log-edit-mode-hook . 'flyspell-mode-off)
+         (text-mode-hook . 'flyspell-mode))
+  :config
+  (setq flyspell-issue-message-flag nil)
+)
 
 ;; Hooks
 (add-hook 'text-mode-hook 'my/text-mode-hook)
 (add-hook 'text-mode-hook 'auto-fill-mode)
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
+;;(add-hook 'before-save-hook 'whitespace-cleanup)
 (add-hook 'before-save-hook 'time-stamp)
 (add-hook 'comint-output-filter-functions 'comint-watch-for-password-prompt)
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
@@ -136,12 +124,15 @@
 ;;; Text editing
 ;;; ------------------------------
 
+;; XXX: eval
+;;(use-package crux :ensure t)
+
 (use-package hungry-delete
   :ensure t
   :config (global-hungry-delete-mode))
 
 (use-package smartparens
-  :defer t
+  :diminish
   :ensure t
   :init (require 'smartparens-config)
   :config
@@ -149,6 +140,10 @@
   (add-to-list 'sp-lisp-modes 'sly-mrepl-mode)
   (add-to-list 'sp-lisp-modes 'sly-mode)
   (sp-local-pair #'sly-mrepl-mode "'" nil :actions nil))
+
+(use-package adjust-parens
+  :disabled
+  :ensure t)
 
 (use-package tex
   :defer t
@@ -172,69 +167,25 @@
 
 (use-package yaml-mode
   :ensure t
-  :mode "\\.yml\\|\\.yaml$"
+  :mode "\\.yml$\\|\\.yaml$"
   :config
   (add-to-list 'magic-mode-alist '("---" . yaml-mode)))
 
 (use-package ansible-vault
   :ensure t)
 
+(use-package typescript-mode
+  :ensure t)
+
+(use-package yasnippet
+  :ensure t
+  :if (not noninteractive)
+  :diminish yas-minor-mode
+  :commands (yas-global-mode yas-minor-mode))
+
 ;;; ------------------------------
 ;;; Visual settings
 ;;; ------------------------------
-
-(global-font-lock-mode t)
-(setq font-lock-maximum-decoration t)
-
-(show-paren-mode t)
-(setq visible-bell t)
-(setq window-min-height 3)
-
-(blink-cursor-mode -1)
-(setq-default cursor-type 'box)
-
-(when (fboundp 'tool-bar-mode)
-  (tool-bar-mode -1))
-(when (fboundp 'scroll-bar-mode)
-  (scroll-bar-mode -1))
-(when (fboundp 'horizontal-scroll-bar-mode)
-  (horizontal-scroll-bar-mode -1))
-(menu-bar-mode t)
-
-;; Set Default font if present
-(let ((my-font-name "tamsyn-16"))
-  (when (find-font (font-spec :name my-font-name))
-    (add-to-list 'default-frame-alist `(font . ,my-font-name))
-    (set-face-attribute 'default nil :font my-font-name)))
-
-;; Maximize first frame
-(add-to-list 'default-frame-alist '(fullscreen . maximized))
-
-;; Setup clipboard options if running in X
-
-;; Graphical Emacs seems to freeze when handling clipboard, so
-;; decrease the selection timeout so it won't wait for so long.
-;; https://omecha.info/blog/org-capture-freezes-emacs.html
-(when (eq system-type 'berkeley-unix)
-  (setq x-selection-timeout 10))
-
-;; disable dialog boxes
-(setq use-file-dialog nil
-      use-dialog-box nil)
-
-;; the modeline
-(line-number-mode t)
-(column-number-mode t)
-(display-time-mode -1)
-
-;; show file size
-(size-indication-mode t)
-
-;; show buffer name in title
-(setq frame-title-format
-      '((:eval (if (buffer-file-name)
-		   (concat "Emacs: " (abbreviate-file-name (buffer-file-name)))
-		 "Emacs: %b"))))
 
 (use-package diminish
   :ensure t)
@@ -250,12 +201,81 @@
 (use-package zenburn-theme
   :ensure t)
 
-(use-package modus-vivendi-theme
+(use-package gruvbox-theme
   :ensure t
-  :config (load-theme 'modus-vivendi t))
+  :config (load-theme 'gruvbox-dark-soft t nil))
 
 (use-package base16-theme
   :ensure t)
+
+(use-package font-core
+  :config (global-font-lock-mode t))
+
+(use-package font-lock
+  :config (setq font-lock-maximum-decoration t))
+
+(use-package paren
+  :config (show-paren-mode t))
+
+(use-package frame
+  :config (blink-cursor-mode -1)
+)
+
+;; default emacs configurations
+(use-package emacs
+  :config
+
+  (when (fboundp 'tool-bar-mode)
+    (tool-bar-mode -1))
+  (when (fboundp 'scroll-bar-mode)
+    (scroll-bar-mode -1))
+  (when (fboundp 'horizontal-scroll-bar-mode)
+    (horizontal-scroll-bar-mode -1))
+  (menu-bar-mode t)
+
+  (setq case-fold-search t)
+
+  (setq-default cursor-type 'box)
+
+  (setq initial-scratch-message ""
+        inhibit-startup-screen t
+        inhibit-startup-echo-area-message t)
+
+  (setq visible-bell t)
+  (setq window-min-height 3)
+
+  ;; disable dialog boxes
+  (setq use-file-dialog nil
+        use-dialog-box nil)
+
+  ;; Maximize first frame
+  (add-to-list 'default-frame-alist '(fullscreen . maximized))
+
+  ;; Set Default font if present
+  (let ((my-font-name "tamsyn-16"))
+    (when (find-font (font-spec :name my-font-name))
+      (add-to-list 'default-frame-alist `(font . ,my-font-name))
+      (set-face-attribute 'default nil :font my-font-name)))
+
+  ;; Graphical Emacs seems to freeze when handling clipboard, so
+  ;; decrease the selection timeout so it won't wait for so long.
+  ;; https://omecha.info/blog/org-capture-freezes-emacs.html
+  ;; XXX: why is this needed?
+  (when (eq system-type 'berkeley-unix)
+    (setq x-selection-timeout 10))
+
+  ;; show buffer name in title
+  (setq frame-title-format
+        '((:eval (if (buffer-file-name)
+		     (concat "Emacs: " (abbreviate-file-name (buffer-file-name)))
+		   "Emacs: %b")))))
+
+(use-package simple
+  :config
+  (setq set-mark-command-repeat-pop t)
+  (size-indication-mode t)
+  (line-number-mode t)
+  (column-number-mode t))
 
 ;;; ------------------------------
 ;;; Calendar and diary settings
@@ -295,14 +315,19 @@
         diary-number-of-entries 7)) ;; XXX: is this needed)
 
 ;; time utilities
-(setq time-stamp-active t
-      time-stamp-line-limit 10
-      time-stamp-format "%Y-%02m-%02d %02H:%02M:%02S (%u)")
+(use-package time-stamp
+  :config
+  (setq time-stamp-active t
+        time-stamp-line-limit 10
+        time-stamp-format "%Y-%02m-%02d %02H:%02M:%02S (%u)"))
 
-(setq display-time-24hr-format t
-      display-time-day-and-date nil
-      display-time-format nil
-      display-time-use-mail-icon t)
+(use-package time
+  :config
+  (display-time-mode -1)
+  (setq display-time-24hr-format t
+        display-time-day-and-date nil
+        display-time-format nil
+        display-time-use-mail-icon t))
 
 ;;; ------------------------------
 ;;; Session
@@ -326,9 +351,9 @@
 
 (use-package savehist
   :config
-  (setq savehist-additional-variables '(search ring regexp-search-ring)
-        savehist-autosave-interval 60
-        savehist-file (concat user-emacs-directory "savehist"))
+  (setq savehist-file (concat user-emacs-directory "savehist")
+        savehist-additional-variables '(search ring regexp-search-ring)
+        savehist-autosave-interval 60)
   (savehist-mode t))
 
 (use-package abbrev
@@ -339,14 +364,13 @@
   (when (file-exists-p abbrev-file-name)
     (quietly-read-abbrev-file)))
 
-(setq backup-directory-alist (list `("." . ,(concat user-emacs-directory "backups/")))
-      make-backup-files t
-      backup-by-copying t
-      auto-save-timeout 600
-      version-control t
-      kept-new-versions 2
-      kept-old-versions 3
-      delete-old-versions t)
+(use-package files
+  :config
+  (setq large-file-warning-threshold 50000000
+        backup-directory-alist `((".*" . ,temporary-file-directory))
+        ;;auto-save-file-name-transforms `((".*" ,temporary-file-directory t))
+        make-backup-files t
+        backup-by-copying t))
 
 ;;; ------------------------------
 ;;; Shell settings
@@ -365,7 +389,6 @@
 
 (use-package multi-term
   :ensure t
-  :config
   :bind (("C-c t" . multi-term-next)
          ("C-c T" . multi-term)))
 
@@ -400,7 +423,6 @@
 ;;; customization for term, ansi-term
 ;; disable cua and transient mark modes in term-char-mode
 (defadvice term-line-mode (after term-line-mode-fixes ())
-
   (set (make-local-variable 'transient-mark-mode) t))
 (ad-activate 'term-line-mode)
 
@@ -415,7 +437,7 @@
 
 (use-package org
   :config
-  (setq org-directory (concat user-emacs-directory "org")
+  (setq org-directory (concat user-emacs-directory "org/")
         org-outline-path-complete-in-steps nil
         org-agenda-files (list org-directory)
         org-agenda-include-diary t ;; TODO: this exists?
@@ -433,16 +455,13 @@
                             (sequence "STALLED(s@/!)" "|")
                             (sequence "PENDING(p@/!)" "|"))
         ;; capture notes
-        org-default-notes-file (concat org-directory "/notes.org"))
+        org-default-notes-file (concat org-directory "notes.org"))
   :bind (("C-c l" . org-store-link)
          ("C-c a" . org-agenda)
          ("C-c b" . org-iswitchb)
          ("C-c c" . org-capture))
-  ;; XXX: won't work on emacs-27
-  ;; :hook ((message-mode . turn-on-orgstruct)
-  ;;        (message-mode . turn-on-orgstruct++)
-  ;;        (message-mode . turn-on-orgtbl))
-  )
+  :hook ((org-mode-hook . 'flyspell-mode)
+         (message-mode . turn-on-orgtbl)))
 
 ;;; ------------------------------
 ;;; Buffer management
@@ -457,48 +476,14 @@
 (use-package ibuffer
   :config
   (defalias 'list-buffers 'ibuffer)
-  (defun my/ibuffer-mode-hook ()
-    "Handle Ibuffer settings."
-    (ibuffer-switch-to-saved-filter-groups "default"))
   (setq ibuffer-default-sorting-mode 'major-mode
-        ibuffer-expert t
-        ibuffer-show-empty-filter-groups nil
-        ibuffer-saved-filter-groups
-        '(("default"
-           ("Dired" (mode . dired-mode))
-           ("Programming" (used-mode . prog-mode))
-           ("Shell" (or (mode . shell-mode)
-                        (mode . term-mode)
-                        (mode . eshell-mode)))
-           ("Emacs" (or (mode . emacs-lisp-mode)
-                        (name . "^\\*\\(scratch\\|Messages\\|Packages\\)\\*$")
-                        (mode . info-mode)
-                        (mode . help-mode)))
-           ("Organization" (or (name . "^\\*Calendar\\*$")
-                               (name . "^diary$")
-                               (mode . org-mode)
-                               (mode . muse-mode)))
-           ("Web"  (or (mode . w3m-mode)
-                       (mode . eww-mode)))
-           ("IRC"  (or (mode . rcirc-mode)
-                       (mode . erc-mode)))
-           ("Email" (or (mode . mu4e-mode)
-                       (name . "^mu4e")
-                       (mode . message-mode)
-                       (mode . bbdb-mode)
-                       (mode . mail-mode)
-                       (mode . gnus-group-mode)
-                       (mode . gnus-summary-mode)
-                       (mode . gnus-article-mode)
-                       (name . "^\\.bbdb$")
-                       (name . "^\\.newsrc-dribble"))))))
-  :hook ((ibuffer-mode-hook . ibuffer-auto-mode)
-         (ibuffer-mode-hook . my/ibuffer-mode-hook))
+        ibuffer-expert t)
+  :hook ((ibuffer-mode-hook . ibuffer-auto-mode))
   :bind (:map ibuffer-mode-map
               ("C-x C-f" . counsel-find-file)))
 
 (use-package ibuffer-vc
-  :disabled ;; TODO: causes a lot slow-down, music skips etc.
+  :disabled
   :ensure t
   :defer t
   :config
@@ -531,7 +516,6 @@
 ;;; ------------------------------
 
 (use-package rcirc
-  :after (secrets)
   :config
   (setq rcirc-server-alist
         '(("irc.freenode.net"
@@ -543,7 +527,7 @@
   (let ((nickserv-pass (secrets-get-secret "default" "freenode-pass")))
     (when nickserv-pass
       (setq rcirc-authinfo
-            '(("freenode" nickserv "zmyrgel" (secrets-get-secret "default" "nickserv-pass"))))))
+            `(("freenode" nickserv "zmyrgel" ,nickserv-pass)))))
 
   (setq rcirc-omit-responses '("JOIN" "PART" "QUIT" "NICK" "AWAY"))
   ;;(setq rcirc-time-format "%Y-%m-%d %H:%M ")
@@ -602,14 +586,15 @@
 
 (setq user-mail-address "timo.myyra@bittivirhe.fi"
       user-full-name "Timo Myyrä")
+(setq message-send-mail-function 'smtpmail-send-it)
 
-;; ;; smtp mail setting; these are the same that `gnus' uses.
-(setq message-send-mail-function   'smtpmail-send-it
-      smtpmail-default-smtp-server "smtp.fastmail.com"
-      smtpmail-smtp-server         "smtp.fastmail.com"
-      smtpmail-local-domain        "bittivirhe.fi"
-      smtpmail-smtp-service        465
-      smtpmail-stream-type         'ssl)
+(use-package smtpmail
+  :config
+  (setq smtpmail-default-smtp-server "smtp.fastmail.com"
+        smtpmail-smtp-server         "smtp.fastmail.com"
+        smtpmail-local-domain        "bittivirhe.fi"
+        smtpmail-smtp-service        465
+        smtpmail-stream-type         'ssl))
 
 ;; gnus
 (use-package gnus
@@ -648,7 +633,8 @@
           "https://undeadly.org/cgi?action=rss"
           "https://www.phoronix.com/rss.php"
           "http://planetsysadmin.com/atom.xml"
-          "https://planet.lisp.org/rss20.xml")))
+          "https://planet.lisp.org/rss20.xml"
+          "https://lobste.rs/t/emacs.lisp.security.ask.ai.openbsd.programming.rss")))
 
 (use-package eww
   :config
@@ -679,7 +665,7 @@
         ivy-height 10
         ;;ivy-count-format ""          ;; does not count candidates
         ;;ivy-initial-inputs-alist nil ;; no regexp by default
-        ;;ivy-re-builders-alist '((t . ivy--regex-ignore-order)) ;; configure regexp engine. ;; allow input not in order
+        ;;ivy-re-builders-alist '((t . ivy--regex-ignore-order)) ;; configure regexp engine. ;; allow input not in order))
         ))
 
 (use-package counsel
@@ -693,51 +679,130 @@
 
 (use-package company
   :ensure t
+  :diminish company-mode
   :hook (after-init . global-company-mode)
   :bind (("M-/" . company-complete)
-         (:map company-active-map
-               ("C-n" . company-select-next)
-               ("C-p" . company-select-previous)
-               ("C-d" . company-show-doc-buffer)
-               ("M-." . company-show-location)))
-  :config (add-hook 'after-init-hook 'global-company-mode)
-  ;; aligns annotation to the right hand side
+         :map company-active-map
+         ("C-n" . company-select-next)
+         ("C-p" . company-select-previous)
+         ("C-d" . company-show-doc-buffer)
+         ("M-." . company-show-location))
+  :config
+  (setq company-dabbrev-downcase nil)
   (setq company-tooltip-align-annotations t))
 
 (setq dabbrev-case-replace nil)
 
-(icomplete-mode t)
-(setq icomplete-prospects-height 2
-      completion-ignore-case t
-      read-file-name-completion-ignore-case t
-      tab-always-indent 'complete
-      completion-styles (append completion-styles '(initials)))
+(use-package icomplete
+  :config
+  (setq icomplete-prospects-height 2)
+  (icomplete-mode t))
+
+(setq completion-ignore-case t
+      tab-always-indent 'complete)
+
+(use-package minibuffer
+  :config
+  (setq read-file-name-completion-ignore-case t
+        completion-styles (append completion-styles '(initials))))
+
+;;; ------------------------------
+;;; File and directory management
+;;; ------------------------------
+
+(use-package bongo
+  :ensure t
+  :defer t
+  :config
+  (setq bongo-custom-backend-matchers
+        `((mplayer
+           (local-file "file:" "http:" "ftp:")
+           "ogg" "flac" "mp3" "m4a" "mka" "wav" "wma"
+           "mpg" "mpeg" "vob" "avi" "ogm" "mp4" "m4v"
+           "mkv" "flv" "mov" "asf" "wmv" "rm" "rmvb" "ts")))
+
+  ;; don't autoplay next track if playing video
+  (add-hook 'bongo-player-started-hook
+            (lambda ()
+              (with-bongo-playlist-buffer
+               (when (bongo-video-file-name-p
+                      (bongo-player-get bongo-player 'file-name))
+                 (setq bongo-next-action 'bongo-stop))))))
+
+(use-package dired
+  :init
+  (defun my/dired-load-hook ()
+    "My Dired load hook."
+    (setq truncate-lines t))
+  :bind (("C-x C-j" . dired-jump)
+         ("C-x 4 C-j" . dired-jump-other-window))
+  :hook ((dired-load-hook . 'my/dired-mode-hook)
+         (dired-mode-hook . 'hl-line-mode))
+  :config
+  (require 'dired-x)
+  (setq dired-isearch-filenames t
+        dired-ls-F-marks-symlinks t)
+  ;; Don't pass --dired flag to ls on BSD
+  (when (eq system-type 'berkeley-unix)
+    (setq dired-use-ls-dired nil))
+
+  (setq dired-omit-files "^#\\|\\.$\\|~$\\|^RCS$\\|,v$"
+        dired-guess-shell-alist-user
+        '(("\\.avi$\\|\\.mkv$\\|\\.mov$\\|\\.mpeg$\\|\\.mp4$" "mplayer"
+           "\\.rar$" "unrar e"))
+        dired-guess-shell-gnutar (if (eq system-type 'berkeley-unix)
+                                     "gtar"
+                                   "tar")))
+
+(setq find-ls-option '("-print0 | sort -t \0 | xargs -0 ls -ld" . "-ld"))
 
 ;;; ------------------------------
 ;;; Programming settings
 ;;; ------------------------------
 
+(use-package magit
+  :ensure t
+  :config
+  (setq magit-completing-read-function 'ivy-completing-read)
+  :bind ("C-x v /" . magit-status))
+
 (use-package eglot
   :ensure t)
 
 (use-package lsp-mode
+  :disabled
   :init (setq lsp-keymap-prefix "C-c l")
   :hook ((typescript-mode . lsp-deferred)
          (lsp-mode . lsp-enable-which-key-integration))
   :commands lsp)
 
-;; optionally
 (use-package lsp-ui
+  :disabled
   :ensure t
   :commands lsp-ui-mode)
 
 (use-package lsp-ivy
+  :disabled
   :ensure t
   :commands lsp-ivy-workspace-symbol)
 
-;; optionally if you want to use debugger
 (use-package dap-mode
+  :disabled
   :ensure t)
+
+(use-package tide
+  :disabled
+  :ensure t
+  :after (typescript-mode company flycheck)
+  :hook ((typescript-mode . zmg/tide-mode-hook)
+         (before-save . tide-format-before-save))
+  :init (defun zmg/tide-mode-hook ()
+            (tide-setup)
+            (flycheck-mode +1)
+            (setq flycheck-check-syntax-automatically '(save mode-enabled))
+            (eldoc-mode +1)
+            (tide-hl-identifier-mode +1)
+            (company-mode +1)))
 
 (use-package projectile
   :ensure t
@@ -751,20 +816,80 @@
   :after projectile-mode
   :hook (after-init-hook . counsel-projectile-mode))
 
+;;; Go programming
+
 (use-package company-go
   :ensure t
   :defer t
   :config
   (add-to-list 'company-backends 'company-go))
 
+(use-package go-mode
+  :ensure t
+  :after (company company-go)
+  :hook ((before-save-hook . gofmt-before-save)
+         (go-mode-hook . company-mode))
+  :bind (:map go-mode-map
+              ("C-c m" . gofmt)
+              ("M-." . godef-jump)
+              ("C-c C-r" . go-remove-unused-imports)
+              ("C-c g i" . go-goto-imports)
+              ("C-c C-k" . godoc))
+  :config
+  (setq gofmt-command "goimports")
+  (set (make-local-variable 'compile-command) "go build -v && go test -v && go vet"))
+
+(use-package go-eldoc
+  :ensure t
+  :hook (go-mode-hook . go-eldoc-setup))
+
+(use-package godoctor
+  :ensure t
+  :defer t)
+
+(use-package go-guru
+  :ensure t
+  :defer t)
+
+(use-package go-errcheck
+  :ensure t
+  :defer t)
+
+;;; Ruby
+
+(use-package rvm
+  :ensure t
+  :config (rvm-use-default))
+
+(use-package ruby-mode
+  :mode (("\\.\\(?:gemspec\\|irbrc\\|gemrc\\|rake\\|rb\\|ru\\|thor\\)\\'" . ruby-mode)
+         ("\\(Capfile\\|Gemfile\\(?:\\.[a-zA-Z0-9._-]+\\)?\\|[rR]akefile\\)\\'"  . ruby-mode))
+  :init
+  (defun my/ruby-mode-hook ()
+    (setq ruby-deep-arglist t)
+    (setq ruby-deep-indent-paren nil)
+    (setq c-tab-always-indent nil))
+  :hook my/ruby-mode-hook)
+
+(use-package projectile-rails
+  :ensure t
+  :defer t
+  :after projectile
+  :hook (projectile-mode-hook . projectile-rails-on))
+
+;;; Lisp programming
+
 (use-package rainbow-delimiters
-  :ensure t)
+  :ensure t
+  :diminish
+  :hook (prog-mode-hook . rainbow-delimiters-mode))
 
 (use-package sly
   :ensure t
   :config
-  (when (eq system-type 'gnu/linux)
-    (setenv "SBCL_HOME" (concat (getenv "HOME") "/lib/sbcl")))
+  (let ((sbcl-bin-path (concat (getenv "HOME") "/lib/sbcl")))
+    (when (file-exists-p sbcl-bin-path)
+      (setenv "SBCL_HOME" sbcl-bin-path)))
   (setq sly-lisp-implementations '((sbcl ("sbcl" "--dynamic-space-size" "2048"))
                                    (ecl ("ecl"))
                                    (clisp ("clisp" "-ansi"))
@@ -802,11 +927,61 @@
         quack-smart-open-paren-p t
         quack-switch-to-scheme-method 'other-window))
 
-(setq compilation-save-buffers-predicate nil
-      compilation-ask-about-save nil
-      compilation-window-height 12
-      gdb-many-windows t
-      diff-switches '("-u"))
+(use-package clojure-mode
+  :ensure t
+  :mode "\\.clj$"
+  :hook (clojure-mode-hook . my/shared-lisp-hook))
+
+(use-package cider
+  :ensure t
+  :defer t
+  :config
+  (setq cider-lein-parameters "repl :headless :host localhost"
+        nrepl-hide-special-buffers t)
+  :hook (cider-mode-hook . eldoc-mode))
+
+(use-package geiser
+  :disabled
+  :ensure t
+  :config
+  (when (eq system-type 'berkeley-unix)
+    (setq geiser-chicken-binary "chicken-csi"
+          geiser-guile-binary "guile2")))
+
+;;;; PHP programming
+
+(use-package composer
+  :ensure t
+  :defer t)
+
+(use-package company-php
+  :ensure t)
+
+(use-package php-mode
+  :ensure t
+  :after company-php
+  :mode "\\.php[345]?\\'\\|\\.phtml\\'"
+  :config
+  (defun my/php-mode-hook ()
+    (setq php-site-url "http://fi2.php.net/")
+    (php-enable-symfony2-coding-style)
+    (define-abbrev php-mode-abbrev-table "ex" "extends")
+    (setq indent-tabs-mode nil
+          tab-width 4
+          c-basic-offset 4))
+  :hook (php-mode-hook . my/php-mode-hook))
+
+(use-package rainbow-mode
+  :ensure t)
+
+(use-package compile
+  :config
+  (setq compilation-save-buffers-predicate nil
+        compilation-ask-about-save nil
+        compilation-window-height 12))
+
+(use-package diff
+  :config (setq diff-switches '("-u")))
 
 (use-package ediff
   :config
@@ -815,38 +990,20 @@
         ediff-diff-options "-w")
   :hook (ediff-after-quit-hook-internal . winner-undo))
 
-(use-package irony
-  :disabled
-  :ensure t)
-
-(use-package company-irony
-  :disabled
-  :ensure t
-  :after irony
-  :config
-  (add-to-list 'company-backends 'company-irony))
-
-(use-package flycheck-irony
-  :ensure t
-  :after irony
-  :hook (flycheck-mode . flycheck-irony-setup))
-
 (use-package prog-mode
   :config
   (defun my/prog-mode-hook ()
     "Hook to run when entering generic prog-mode."
-    (subword-mode 1)
-    (electric-pair-mode 1)
-    (adjust-parens-mode 1)
-    (which-function-mode 1)
-    (rainbow-delimiters-mode 1)
-    (flyspell-prog-mode))
     (setq whitespace-line-column 80
           whitespace-style '(face lines-tail)
           which-func-unknown "TOP LEVEL")
     (font-lock-add-keywords nil '(("\\<\\(FIXME\\|TODO\\|XXX+\\|BUG\\):"
                                    1 font-lock-warning-face prepend)))
-  :hook (prog-mode . my/prog-mode-hook))
+  :hook ((prog-mode . 'electric-pair-mode)
+         (prog-mode . 'subword-mode)
+         (prog-mode . 'which-function-mode)
+         (prog-mode . 'flyspell-prog-mode)
+         (prog-mode . 'my/prog-mode-hook))))
 
 (use-package cc-mode
   :bind (:map c-mode-map
@@ -872,7 +1029,6 @@
     (setq whitespace-line-column 100
           whitespace-style '(face lines-tail)))
 
-  ;;(add-hook 'c-mode-common-hook 'my/c-mode-common)
   (add-hook 'c-mode-hook 'my/c-mode)
   (add-hook 'c++-mode-hook 'my/c++-mode))
 
@@ -889,9 +1045,6 @@
           cperl-indent-level 4
           cperl-invalid-face 'default))
   :hook (cperl-mode . my/cperl-mode-hook))
-
-(use-package rainbow-mode
-  :ensure t)
 
 (use-package web-mode
   :ensure t
@@ -910,193 +1063,22 @@
     (setq web-mode-markup-indent-offset 2
           web-mode-css-indent-offset 2
           web-mode-code-indent-offset 4)
-    (when (member (file-name-extension buffer-file-name) '("tsx" "jsx"))
-      (eglot)))
+     (when (member (file-name-extension buffer-file-name) '("tsx" "jsx"))
+       (eglot)))
   (flycheck-add-mode 'typescript-tslint 'web-mode)
   (flycheck-add-mode 'javascript-eslint 'web-mode)
   (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
   :hook (web-mode . my/web-mode-hook))
 
-(use-package rvm
-  :ensure t
-  :config (rvm-use-default))
-
-(use-package go-mode
-  :ensure t
-  :after company-go
-  :hook ((before-save-hook . gofmt-before-save)
-         (go-mode-hook . company-mode))
-  :bind (:map go-mode-map
-              ("C-c m" . gofmt)
-              ("M-." . godef-jump)
-              ("C-c C-r" . go-remove-unused-imports)
-              ("C-c g i" . go-goto-imports)
-              ("C-c C-k" . godoc))
-  :config
-  (setq gofmt-command "goimports")
-  (set (make-local-variable 'compile-command) "go build -v && go test -v && go vet"))
-
-(use-package go-eldoc
-  :ensure t
-  :hook (go-mode-hook . go-eldoc-setup))
-
-(use-package godoctor
-  :ensure t
-  :defer t)
-
-(use-package go-guru
-  :ensure t
-  :defer t)
-
-(use-package go-errcheck
-  :ensure t
-  :defer t)
-
-(use-package projectile-rails
-  :ensure t
-  :defer t
-  :hook (projectile-mode-hook . projectile-rails-on))
-
-(use-package clojure-mode
-  :ensure t
-  :mode "\\.clj$")
-
-(use-package cider
-  :ensure t
-  :defer t
-  :config
-  (setq cider-lein-parameters "repl :headless :host localhost"
-        nrepl-hide-special-buffers t)
-  :hook (cider-mode-hook . eldoc-mode))
-
-(use-package geiser
-  :disabled
-  :ensure t
-  :config
-  (setq geiser-guile-binary (if (eq system-type 'berkeley-unix)
-                                "guile2"
-                              "guile")))
-
-;; ruby
-(use-package ruby-mode
-  :mode (("\\.\\(?:gemspec\\|irbrc\\|gemrc\\|rake\\|rb\\|ru\\|thor\\)\\'" . ruby-mode)
-         ("\\(Capfile\\|Gemfile\\(?:\\.[a-zA-Z0-9._-]+\\)?\\|[rR]akefile\\)\\'"  . ruby-mode))
-  :init
-  (defun my/ruby-mode-hook ()
-    (setq ruby-deep-arglist t)
-    (setq ruby-deep-indent-paren nil)
-    (setq c-tab-always-indent nil))
-  :hook my/ruby-mode-hook)
-
-(use-package php-mode
-  :ensure t
-  :after company-php
-  :mode (("\\.php[345]?\\'\\|\\.phtml\\'" . php-mode))
-  :config
-  (defun my/php-mode-hook ()
-    (require 'company-php)
-    (company-mode t)
-    (add-to-list 'company-backends 'company-ac-php-backend)
-    (setq php-site-url "http://fi2.php.net/")
-    (php-enable-symfony2-coding-style)
-    (define-abbrev php-mode-abbrev-table "ex" "extends")
-    (setq indent-tabs-mode nil
-          tab-width 4
-          c-basic-offset 4))
-  :hook (php-mode-hook . my/php-mode-hook))
-
-(use-package composer
-  :ensure t
-  :defer t)
-
-(use-package company-php
-  :ensure t)
-
-(use-package company-shell
-  :ensure t
-  :defer t)
-
-(use-package magit
-  :ensure t
-  :bind ("C-x v /" . magit-status))
-
 (use-package flycheck
   :ensure t
+  :diminish flycheck-mode
   :hook (after-init-hook . global-flycheck-mode)
+  :init (flycheck-add-mode 'javascript-eslint 'typescript-mode)
   :config
   (setq flycheck-completion-system 'ivy
         flycheck-phpcs-standard "Zend")
   (flycheck-add-mode 'typescript-tslint 'web-mode))
-
-(use-package yasnippet
-  :ensure t
-  :if (not noninteractive)
-  :diminish yas-minor-mode
-  :commands (yas-global-mode yas-minor-mode))
-
-;;; ------------------------------
-;;; File and directory management
-;;; ------------------------------
-
-(use-package bongo
-  :ensure t
-  :defer t
-  :config
-  (setq bongo-custom-backend-matchers
-        `((mplayer
-           (local-file "file:" "http:" "ftp:")
-           "ogg" "flac" "mp3" "m4a" "mka" "wav" "wma"
-           "mpg" "mpeg" "vob" "avi" "ogm" "mp4" "m4v"
-           "mkv" "flv" "mov" "asf" "wmv" "rm" "rmvb" "ts")))
-
-  ;; don't autoplay next track if playing video
-  (add-hook 'bongo-player-started-hook
-            (lambda ()
-              (with-bongo-playlist-buffer
-               (when (bongo-video-file-name-p
-                      (bongo-player-get bongo-player 'file-name))
-                 (setq bongo-next-action 'bongo-stop))))))
-
-(setq dired-isearch-filenames t
-      dired-ls-F-marks-symlinks t)
-
-;; Don't pass --dired flag to ls on BSD
-(when (eq system-type 'berkeley-unix)
-  (setq dired-use-ls-dired nil))
-
-(setq find-ls-option '("-print0 | xargs -0 ls -ld" . "-ld"))
-
-;; Enhance dired mode
-(defun my/dired-load-hook ()
-  "My Dired load hook."
-  ;; Bind dired-x-find-file.
-  ;;(setq dired-x-hands-off-my-keys nil)
-  (load "dired-x")
-  (setq dired-omit-files "^#\\|\\.$\\|~$\\|^RCS$\\|,v$"
-        dired-guess-shell-alist-user
-        '(("\\.avi$\\|\\.mkv$\\|\\.mov$\\|\\.mpeg$\\|\\.mp4$" "mplayer"
-           "\\.rar$" "unrar e"))
-        dired-guess-shell-gnutar (if (eq system-type 'berkeley-unix)
-                                     "gtar"
-                                   "tar")))
-
-(add-hook 'dired-load-hook 'my/dired-mode-hook)
-
-(defun my/dired-mode-hook ()
-  (setq truncate-lines t))
-
-;;(add-hook 'dired-mode-hook 'dired-omit-mode)
-(add-hook 'dired-mode-hook 'hl-line-mode)
-(add-hook 'dired-mode-hook 'my/dired-mode-hook)
-
-(autoload 'dired-jump "dired-x"
-  "Jump to Dired buffer corresponding to current buffer." t)
-
-(autoload 'dired-jump-other-window "dired-x"
-  "Like \\[dired-jump] (dired-jump) but in other window." t)
-
-(define-key global-map (kbd "C-x C-j") 'dired-jump)
-(define-key global-map (kbd "C-x 4 C-j") 'dired-jump-other-window)
 
 ;;; ------------------------------
 ;;; Functions
@@ -1115,39 +1097,14 @@ between them."
     (indent-region begin end))
   (message "Ah, much better!"))
 
-(defun rename-current-file-or-buffer ()
-  "Rename current buffer."
-  (interactive)
-  (if (not (buffer-file-name))
-      (call-interactively 'rename-buffer)
-    (let ((file (buffer-file-name)))
-      (with-temp-buffer
-        (set-buffer (dired-noselect file))
-        (dired-do-rename)
-        (kill-buffer nil))))
-  nil)
-
-(defun find-alternative-file-with-sudo ()
-  "Try to open file with sudo."
-  (interactive)
-  (let ((fname (or buffer-file-name
-                   dired-directory)))
-    (when fname
-      (if (string-match "^/sudo:root@localhost:" fname)
-          (setq fname (replace-regexp-in-string
-                       "^/sudo:root@localhost:" ""
-                       fname))
-        (setq fname (concat "/sudo:root@localhost:" fname)))
-      (find-alternate-file fname))))
-
 ;;; ------------------------------
 ;;; Keybindings
 ;;; ------------------------------
 
 (global-set-key (kbd "C-x C-k") 'kill-region)
+;;(global-set-key (kbd "C-x k") 'kill-this-buffer)
 (global-set-key (kbd "C-w") 'backward-kill-word)
 (global-set-key (kbd "C-c C-j") 'join-line)
-(global-set-key (kbd "C-c R") 'rename-current-file-or-buffer)
 (global-set-key (kbd "M-z") 'zap-up-to-char)
 
 ;; enable regexp search by default
@@ -1172,7 +1129,7 @@ between them."
                      gcs-done)))
 
 ;; Make gc pauses faster by decreasing the threshold.
-(setq gc-cons-threshold (* 2 1000 1000)
+(setq gc-cons-threshold (* 2 1000 1000))
 
 ;; Load optional local startup files
 (load (concat user-emacs-directory "init-local.el") t t)
