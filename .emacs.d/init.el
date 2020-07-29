@@ -3,7 +3,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2020-07-29 22:58:57 (tmy)>
+;;; Time-stamp: <2020-07-29 23:15:37 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -18,14 +18,11 @@
 ;;; - winner
 ;;; - project.el
 ;;; - check log-edit-generate-changelog-from-diff: C-c C-w
-;;; - diff-font-lock-prettify t to match magit format: diff-buffers C-x v =
 ;;; - fido-mode for icomplete
 ;;; - isearch-lazy-count
 ;;; - xterm-set-window-title: experimental
-;;; - grep-find-use-xargs
 ;;; - check global-so-long-mode: long-lines cause pauses
 ;;; - vc: add support for got?
-
 
 ;;; Code:
 
@@ -126,6 +123,11 @@
 
 ;; XXX: eval
 ;;(use-package crux :ensure t)
+
+(use-package grep
+  :config
+  (when (version<= "27" emacs-version)
+    (setq grep-find-use-xargs 'exec-plus)))
 
 (use-package hungry-delete
   :ensure t
@@ -754,8 +756,6 @@
                                      "gtar"
                                    "tar")))
 
-(setq find-ls-option '("-print0 | sort -t \0 | xargs -0 ls -ld" . "-ld"))
-
 ;;; ------------------------------
 ;;; Programming settings
 ;;; ------------------------------
@@ -979,6 +979,10 @@
   (setq compilation-save-buffers-predicate nil
         compilation-ask-about-save nil
         compilation-window-height 12))
+
+(use-package diff-mode
+  :config
+  (setq diff-font-lock-prettify nil))
 
 (use-package diff
   :config (setq diff-switches '("-u")))
