@@ -3,7 +3,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2020-07-29 23:15:37 (tmy)>
+;;; Time-stamp: <2020-07-30 18:05:20 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -16,7 +16,6 @@
 ;;; - use server-after-make-frame-hook for desktop
 ;;; - display-fill-column-indicator
 ;;; - winner
-;;; - project.el
 ;;; - check log-edit-generate-changelog-from-diff: C-c C-w
 ;;; - fido-mode for icomplete
 ;;; - isearch-lazy-count
@@ -30,10 +29,9 @@
 ;; collection.  The default is 800 kilobytes.  Measured in bytes.
 (setq gc-cons-threshold (* 50 1000 1000))
 
-(defconst elisp-dir (concat user-emacs-directory "elisp/"))
-(defconst elpa-dir (concat user-emacs-directory "elpa/"))
+(defconst elisp-dir (expand-file-name "elisp" user-emacs-directory))
 
-(setq custom-file (concat user-emacs-directory "custom.el"))
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (load custom-file 'noerror)
 
 (require 'package)
@@ -101,12 +99,10 @@
   (set-fill-column 80))
 
 (use-package flyspell
-  :hook ((change-log-mode-hook . 'flyspell-mode-off)
-         (log-edit-mode-hook . 'flyspell-mode-off)
+  :hook (((change-log-mode-hook log-edit-mode-hook) . 'flyspell-mode-off)
          (text-mode-hook . 'flyspell-mode))
   :config
-  (setq flyspell-issue-message-flag nil)
-)
+  (setq flyspell-issue-message-flag nil))
 
 ;; Hooks
 (add-hook 'text-mode-hook 'my/text-mode-hook)
@@ -174,6 +170,7 @@
   (add-to-list 'magic-mode-alist '("---" . yaml-mode)))
 
 (use-package ansible-vault
+  ;;; TODO: add vault-identity support
   :ensure t)
 
 (use-package typescript-mode
@@ -312,7 +309,7 @@
         calendar-mark-diary-entries-flag t)
 
   (setq diary-show-holidays-flag t
-        diary-file (concat user-emacs-directory "diary")
+        diary-file (expand-file-name "diary" user-emacs-directory)
         diary-display-function 'diary-fancy-display ;; XXX: is this needed
         diary-number-of-entries 7)) ;; XXX: is this needed)
 
@@ -337,23 +334,23 @@
 
 (use-package saveplace
   :config
-  (save-place-mode 1)
-  (setq save-place-file (concat user-emacs-directory "places")))
+  (setq save-place-file (expand-file-name "places" user-emacs-directory))
+  (save-place-mode 1))
 
 (use-package recentf
   :config
-  (setq recentf-save-file (concat user-emacs-directory "recentf")
+  (setq recentf-save-file (expand-file-name "recentf" user-emacs-directory)
         recentf-max-saved-items 50)
   (recentf-mode t))
 
 (use-package bookmark
   :config
-  (setq bookmark-default-file (concat user-emacs-directory "bookmarks")
+  (setq bookmark-default-file (expand-file-name "bookmarks" user-emacs-directory)
         bookmark-save-flag 1))
 
 (use-package savehist
   :config
-  (setq savehist-file (concat user-emacs-directory "savehist")
+  (setq savehist-file (expand-file-name "savehist" user-emacs-directory)
         savehist-additional-variables '(search ring regexp-search-ring)
         savehist-autosave-interval 60)
   (savehist-mode t))
@@ -361,7 +358,7 @@
 (use-package abbrev
   :hook (kill-emacs-hook . write-abbrev-file)
   :config
-  (setq abbrev-file-name (concat user-emacs-directory "abbrev_defs")
+  (setq abbrev-file-name (expand-file-name "abbrev_defs" user-emacs-directory)
         save-abbrevs t)
   (when (file-exists-p abbrev-file-name)
     (quietly-read-abbrev-file)))
@@ -439,7 +436,7 @@
 
 (use-package org
   :config
-  (setq org-directory (concat user-emacs-directory "org/")
+  (setq org-directory (expand-file-name "org"  user-emacs-directory)
         org-outline-path-complete-in-steps nil
         org-agenda-files (list org-directory)
         org-agenda-include-diary t ;; TODO: this exists?
@@ -457,7 +454,7 @@
                             (sequence "STALLED(s@/!)" "|")
                             (sequence "PENDING(p@/!)" "|"))
         ;; capture notes
-        org-default-notes-file (concat org-directory "notes.org"))
+        org-default-notes-file (expand-file-name "notes.org" org-directory))
   :bind (("C-c l" . org-store-link)
          ("C-c a" . org-agenda)
          ("C-c b" . org-iswitchb)
@@ -574,7 +571,7 @@
   (pcomplete-erc-setup)
 
   (setq erc-pcomplete-order-nickname-completions t
-        erc-log-channels-directory "~/.irclogs/"
+        erc-log-channels-directory (expand-file-name ".irclogs" "~")
         erc-log-insert-log-on-open nil
         erc-log-file-coding-system 'utf-8-unix
         erc-save-buffer-on-part t
@@ -648,9 +645,6 @@
 ;;; ------------------------------
 ;;; Completion
 ;;; ------------------------------
-
-(use-package smex
-  :ensure t)
 
 (use-package flx
   :ensure t)
@@ -762,59 +756,10 @@
 
 (use-package magit
   :ensure t
-  :config
-  (setq magit-completing-read-function 'ivy-completing-read)
   :bind ("C-x v /" . magit-status))
 
 (use-package eglot
   :ensure t)
-
-(use-package lsp-mode
-  :disabled
-  :init (setq lsp-keymap-prefix "C-c l")
-  :hook ((typescript-mode . lsp-deferred)
-         (lsp-mode . lsp-enable-which-key-integration))
-  :commands lsp)
-
-(use-package lsp-ui
-  :disabled
-  :ensure t
-  :commands lsp-ui-mode)
-
-(use-package lsp-ivy
-  :disabled
-  :ensure t
-  :commands lsp-ivy-workspace-symbol)
-
-(use-package dap-mode
-  :disabled
-  :ensure t)
-
-(use-package tide
-  :disabled
-  :ensure t
-  :after (typescript-mode company flycheck)
-  :hook ((typescript-mode . zmg/tide-mode-hook)
-         (before-save . tide-format-before-save))
-  :init (defun zmg/tide-mode-hook ()
-            (tide-setup)
-            (flycheck-mode +1)
-            (setq flycheck-check-syntax-automatically '(save mode-enabled))
-            (eldoc-mode +1)
-            (tide-hl-identifier-mode +1)
-            (company-mode +1)))
-
-(use-package projectile
-  :ensure t
-  :config
-  (projectile-mode 1)
-  (setq projectile-enable-caching t
-        projectile-completion-system 'ivy))
-
-(use-package counsel-projectile
-  :ensure t
-  :after projectile-mode
-  :hook (after-init-hook . counsel-projectile-mode))
 
 ;;; Go programming
 
@@ -871,12 +816,6 @@
     (setq c-tab-always-indent nil))
   :hook my/ruby-mode-hook)
 
-(use-package projectile-rails
-  :ensure t
-  :defer t
-  :after projectile
-  :hook (projectile-mode-hook . projectile-rails-on))
-
 ;;; Lisp programming
 
 (use-package rainbow-delimiters
@@ -887,7 +826,7 @@
 (use-package sly
   :ensure t
   :config
-  (let ((sbcl-bin-path (concat (getenv "HOME") "/lib/sbcl")))
+  (let ((sbcl-bin-path (expand-file-name "lib/sbcl" "~")))
     (when (file-exists-p sbcl-bin-path)
       (setenv "SBCL_HOME" sbcl-bin-path)))
   (setq sly-lisp-implementations '((sbcl ("sbcl" "--dynamic-space-size" "2048"))
@@ -1020,7 +959,6 @@
   :config
   (defun my/c-mode-common ()
     "Programming options shared for C-like languages."
-    ;;(setq company-backends (delete 'company-semantic company-backends))
     (cwarn-mode 1)
     (setq compilation-scroll-output 'first-error))
   (defun my/c-mode ()
@@ -1052,7 +990,7 @@
 
 (use-package web-mode
   :ensure t
-  :after flycheck
+  :after (flycheck eglot)
   :mode (("\\.jsp\\'" . web-mode)
          ("\\.ap[cp]x\\'" . web-mode)
          ("\\.erb\\'" . web-mode)
@@ -1068,7 +1006,7 @@
           web-mode-css-indent-offset 2
           web-mode-code-indent-offset 4)
      (when (member (file-name-extension buffer-file-name) '("tsx" "jsx"))
-       (eglot)))
+       (eglot-ensure)))
   (flycheck-add-mode 'typescript-tslint 'web-mode)
   (flycheck-add-mode 'javascript-eslint 'web-mode)
   (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
@@ -1080,8 +1018,7 @@
   :hook (after-init-hook . global-flycheck-mode)
   :init (flycheck-add-mode 'javascript-eslint 'typescript-mode)
   :config
-  (setq flycheck-completion-system 'ivy
-        flycheck-phpcs-standard "Zend")
+  (setq flycheck-phpcs-standard "Zend")
   (flycheck-add-mode 'typescript-tslint 'web-mode))
 
 ;;; ------------------------------
@@ -1089,9 +1026,7 @@
 ;;; ------------------------------
 
 (defun bf-pretty-print-xml-region (begin end)
-  "Pretty format XML markup in region.  The function inserts
-linebreaks to separate tags that have nothing but whitespace
-between them."
+  "Function formats XML elements in region between BEGIN and END."
   (interactive "r")
   (save-excursion
     (nxml-mode)
@@ -1136,9 +1071,10 @@ between them."
 (setq gc-cons-threshold (* 2 1000 1000))
 
 ;; Load optional local startup files
-(load (concat user-emacs-directory "init-local.el") t t)
+(load (expand-file-name "init-local.el" user-emacs-directory) t t)
 
-(server-start)
+(unless (boundp 'server-process)
+  (server-start))
 
 (provide 'init)
 
