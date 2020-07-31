@@ -3,12 +3,11 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2020-07-30 18:05:20 (tmy)>
+;;; Time-stamp: <2020-07-31 09:28:42 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Commentary:
-;;; - elisp-hook
 ;;; - check key bindings, define-key etc.
 ;;; - fix warnings on this file
 ;;; - elisp-hook
@@ -21,7 +20,6 @@
 ;;; - isearch-lazy-count
 ;;; - xterm-set-window-title: experimental
 ;;; - check global-so-long-mode: long-lines cause pauses
-;;; - vc: add support for got?
 
 ;;; Code:
 
@@ -37,11 +35,11 @@
 (require 'package)
 
 (add-to-list 'package-archives
-             '("melpa" . "https://melpa.org/packages/"))
+             '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 
 ;; avoid re-initializing packages
 (when (version< emacs-version "27")
-  (package-initialize))
+ (package-initialize))
 
 ;; load of use-package to handle rest of package initialization.
 (unless (package-installed-p 'use-package)
@@ -99,15 +97,10 @@
   (set-fill-column 80))
 
 (use-package flyspell
-  :hook (((change-log-mode-hook log-edit-mode-hook) . 'flyspell-mode-off)
-         (text-mode-hook . 'flyspell-mode))
+  :hook text-mode
   :config
   (setq flyspell-issue-message-flag nil))
 
-;; Hooks
-(add-hook 'text-mode-hook 'my/text-mode-hook)
-(add-hook 'text-mode-hook 'auto-fill-mode)
-(add-hook 'before-save-hook 'delete-trailing-whitespace)
 ;;(add-hook 'before-save-hook 'whitespace-cleanup)
 (add-hook 'before-save-hook 'time-stamp)
 (add-hook 'comint-output-filter-functions 'comint-watch-for-password-prompt)
@@ -146,7 +139,7 @@
 (use-package tex
   :defer t
   :ensure auctex
-  :hook (latex-mode-hook . auto-fill-mode)
+  :hook (latex-mode . auto-fill-mode)
   :config
   (setq TeX-auto-save t
         TeX-parse-self t
@@ -217,12 +210,29 @@
   :config (show-paren-mode t))
 
 (use-package frame
-  :config (blink-cursor-mode -1)
-)
+  :config (blink-cursor-mode -1))
 
 ;; default emacs configurations
 (use-package emacs
   :config
+  (global-set-key (kbd "C-x C-k") 'kill-region)
+  ;;(global-set-key (kbd "C-x k") 'kill-this-buffer)
+  (global-set-key (kbd "C-w") 'backward-kill-word)
+  (global-set-key (kbd "C-c C-j") 'join-line)
+  (global-set-key (kbd "M-z") 'zap-up-to-char)
+
+  ;; enable regexp search by default
+  ;;(global-set-key (kbd "C-s") 'isearch-forward-regexp)
+  ;;(global-set-key (kbd "C-r") 'isearch-backward-regexp)
+
+  ;; shortcuts
+  ;;(global-set-key (kbd "M-o") 'other-window)
+  (global-set-key (kbd "<f1>") 'eshell)
+  (global-set-key (kbd "<f2>") 'rgrep)
+  (global-set-key (kbd "<f6>") 'magit-status)
+  (global-set-key (kbd "<f11>") 'gnus)
+  (global-set-key (kbd "<f12>") 'bookmark-bmenu-list)
+
 
   (when (fboundp 'tool-bar-mode)
     (tool-bar-mode -1))
@@ -235,6 +245,10 @@
   (setq case-fold-search t)
 
   (setq-default cursor-type 'box)
+  (setq-default truncate-lines t)
+
+  (setq completion-ignore-case t
+      tab-always-indent 'complete)
 
   (setq initial-scratch-message ""
         inhibit-startup-screen t
@@ -274,7 +288,9 @@
   (setq set-mark-command-repeat-pop t)
   (size-indication-mode t)
   (line-number-mode t)
-  (column-number-mode t))
+  (column-number-mode t)
+  :hook (((my/text-mode-hook auto-fill-mode) . text-mode)
+         (delete-trailing-whitespace . before-save)))
 
 ;;; ------------------------------
 ;;; Calendar and diary settings
@@ -283,13 +299,17 @@
 (use-package suomalainen-kalenteri
   :ensure t)
 
+(use-package diary-lib
+  :hook ((diary-list-entries . diary-include-other-diary-files)
+         (diary-list-entries . diary-sort-entries)
+         (diary-list-entries . diary-mark-included-diary-files))
+  :config (setq diary-display-function 'diary-fancy-display
+                diary-number-of-entries 7))
+
 (use-package calendar
-  :hook ((diary-list-entries-hook . diary-include-other-diary-files)
-         (diary-list-entries-hook . diary-sort-entries)
-         (diary-mark-entries-hook . diary-mark-included-diary-files)
-         (calendar-today-visible-hook . calendar-mark-today))
+  :hook (calendar-today-visible . calendar-mark-today)
+  :init (setq calendar-date-style 'european)
   :config
-  ;; localize calendar for finland
   (setq calendar-week-start-day 1
         calendar-day-name-array
         ["sunnuntai" "maanantai" "tiistai" "keskiviikko"
@@ -299,19 +319,11 @@
          "kesäkuu" "heinäkuu" "elokuu" "syyskuu"
          "lokakuu" "marraskuu" "joulukuu"])
 
-  ;; make calendar use european date format
-  (add-hook 'calendar-load-hook (lambda () (calendar-set-date-style 'european)))
-
-  ;; rest of calendar configs
   (setq calendar-mark-holidays-flag t
         calendar-view-diary-initially-flag t
-        calendar-date-style 'european
-        calendar-mark-diary-entries-flag t)
-
-  (setq diary-show-holidays-flag t
-        diary-file (expand-file-name "diary" user-emacs-directory)
-        diary-display-function 'diary-fancy-display ;; XXX: is this needed
-        diary-number-of-entries 7)) ;; XXX: is this needed)
+        calendar-mark-diary-entries-flag t
+        diary-show-holidays-flag t
+        diary-file (expand-file-name "diary" user-emacs-directory)))
 
 ;; time utilities
 (use-package time-stamp
@@ -356,7 +368,7 @@
   (savehist-mode t))
 
 (use-package abbrev
-  :hook (kill-emacs-hook . write-abbrev-file)
+  :hook (kill-emacs . write-abbrev-file)
   :config
   (setq abbrev-file-name (expand-file-name "abbrev_defs" user-emacs-directory)
         save-abbrevs t)
@@ -364,6 +376,7 @@
     (quietly-read-abbrev-file)))
 
 (use-package files
+  :hook (after-save . executable-make-buffer-file-executable-if-script-p)
   :config
   (setq large-file-warning-threshold 50000000
         backup-directory-alist `((".*" . ,temporary-file-directory))
@@ -391,16 +404,13 @@
   :bind (("C-c t" . multi-term-next)
          ("C-c T" . multi-term)))
 
-(defun my/sh-mode-hook ()
-  (set (make-local-variable 'indent-tabs-mode) t))
+(use-package sh-script
+  :config (defun my/sh-mode-hook ()
+            (set (make-local-variable 'indent-tabs-mode) t))
+  :hook (sh-mode . my/sh-mode-hook))
 
-(add-hook 'sh-mode-hook 'my/sh-mode-hook)
-
-(setq shell-command-switch "-c"
-      explicit-sh-args '("-login" "-i"))
-
-(add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
-(add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
+(use-package shell
+  :hook (shell-mode . ansi-color-for-comint-mode-on))
 
 (use-package comint
   :config
@@ -459,7 +469,7 @@
          ("C-c a" . org-agenda)
          ("C-c b" . org-iswitchb)
          ("C-c c" . org-capture))
-  :hook ((org-mode-hook . 'flyspell-mode)
+  :hook ((org-mode . flyspell-mode)
          (message-mode . turn-on-orgtbl)))
 
 ;;; ------------------------------
@@ -473,16 +483,16 @@
       uniquify-ignore-buffers-re "^\\*")
 
 (use-package ibuffer
+  :init (defalias 'list-buffers 'ibuffer)
   :config
-  (defalias 'list-buffers 'ibuffer)
   (setq ibuffer-default-sorting-mode 'major-mode
         ibuffer-expert t)
-  :hook ((ibuffer-mode-hook . ibuffer-auto-mode))
+  :hook (ibuffer-mode . ibuffer-auto-mode)
   :bind (:map ibuffer-mode-map
               ("C-x C-f" . counsel-find-file)))
 
 (use-package ibuffer-vc
-  :disabled
+  ;;:disabled
   :ensure t
   :defer t
   :config
@@ -530,24 +540,24 @@
 
   (setq rcirc-omit-responses '("JOIN" "PART" "QUIT" "NICK" "AWAY"))
   ;;(setq rcirc-time-format "%Y-%m-%d %H:%M ")
-  :hook ((rcirc-mode-hook . rcirc-track-minor-mode)
-         (rcirc-mode-hook . flyspell-mode)))
+  :hook ((rcirc-mode . rcirc-track-minor-mode)
+         (rcirc-mode . flyspell-mode)))
 
 (use-package erc
-  :hook ((erc-mode-hook . erc-services-mode)
-         (erc-mode-hook . erc-autojoin-mode)
-         (erc-mode-hook . erc-match-mode)
-         (erc-mode-hook . erc-track-mode)
-         (erc-mode-hook . erc-fill-mode)
-         (erc-mode-hook . erc-ring-mode)
-         (erc-mode-hook . erc-netsplit-mode)
-         (erc-mode-hook . erc-timestamp-mode)
-         (erc-mode-hook . erc-spelling-mode)
-         (erc-mode-hook . erc-notify-mode)
-         (erc-mode-hook . erc-pcomplete-mode)
-         (erc-mode-hook . erc-log-mode)
-         (erc-insert-post-hook . erc-save-buffer-in-logs)
-         (erc-insert-post-hook . erc-truncate-buffer))
+  :hook ((erc-mode . erc-services-mode)
+         (erc-mode . erc-autojoin-mode)
+         (erc-mode . erc-match-mode)
+         (erc-mode . erc-track-mode)
+         (erc-mode . erc-fill-mode)
+         (erc-mode . erc-ring-mode)
+         (erc-mode . erc-netsplit-mode)
+         (erc-mode . erc-timestamp-mode)
+         (erc-mode . erc-spelling-mode)
+         (erc-mode . erc-notify-mode)
+         (erc-mode . erc-pcomplete-mode)
+         (erc-mode . erc-log-mode)
+         (erc-insert-post . erc-save-buffer-in-logs)
+         (erc-insert-post . erc-truncate-buffer))
   :config
 
   (setq erc-modules (append erc-modules '(services notify spelling log)))
@@ -694,9 +704,6 @@
   (setq icomplete-prospects-height 2)
   (icomplete-mode t))
 
-(setq completion-ignore-case t
-      tab-always-indent 'complete)
-
 (use-package minibuffer
   :config
   (setq read-file-name-completion-ignore-case t
@@ -726,14 +733,9 @@
                  (setq bongo-next-action 'bongo-stop))))))
 
 (use-package dired
-  :init
-  (defun my/dired-load-hook ()
-    "My Dired load hook."
-    (setq truncate-lines t))
   :bind (("C-x C-j" . dired-jump)
          ("C-x 4 C-j" . dired-jump-other-window))
-  :hook ((dired-load-hook . 'my/dired-mode-hook)
-         (dired-mode-hook . 'hl-line-mode))
+  :hook (dired-mode . hl-line-mode)
   :config
   (require 'dired-x)
   (setq dired-isearch-filenames t
@@ -746,13 +748,52 @@
         dired-guess-shell-alist-user
         '(("\\.avi$\\|\\.mkv$\\|\\.mov$\\|\\.mpeg$\\|\\.mp4$" "mplayer"
            "\\.rar$" "unrar e"))
-        dired-guess-shell-gnutar (if (eq system-type 'berkeley-unix)
-                                     "gtar"
+        dired-guess-shell-gnutar (unless (eq system-type 'berkeley-unix)
                                    "tar")))
 
 ;;; ------------------------------
 ;;; Programming settings
 ;;; ------------------------------
+
+(use-package rainbow-mode
+  :ensure t)
+
+(use-package compile
+  :config
+  (setq compilation-save-buffers-predicate nil
+        compilation-scroll-output 'first-error
+        compilation-ask-about-save nil
+        compilation-window-height 12))
+
+(use-package diff-mode
+  :config
+  (setq diff-font-lock-prettify nil))
+
+(use-package diff
+  :config (setq diff-switches '("-u")))
+
+(use-package ediff
+  :config
+  (setq ediff-window-setup-function 'ediff-setup-windows-plain
+        ediff-split-window-function 'split-window-horizontally
+        ediff-diff-options "-w")
+  :hook (ediff-after-quit-hook-internal . winner-undo))
+
+;; XXX: hook error
+(use-package prog-mode
+  :config
+  (defun my/prog-mode-hook ()
+    "Hook to run when entering generic prog-mode."
+    (setq whitespace-line-column 80
+          whitespace-style '(face lines-tail)
+          which-func-unknown "TOP LEVEL")
+    (font-lock-add-keywords nil '(("\\<\\(FIXME\\|TODO\\|XXX+\\|BUG\\):"
+                                   1 font-lock-warning-face prepend)))
+  :hook ((prog-mode . electric-pair-mode)
+         (prog-mode . subword-mode)
+         (prog-mode . which-function-mode)
+         (prog-mode . flyspell-prog-mode)
+         (prog-mode . my/prog-mode-hook))))
 
 (use-package magit
   :ensure t
@@ -769,11 +810,12 @@
   :config
   (add-to-list 'company-backends 'company-go))
 
+;; XXX: hook issue
 (use-package go-mode
   :ensure t
   :after (company company-go)
-  :hook ((before-save-hook . gofmt-before-save)
-         (go-mode-hook . company-mode))
+  :hook ((before-save . gofmt-before-save)
+         (go-mode . company-mode))
   :bind (:map go-mode-map
               ("C-c m" . gofmt)
               ("M-." . godef-jump)
@@ -786,7 +828,7 @@
 
 (use-package go-eldoc
   :ensure t
-  :hook (go-mode-hook . go-eldoc-setup))
+  :hook (go-mode . go-eldoc-setup))
 
 (use-package godoctor
   :ensure t
@@ -814,17 +856,13 @@
     (setq ruby-deep-arglist t)
     (setq ruby-deep-indent-paren nil)
     (setq c-tab-always-indent nil))
-  :hook my/ruby-mode-hook)
+  :hook (ruby-mode . my/ruby-mode-hook))
 
 ;;; Lisp programming
 
-(use-package rainbow-delimiters
-  :ensure t
-  :diminish
-  :hook (prog-mode-hook . rainbow-delimiters-mode))
-
 (use-package sly
   :ensure t
+  :hook (sly-mode . lisp-mode)
   :config
   (let ((sbcl-bin-path (expand-file-name "lib/sbcl" "~")))
     (when (file-exists-p sbcl-bin-path)
@@ -842,14 +880,13 @@
                ((file-directory-p "~/lisp/docs/HyperSpec")
                 (concat "file:" (getenv "HOME") "/lisp/docs/HyperSpec/"))
                (t "http://www.lispworks.com/documentation/HyperSpec/"))
-         "Data/Map_Sym.txt"))
+         "Data/Map_Sym.txt")))
 
-  (add-hook 'lisp-mode-hook 'sly-mode))
-
-(use-package sly-repl-ansi-color
-  :ensure t
-  :after sly
-  :config (sly-enable-contrib 'sly-repl-ansi-color))
+;; XXX: fails on melpa-stable
+;; (use-package sly-repl-ansi-color
+;;   :ensure t
+;;   :after sly
+;;   :config (sly-enable-contrib 'sly-repl-ansi-color))
 
 (use-package quack
   :disabled
@@ -868,8 +905,7 @@
 
 (use-package clojure-mode
   :ensure t
-  :mode "\\.clj$"
-  :hook (clojure-mode-hook . my/shared-lisp-hook))
+  :mode "\\.clj$")
 
 (use-package cider
   :ensure t
@@ -877,7 +913,7 @@
   :config
   (setq cider-lein-parameters "repl :headless :host localhost"
         nrepl-hide-special-buffers t)
-  :hook (cider-mode-hook . eldoc-mode))
+  :hook (cider-mode . eldoc-mode))
 
 (use-package geiser
   :disabled
@@ -908,45 +944,9 @@
     (setq indent-tabs-mode nil
           tab-width 4
           c-basic-offset 4))
-  :hook (php-mode-hook . my/php-mode-hook))
+  :hook (php-mode . my/php-mode-hook))
 
-(use-package rainbow-mode
-  :ensure t)
-
-(use-package compile
-  :config
-  (setq compilation-save-buffers-predicate nil
-        compilation-ask-about-save nil
-        compilation-window-height 12))
-
-(use-package diff-mode
-  :config
-  (setq diff-font-lock-prettify nil))
-
-(use-package diff
-  :config (setq diff-switches '("-u")))
-
-(use-package ediff
-  :config
-  (setq ediff-window-setup-function 'ediff-setup-windows-plain
-        ediff-split-window-function 'split-window-horizontally
-        ediff-diff-options "-w")
-  :hook (ediff-after-quit-hook-internal . winner-undo))
-
-(use-package prog-mode
-  :config
-  (defun my/prog-mode-hook ()
-    "Hook to run when entering generic prog-mode."
-    (setq whitespace-line-column 80
-          whitespace-style '(face lines-tail)
-          which-func-unknown "TOP LEVEL")
-    (font-lock-add-keywords nil '(("\\<\\(FIXME\\|TODO\\|XXX+\\|BUG\\):"
-                                   1 font-lock-warning-face prepend)))
-  :hook ((prog-mode . 'electric-pair-mode)
-         (prog-mode . 'subword-mode)
-         (prog-mode . 'which-function-mode)
-         (prog-mode . 'flyspell-prog-mode)
-         (prog-mode . 'my/prog-mode-hook))))
+;;;; C programming
 
 (use-package cc-mode
   :bind (:map c-mode-map
@@ -954,13 +954,11 @@
               ("C-c C-d" . gdb)
               ("C-m" . c-context-line-break)
               ("C-c o" . ff-find-other-file))
-  :hook ((c-mode-common-hook . which-function-mode)
-         (c-mode-common-hook . cwarn-mode))
+  :hook ((c-mode-common . which-function-mode)
+         (c-mode-common . cwarn-mode)
+         (c-mode . 'my/c-mode)
+         (c++-mode . 'my/c-mode))
   :config
-  (defun my/c-mode-common ()
-    "Programming options shared for C-like languages."
-    (cwarn-mode 1)
-    (setq compilation-scroll-output 'first-error))
   (defun my/c-mode ()
     "My C programming options."
     (c-set-style "bsd"))
@@ -969,10 +967,7 @@
     (setq fill-column 100)
     (c-set-style "stroustrup")
     (setq whitespace-line-column 100
-          whitespace-style '(face lines-tail)))
-
-  (add-hook 'c-mode-hook 'my/c-mode)
-  (add-hook 'c++-mode-hook 'my/c++-mode))
+          whitespace-style '(face lines-tail))))
 
 (use-package cperl-mode
   :init
@@ -1015,10 +1010,10 @@
 (use-package flycheck
   :ensure t
   :diminish flycheck-mode
-  :hook (after-init-hook . global-flycheck-mode)
-  :init (flycheck-add-mode 'javascript-eslint 'typescript-mode)
+  :hook (after-init . global-flycheck-mode)
   :config
   (setq flycheck-phpcs-standard "Zend")
+  (flycheck-add-mode 'javascript-eslint 'typescript-mode)
   (flycheck-add-mode 'typescript-tslint 'web-mode))
 
 ;;; ------------------------------
@@ -1037,26 +1032,8 @@
   (message "Ah, much better!"))
 
 ;;; ------------------------------
-;;; Keybindings
+;;; Finalizers
 ;;; ------------------------------
-
-(global-set-key (kbd "C-x C-k") 'kill-region)
-;;(global-set-key (kbd "C-x k") 'kill-this-buffer)
-(global-set-key (kbd "C-w") 'backward-kill-word)
-(global-set-key (kbd "C-c C-j") 'join-line)
-(global-set-key (kbd "M-z") 'zap-up-to-char)
-
-;; enable regexp search by default
-;;(global-set-key (kbd "C-s") 'isearch-forward-regexp)
-;;(global-set-key (kbd "C-r") 'isearch-backward-regexp)
-
-;; shortcuts
-(global-set-key (kbd "M-o") 'other-window)
-(global-set-key (kbd "<f1>") 'eshell)
-(global-set-key (kbd "<f2>") 'rgrep)
-(global-set-key (kbd "<f6>") 'magit-status)
-(global-set-key (kbd "<f11>") 'gnus)
-(global-set-key (kbd "<f12>") 'bookmark-bmenu-list)
 
 ;; Use a hook so the message doesn't get clobbered by other messages.
 (add-hook 'emacs-startup-hook
