@@ -3,7 +3,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2020-08-06 08:26:49 (tmy)>
+;;; Time-stamp: <2020-08-09 13:56:30 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -882,6 +882,42 @@
   (setq compilation-scroll-output 'first-error)
   (setq compilation-ask-about-save nil)
   (setq compilation-always-kill t)
+  (setq compilation-window-height 12))
+
+(use-package diff-mode
+  :config
+  (setq diff-font-lock-prettify nil))
+
+(use-package diff
+  :config (setq diff-switches '("-u")))
+
+(use-package ediff
+  :config
+  (setq ediff-window-setup-function 'ediff-setup-windows-plain)
+  (setq ediff-split-window-function 'split-window-horizontally)
+  (setq ediff-diff-options "-w")
+  :hook (ediff-after-quit-hook-internal-hook . winner-undo))
+
+(use-package prog-mode
+  :config
+  (defun my/prog-mode-hook ()
+    "Hook to run when entering generic prog-mode."
+    (setq whitespace-line-column 80
+          whitespace-style '(face lines-tail)
+          which-func-unknown "TOP LEVEL")
+    (font-lock-add-keywords nil '(("\\<\\(FIXME\\|TODO\\|XXX+\\|BUG\\):"
+                                   1 font-lock-warning-face prepend))))
+  :hook ((prog-mode-hook . electric-pair-mode)
+         (prog-mode-hook . subword-mode)
+         (prog-mode-hook . which-function-mode)
+         ;;(prog-mode-hook . flyspell-prog-mode)
+         (prog-mode-hook . my/prog-mode-hook)))
+
+(use-package compile
+  :config
+  (setq compilation-save-buffers-predicate nil)
+  (setq compilation-scroll-output 'first-error)
+  (setq compilation-ask-about-save nil)
   (setq compilation-window-height 12))
 
 (use-package diff-mode
