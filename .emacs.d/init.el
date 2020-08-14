@@ -3,7 +3,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2020-08-09 13:56:30 (tmy)>
+;;; Time-stamp: <2020-08-14 17:33:05 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -116,7 +116,7 @@
 
 (use-package which-key
   :ensure t
-  :diminish which-key-mode
+  :diminish
   :config (which-key-mode))
 
 ;;; ------------------------------
@@ -130,6 +130,7 @@
 
 (use-package hungry-delete
   :ensure t
+  :diminish
   :config (global-hungry-delete-mode))
 
 ;; (use-package smartparens
@@ -163,16 +164,38 @@
                              (electric-pair-mode -1)
                              (electric-quote-mode -1))))
 
+;; (defun th/pdf-view-revert-buffer-maybe (file)
+;;   (let ((buf (find-buffer-visiting file)))
+;;     (when buf
+;;   (with-current-buffer buf
+;;     (when (derived-mode-p 'pdf-view-mode)
+;;       (pdf-view-revert-buffer nil t))))))
+;; (add-hook 'TeX-after-TeX-LaTeX-command-finished-hook
+;;     #'th/pdf-view-revert-buffer-maybe)
+
+
 (use-package tex
   :defer t
   :ensure auctex
   :hook (latex-mode-hook . auto-fill-mode)
+  :init
+
+ ;;  (((output-dvi has-no-display-manager)
+ ;;  "dvi2tty")
+ ;; ((output-dvi style-pstricks)
+ ;;  "dvips and gv")
+ ;; (output-dvi "xdvi")
+ ;; (output-pdf "Evince")
+  ;; (output-html "xdg-open"))
+
+  (setq TeX-view-program-selection '((output-pdf "pdf-tools")))
+  (setq TeX-view-program-list '(("pdf-tools" "TeX-pdf-tools-sync-view")))
   :config
   (setq TeX-auto-save t)
   (setq TeX-parse-self t)
   (setq TeX-insert-braces nil)
   (setq TeX-electric-escape t)
-  (setq TeX-electric-macro t)n
+  (setq TeX-electric-macro t)
   (setq TeX-newline-function 'reindent-then-newline-and-indent))
 
 (use-package pdf-tools
@@ -184,8 +207,6 @@
   ;;             ("D" . pdf-annot-delete)
   ;;             )
   :config
-  ;;(setq TeX-view-program-selection '((output-pdf "pdf-tools")))
-  ;;(setq TeX-view-program-list '(("pdf-tools" "TeX-pdf-tools-sync-view")))
   (setq pdf-view-display-size 'fit-page)
   ;;(setq pdf-annot-activate-created-annotations t)
   ;;(setq pdf-view-resize-factor 1.1)
@@ -287,6 +308,8 @@
 
   (setq completion-ignore-case t)
 
+  (setq sentence-end-double-space nil)
+
   ;; keep a little more history to see whats going on
   (setq message-log-max 16384)
 
@@ -296,6 +319,8 @@
 
   (setq visible-bell t)
   (setq window-min-height 3)
+
+  (setq select-active-regions t)
 
   ;; disable dialog boxes
   (setq use-file-dialog nil)
@@ -319,6 +344,8 @@
     (setq x-selection-timeout 10))
   (setq save-interprogram-paste-before-kill t)
 
+  (setq select-enable-clipboard t)
+
   (defalias 'yes-or-no-p 'y-or-n-p)
 
   ;; enabled disabled features
@@ -338,6 +365,10 @@
   :config
   (setq set-mark-command-repeat-pop t)
   (setq next-line-add-newlines nil)
+  (setq kill-ring-max 100)
+  (setq yank-pop-change-selection t)
+  (setq save-interprogram-paste-before-kill t)
+
   (size-indication-mode t)
   (line-number-mode t)
   (column-number-mode t)
@@ -442,12 +473,13 @@
 (use-package files
   :hook (after-save-hook . executable-make-buffer-file-executable-if-script-p)
   :config
-  (setq large-file-warning-threshold 50000000)
+  (setq large-file-warning-threshold 50000000) ;; 50mb
   (setq backup-directory-alist `((".*" . ,temporary-file-directory)))
   ;;(setq auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
   (setq make-backup-files t)
   (setq backup-by-copying t)
-  (setq mode-require-final-newline 'visit-save))
+  (setq mode-require-final-newline t)
+  (setq require-final-newline t))
 
 ;;; ------------------------------
 ;;; Shell settings
@@ -874,7 +906,7 @@
   ;;        ("C-x v I" . vc-log-incoming)  ; the actual git fetch
   ;;        ("C-x v F" . vc-update)        ; "F" because "P" is push
   ;;        ("C-x v d" . vc-diff)))
-)
+  )
 
 (use-package compile
   :config
@@ -884,41 +916,10 @@
   (setq compilation-always-kill t)
   (setq compilation-window-height 12))
 
-(use-package diff-mode
-  :config
-  (setq diff-font-lock-prettify nil))
-
-(use-package diff
-  :config (setq diff-switches '("-u")))
-
-(use-package ediff
-  :config
-  (setq ediff-window-setup-function 'ediff-setup-windows-plain)
-  (setq ediff-split-window-function 'split-window-horizontally)
-  (setq ediff-diff-options "-w")
-  :hook (ediff-after-quit-hook-internal-hook . winner-undo))
-
-(use-package prog-mode
-  :config
-  (defun my/prog-mode-hook ()
-    "Hook to run when entering generic prog-mode."
-    (setq whitespace-line-column 80
-          whitespace-style '(face lines-tail)
-          which-func-unknown "TOP LEVEL")
-    (font-lock-add-keywords nil '(("\\<\\(FIXME\\|TODO\\|XXX+\\|BUG\\):"
-                                   1 font-lock-warning-face prepend))))
-  :hook ((prog-mode-hook . electric-pair-mode)
-         (prog-mode-hook . subword-mode)
-         (prog-mode-hook . which-function-mode)
-         ;;(prog-mode-hook . flyspell-prog-mode)
-         (prog-mode-hook . my/prog-mode-hook)))
-
-(use-package compile
-  :config
-  (setq compilation-save-buffers-predicate nil)
-  (setq compilation-scroll-output 'first-error)
-  (setq compilation-ask-about-save nil)
-  (setq compilation-window-height 12))
+;; or use smerge-ediff to resolve conflicts
+(use-package smerge-mode
+  :init
+  (setq smerge-command-prefix (kbd "C-c v")))
 
 (use-package diff-mode
   :config
@@ -935,6 +936,7 @@
   :hook (ediff-after-quit-hook-internal-hook . winner-undo))
 
 (use-package prog-mode
+  :diminish subword-mode
   :config
   (defun my/prog-mode-hook ()
     "Hook to run when entering generic prog-mode."
