@@ -3,7 +3,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2020-08-14 17:33:05 (tmy)>
+;;; Time-stamp: <2020-09-03 21:23:24 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -27,7 +27,6 @@
 (require 'package)
 
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
-(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 
 ;; avoid re-initializing packages
 (unless package--initialized (package-initialize))
@@ -37,8 +36,6 @@
   (package-refresh-contents)
   (package-install 'use-package))
 
-;; prefer to use stable versions over git versions
-(setq use-package-always-pin "melpa-stable")
 (setq use-package-hook-name-suffix nil)
 
 (add-hook 'package-menu-mode-hook 'hl-line-mode)
@@ -47,20 +44,12 @@
 ;;; General
 ;;; ------------------------------
 
-(use-package gnutls
-  :config
-  ;; silence gnutls warnings
-  (setq gnutls-min-prime-bits nil
-        gnutls-verify-error nil)
-  ;; TODO: workaround for emacs bug, fixed in 26.3+
-  (when (version<= emacs-version "26.3")
-    (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")))
+(use-package expand-region
+  :ensure t
+  :bind (("C-=" . er/expand-region)))
 
-;; https://bugs.debian.org/766397
-(when (version<= emacs-version "27")
-  (setq tls-program '("gnutls-cli --x509cafile %t -p %p %h")))
-
-(delete-selection-mode 1)
+(use-package delsel
+  :hook (after-init-hook . delete-selection-mode))
 
 ;; | Key chord | Description                  |
 ;; |-----------+------------------------------|
@@ -88,12 +77,19 @@
 
 (setq query-replace-highlight t)
 
-;; Misc options
-(auto-compression-mode 1)
-
 ;; mouse options
-(setq mouse-yank-at-point t)
-(mouse-wheel-mode t)
+(use-package mouse
+  :config
+  (setq mouse-wheel-scroll-amount
+        '(1
+          ((shift) . 5)
+          ((meta) . 0.5)
+          ((control) . text-scale)))
+  (setq mouse-drag-copy-region nil)
+  (setq make-pointer-invisible t)
+  (setq mouse-wheel-progressive-speed t)
+  (setq mouse-wheel-follow-mouse t)
+  :hook (after-init-hook . mouse-wheel-mode))
 
 (use-package flyspell
   :commands (ispell-change-dictionary
@@ -179,15 +175,13 @@
   :ensure auctex
   :hook (latex-mode-hook . auto-fill-mode)
   :init
-
- ;;  (((output-dvi has-no-display-manager)
- ;;  "dvi2tty")
- ;; ((output-dvi style-pstricks)
- ;;  "dvips and gv")
- ;; (output-dvi "xdvi")
- ;; (output-pdf "Evince")
+  ;;  (((output-dvi has-no-display-manager)
+  ;;  "dvi2tty")
+  ;; ((output-dvi style-pstricks)
+  ;;  "dvips and gv")
+  ;; (output-dvi "xdvi")
+  ;; (output-pdf "Evince")
   ;; (output-html "xdg-open"))
-
   (setq TeX-view-program-selection '((output-pdf "pdf-tools")))
   (setq TeX-view-program-list '(("pdf-tools" "TeX-pdf-tools-sync-view")))
   :config
@@ -200,17 +194,16 @@
 
 (use-package pdf-tools
   :ensure t
-  ;; :bind (:map pdf-view-mode-map
-  ;;             ("C-s" . isearch-forward)
-  ;;             ("h" . pdf-annot-add-highlight-markup-annotation)
-  ;;             ("t" . pdf-annot-add-text-annotation)
-  ;;             ("D" . pdf-annot-delete)
-  ;;             )
+  :mode ("\\.pdf\\'" . pdf-view-mode)
+  :magic ("%PDF" . pdf-view-mode)
+  :hook
+  (pdf-view-mode . pdf-links-minor-mode)
+  (pdf-view-mode . pdf-isearch-minor-mode)
+  (pdf-view-mode . pdf-outline-minor-mode)
+  (pdf-view-mode . pdf-history-minor-mode)
   :config
   (setq pdf-view-display-size 'fit-page)
-  ;;(setq pdf-annot-activate-created-annotations t)
-  ;;(setq pdf-view-resize-factor 1.1)
-  (pdf-tools-install))
+  (pdf-tools-install :no-query))
 
 (use-package markdown-mode
   :ensure t
@@ -223,8 +216,7 @@
 (use-package yaml-mode
   :ensure t
   :mode "\\.yml$\\|\\.yaml$"
-  :config
-  (add-to-list 'magic-mode-alist '("---" . yaml-mode)))
+  :magic ("---" . yaml-mode))
 
 (use-package nxml-mode
   :mode (("\\.plist\\'" . nxml-mode)
@@ -251,7 +243,9 @@
 
 (use-package typescript-mode
   :ensure t
-  :hook (typescript-mode-hook . eglot-ensure))
+  :after flymake-eslint
+  :hook ((typescript-mode-hook . eglot-ensure)
+         (typescript-mode-hook . flymake-eslint-enable)))
 
 (use-package yasnippet
   :ensure t
@@ -270,24 +264,50 @@
   :config (setq font-lock-maximum-decoration t))
 
 (use-package paren
-  :config (show-paren-mode t))
+  :config
+  (setq show-paren-style 'parenthesis)
+  (setq show-paren-when-point-in-periphery t)
+  (setq show-paren-when-point-inside-paren nil)
+  :hook (after-init-hook . show-paren-mode))
 
 (use-package frame
   :config (blink-cursor-mode -1))
 
+;; (use-package winner
+;;   :commands winner-undo
+;;   :bind
+;;   (("C-c w" . winner-undo)
+;;    ("C-c W" . winner-redo))
+;;   :config
+;;   (winner-mode))
+
 ;; default emacs configurations
 (use-package emacs
-  :bind (("C-x C-k" . kill-region)
-         ("C-w" . backward-kill-word) ;; XXX: change this to backward-kill-word-or-region
+  :bind (("C-z" . nil)
+         ("C-x C-z" . nil)
+         ("C-h h" . nil)
+         ("C-x C-k" . kill-region)
+         ("C-w" . my/backward-kill-word-or-region)
          ("C-c C-j" . join-line)
          ("M-z" . zap-up-to-char)
+         ("C-x k" . kill-this-buffer)
          ("M-o" . other-window)
-         ("<f1>" . eshell)
-         ("<f2>" . rgrep)
-         ("<f6>" . magit-status)
-         ("<f11>" . gnus)
-         ("<f12>" . bookmark-bmenu-list))
+         ("C-c s" . eshell)
+         ("C-c r" . rgrep)
+         ("C-c g" . magit-status)
+         ("C-c m" . gnus)
+         ("C-c b" . bookmark-bmenu-list))
+;; Tranlate-map C-x -> C-t, M-x -> M-t
+  :hook ((after-init-hook . auto-compression-mode)
+         (focus-out-hook . garbage-collect))
   :config
+  (defun my/backward-kill-word-or-region ()
+    "Kill region or word based on selection."
+    (interactive)
+    (call-interactively (if (region-active-p)
+                            'kill-region
+                          'backward-kill-word)))
+
   (when (fboundp 'tool-bar-mode)
     (tool-bar-mode -1))
   (when (fboundp 'scroll-bar-mode)
@@ -297,6 +317,7 @@
   (menu-bar-mode t)
 
   (setq case-fold-search t)
+  (setq load-prefer-newer t)
 
   (setq-default show-trailing-whitespace t)
   (setq-default require-final-newline t)
@@ -306,9 +327,10 @@
   (setq-default fill-column 72)
   (setq-default tab-always-indent 'complete)
 
-  (setq completion-ignore-case t)
-
   (setq sentence-end-double-space nil)
+  (setq colon-double-space nil)
+  (setq use-hard-newlines nil)
+  (setq sentence-end-without-period nil)
 
   ;; keep a little more history to see whats going on
   (setq message-log-max 16384)
@@ -326,8 +348,8 @@
   (setq use-file-dialog nil)
   (setq use-dialog-box nil)
 
-  ;; Maximize first frame
-  (add-to-list 'default-frame-alist '(fullscreen . maximized))
+  (add-to-list 'initial-frame-alist '(fullscreen . maximized))
+
   (add-hook 'help-mode-hook (lambda () (setq truncate-lines t)))
 
   ;; Set Default font if present
@@ -365,18 +387,19 @@
   :config
   (setq set-mark-command-repeat-pop t)
   (setq next-line-add-newlines nil)
+  (setq backward-delete-char-untabify-method nil)
   (setq kill-ring-max 100)
   (setq yank-pop-change-selection t)
   (setq save-interprogram-paste-before-kill t)
-
-  (size-indication-mode t)
-  (line-number-mode t)
-  (column-number-mode t)
-  :hook ((text-mode-hook . auto-fill-mode)
+  :hook ((after-init-hook . size-indication-mode)
+         (after-init-hook . line-number-mode)
+         (after-init-hook . column-number-mode)
+         (text-mode-hook . auto-fill-mode)
          (before-save-hook . delete-trailing-whitespace)))
 
 (use-package diminish
-  :ensure t)
+  :ensure t
+  :after use-package)
 
 ;; (use-package gruvbox-theme
 ;;   :ensure t
@@ -384,7 +407,10 @@
 
 (use-package modus-vivendi-theme
   :ensure t
-  :config (load-theme 'modus-vivendi t nil))
+  :config
+  (setq modus-operandi-theme-proportional-fonts t)
+  (setq modus-operandi-theme-scale-headings t)
+  (load-theme 'modus-vivendi t nil))
 
 ;;; ------------------------------
 ;;; Calendar and diary settings
@@ -417,6 +443,11 @@
   (setq diary-show-holidays-flag t)
   (setq diary-file (expand-file-name "diary" user-emacs-directory)))
 
+(use-package solar
+  :config
+  (setq calendar-latitude 60.29414
+        calendar-longitude 25.04099))
+
 ;; time utilities
 (use-package time-stamp
   :config
@@ -448,7 +479,7 @@
   :config
   (setq recentf-save-file (expand-file-name "recentf" user-emacs-directory))
   (setq recentf-max-saved-items 50)
-  (recentf-mode t))
+  :hook (after-init-hook . recentf-mode))
 
 (use-package bookmark
   :config
@@ -458,9 +489,12 @@
 (use-package savehist
   :config
   (setq savehist-file (expand-file-name "savehist" user-emacs-directory))
+  (setq history-length 30000)
+  (setq history-delete-duplicates t)
+  (setq savehist-save-minibuffer-history t)
   (setq savehist-additional-variables '(search ring regexp-search-ring))
   (setq savehist-autosave-interval 60)
-  (savehist-mode t))
+  :hook (after-init-hook . savehist-mode))
 
 (use-package abbrev
   :hook (kill-emacs-hook . write-abbrev-file)
@@ -475,7 +509,6 @@
   :config
   (setq large-file-warning-threshold 50000000) ;; 50mb
   (setq backup-directory-alist `((".*" . ,temporary-file-directory)))
-  ;;(setq auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
   (setq make-backup-files t)
   (setq backup-by-copying t)
   (setq mode-require-final-newline t)
@@ -543,31 +576,189 @@
 ;;; ------------------------------
 
 (use-package org
+  :demand t
   :config
-  (setq org-directory (expand-file-name "org"  user-emacs-directory))
+  (setq org-directory "~/Org)")
+  (setq org-default-notes-file "~/Org/notes.org")
+  ;;(setq org-agenda-files '("./notes.org" "./tasks.org" "./work.org"))
+  (setq org-agenda-files '("~/Org"))
   (setq org-outline-path-complete-in-steps nil)
-  (setq org-agenda-files (list org-directory))
-  (setq org-agenda-include-diary t) ;; TODO: this exists?
-  (setq org-agenda-todo-ignore-with-date t) ;; TODO: this exists?)
   (setq org-insert-mode-line-in-empty-file t)
   (setq org-enforce-todo-checkbox-dependencies t)
   (setq org-enforce-todo-dependencies t)
   (setq org-log-done 'note)
   (setq org-startup-indented t)
   (setq org-special-ctrl-a/e t)
-  (setq org-src-tab-acts-natively t)
-  (setq org-src-window-setup 'current-window)
   (setq org-todo-keywords '((sequence "TODO(t)" "WIP(w!)" "|" "DONE(d@!)")
                             (sequence "|" "CANCELED(c@/!)")
+                            (sequence "MEET(m)" "|" "MET(M)")
                             (sequence "STALLED(s@/!)" "|")
                             (sequence "PENDING(p@/!)" "|")))
-  ;; capture notes
-  (setq org-default-notes-file (expand-file-name "notes.org" org-directory))
-  :bind (("C-c l" . org-store-link)
-         ("C-c a" . org-agenda)
-         ("C-c c" . org-capture))
+  (setq org-fontify-quote-and-verse-blocks t)
+  (setq org-track-ordered-property-with-tag t)
+  (setq org-highest-priority ?A)
+  (setq org-lowest-priority ?C)
+  (setq org-default-priority ?B)
+
+  ;; tags
+  ;; (setq org-tag-alist                   ; TODO review org tag list
+  ;;       '((:startgroup)
+  ;;         ("@work")
+  ;;         ("@priv")
+  ;;         (:endgroup)
+  ;;         ("emacs")
+  ;;         ("masters")
+  ;;         ("mail")))
+
+
+  (setq org-confirm-babel-evaluate t)
+  (setq org-log-done 'note)
+  (setq org-log-note-clock-out t)
+  (setq org-read-date-prefer-future t)
+
+   ;; general
+  (setq org-adapt-indentation nil)
+  (setq org-special-ctrl-a/e t)
+  (setq org-special-ctrl-k t)
+  (setq org-hide-emphasis-markers nil)
+  (setq org-hide-leading-stars nil)
+  (setq org-catch-invisible-edits 'show)
+  (setq org-return-follows-link nil)
+  (setq org-loop-over-headlines-in-active-region 'start-level)
+  (setq org-imenu-depth 3)
   :hook ((org-mode-hook . flyspell-mode)
          (message-mode-hook . turn-on-orgtbl)))
+
+(use-package ol
+:config
+(setq org-link-keep-stored-after-insertion t)
+:bind (:map org-mode-map
+            ("C-c l" . org-store-link)
+            ("C-c L" . org-toggle-link-display)
+            ("C-c C-y" . org-insert-last-stored-link)))
+
+(use-package org-capture
+  :after org
+  :config
+  (setq org-capture-templates
+        '(("b" "Basic task for future review" entry
+           (file+headline "tasks.org" "Basic tasks that need to be reviewed")
+           "* %^{Title}\n:PROPERTIES:\n:CAPTURED: %U\n:END:\n\n%i %l")
+          ("w" "Work")
+          ("wt" "Task or assignment" entry
+           (file+headline "work.org" "Tasks and assignments")
+           "* TODO [#A] %^{Title} :@work:\nSCHEDULED: %^t\n:PROPERTIES:\n:CAPTURED: %U\n:END:\n\n%i %?")
+          ("wm" "Meeting, event, appointment" entry
+           (file+headline "work.org" "Meetings, events, and appointments")
+           "* MEET [#A] %^{Title} :@work:\nSCHEDULED: %^T\n:PROPERTIES:\n:CAPTURED: %U\n:END:\n\n%i %?")
+          ("t" "Task with a due date" entry
+           (file+headline "tasks.org" "Task list with a date")
+           "* %^{Scope of task||TODO|STUDY|MEET} %^{Title} %^g\nSCHEDULED: %^t\n:PROPERTIES:\n:CAPTURED: %U\n:END:\n\n%i %?")
+          ("r" "Reply to an email" entry
+           (file+headline "tasks.org" "Mail correspondence")
+           "* TODO [#B] %:subject :mail:\nSCHEDULED: %t\n:PROPERTIES:\n:CONTEXT: %a\n:END:\n\n%i %?")))
+
+  (setq org-capture-templates-contexts
+        '(("r" ((in-mode . "gnus-article-mode")
+                (in-mode . "gnus-summary-mode")))))
+  :bind ("C-c c" . org-capture))
+
+(use-package org-agenda
+  :after org
+  :config
+  (setq org-agenda-span 'week)
+  (setq org-agenda-start-on-weekday 1)  ; Monday
+  (setq org-agenda-confirm-kill t)
+  (setq org-agenda-show-all-dates t)
+
+
+  ;; XXX: evaluate these
+  (setq org-agenda-show-outline-path nil)
+  (setq org-agenda-window-setup 'current-window)
+  (setq org-agenda-custom-commands-contexts nil)
+  (setq org-agenda-prefix-format
+        '((agenda . " %i %-12:c%?-12t% s")
+          (todo . " %i %-12:c")
+          (tags . " %i %-12:c")
+          (search . " %i %-12:c")))
+  (setq org-agenda-sorting-strategy
+        '(((agenda habit-down time-up priority-down category-keep)
+           (todo priority-down category-keep)
+           (tags priority-down category-keep)
+           (search category-keep))))
+
+  (setq org-agenda-remove-times-when-in-prefix nil)
+  (setq org-agenda-remove-timeranges-from-blocks nil)
+  (setq org-agenda-compact-blocks nil)
+  (setq org-agenda-block-separator ?—)
+
+  ;;(setq org-agenda-bulk-mark-char "#")
+
+  (setq org-agenda-insert-diary-strategy 'date-tree)
+  (setq org-agenda-insert-diary-extract-time t)
+  (setq org-agenda-include-diary t)
+
+  (setq org-agenda-start-with-follow-mode t)
+  (setq org-agenda-follow-indirect t)
+
+  (setq org-agenda-dim-blocked-tasks t)
+  (setq org-agenda-todo-list-sublevels t)
+
+  (setq org-agenda-include-deadlines t)
+  (setq org-deadline-warning-days 7)
+  (setq org-agenda-skip-scheduled-if-done nil)
+  (setq org-agenda-skip-scheduled-if-deadline-is-shown t)
+  (setq org-agenda-skip-timestamp-if-deadline-is-shown t)
+  (setq org-agenda-skip-deadline-prewarning-if-scheduled 1)
+  (setq org-scheduled-past-days 365)
+  (setq org-deadline-past-days 365)
+
+  (setq org-agenda-time-leading-zero t)
+  (setq org-agenda-timegrid-use-ampm nil)
+  (setq org-agenda-current-time-string
+        "now - - - - - - - - - - - - - - - - - - - - - - - - -"
+        ;;"—·—·—·—·—·—·—·—·—"
+        )
+  (setq org-agenda-time-grid
+        '((daily today require-timed)
+          (0700 0800 0900 1000 1100
+                1200 1300 1400 1500 1600
+                1700 1800 1900 2000 2100)
+          "......" "----------------"
+          ;;" -----" "—————————————————"
+          ))
+
+  (setq org-agenda-todo-ignore-with-date t)
+  (setq org-agenda-todo-ignore-timestamp t)
+  (setq org-agenda-todo-ignore-scheduled t)
+  (setq org-agenda-todo-ignore-deadlines t)
+  (setq org-agenda-todo-ignore-time-comparison-use-seconds t)
+  (setq org-agenda-tags-todo-honor-ignore-options nil)
+
+  (setq org-agenda-show-inherited-tags t)
+  (setq org-agenda-use-tag-inheritance
+        '(todo search agenda))
+  (setq org-agenda-hide-tags-regexp nil)
+  (setq org-agenda-remove-tags nil)
+  (setq org-agenda-tags-column -120)
+
+  :bind (("C-c a" . org-agenda)))
+
+(use-package org-src
+  :after org
+  :config
+  (setq org-src-tab-acts-natively t)
+  (setq org-src-window-setup 'current-window)
+  (setq org-src-fontify-natively t)
+  (setq org-src-preserve-indentation t)
+  (setq org-edit-src-content-indentation 0))
+
+(use-package ox
+  :after org
+  :config
+  (setq org-export-with-toc t)
+  (setq org-export-headline-levels 3)
+  (setq org-export-dispatch-use-expert-ui nil))
 
 ;;; ------------------------------
 ;;; Buffer management
@@ -588,7 +779,6 @@
   :hook (ibuffer-mode-hook . ibuffer-auto-mode))
 
 (use-package ibuffer-vc
-  ;;:disabled
   :ensure t
   :defer t
   :config
@@ -635,10 +825,8 @@
             `(("freenode" nickserv "zmyrgel" ,nickserv-pass)))))
 
   (setq rcirc-omit-responses '("JOIN" "PART" "QUIT" "NICK" "AWAY"))
-  ;;(setq rcirc-time-format "%Y-%m-%d %H:%M ")
-  :hook ((rcirc-mode-hook . rcirc-track-minor-mode)
-         ;;(rcirc-mode-hook . flyspell-mode)
-         ))
+  (setq rcirc-time-format "%Y-%m-%d %H:%M ")
+  :hook ((rcirc-mode-hook . rcirc-track-minor-mode)))
 
 (use-package erc
   :hook ((erc-mode-hook . erc-services-mode)
@@ -692,7 +880,6 @@
 
 (setq user-mail-address "timo.myyra@bittivirhe.fi")
 (setq user-full-name "Timo Myyrä")
-(setq message-send-mail-function 'smtpmail-send-it)
 
 (use-package smtpmail
   :config
@@ -702,54 +889,102 @@
   (setq smtpmail-smtp-service        465)
   (setq smtpmail-stream-type         'ssl))
 
+(use-package smtpmail-async
+  :after smtpmail
+  :config
+  (setq send-mail-function 'async-smtpmail-send-it)
+  (setq message-send-mail-function 'async-smtpmail-send-it))
+
+(use-package message
+  :config
+  (setq mail-user-agent 'message-user-agent)
+  (setq message-mail-user-agent nil)    ; default is `gnus'
+  (setq compose-mail-user-agent-warnings nil)
+  (setq message-citation-line-format "%f [%Y-%m-%d, %R %z]:\n")
+  (setq message-citation-line-function
+        'message-insert-formatted-citation-line)
+  (setq message-confirm-send nil)
+  (setq message-kill-buffer-on-exit t)
+  (setq message-wide-reply-confirm-recipients t)
+  (setq message-default-charset 'utf-8)
+  (add-to-list 'mm-body-charset-encoding-alist '(utf-8 . base64))
+  :hook ((message-setup-hook . message-sort-headers)))
+
 ;; gnus
 (use-package gnus
   :config
-  (setq gnus-select-method '(nntp "news.gmane.io"))
   (setq gnus-treat-hide-citation t)
+  (setq gnus-gcc-mark-as-read t)
   (setq gnus-cited-lines-visible '(0 . 5))
   (setq gnus-always-read-dribble-file t)
   (setq mm-inline-large-images 'resize)
   (setq mm-discouraged-alternatives '("text/html" "text/richtext"))
   (setq mm-text-html-renderer 'shr)
 
+  (setq gnus-select-method '(nntp "news.gmane.io"))
   (setq gnus-secondary-select-methods
         '((nnimap "work-gmail"
                   (nnimap-address "imap.gmail.com")
                   (nnimap-server-port "993")
                   (nnimap-stream ssl))
+          (nnimap "imap-metro"
+                  (nnimap-address "imap.metropolia.fi")
+                  (nnimap-server-port "993")
+                  (nnimap-stream tls))
           (nnimap "fastmail"
                   (nnimap-address "imap.fastmail.com")
-                  (nnimap-stream tls)))))
+                  (nnimap-stream tls))))
+  :bind ("C-c m" . gnus))
+
+(use-package gnus-art
+  :config
+  (setq gnus-article-mode-line-format "%G %S %m")
+  (setq gnus-visible-headers
+        '("^From:" "^Subject:" "^To:" "^Cc:" "^Newsgroups:" "^Date:"
+          "Followup-To:" "Reply-To:" "^Organization:" "^X-Newsreader:"
+          "^X-Mailer:"))
+  (setq gnus-sorted-header-list gnus-visible-headers))
+
+(use-package gnus-async
+  :after gnus
+  :config
+  (setq gnus-asynchronous t)
+  (setq gnus-use-article-prefetch 15))
+
+(use-package nnmail
+  :config
+  (setq nnmail-expiry-wait 30))
+
+(use-package gnus-agent
+  :after gnus
+  :config
+  (setq gnus-agent-expire-days 30))
+
+(use-package gnus-dired
+  :after (gnus dired)
+  :hook (dired-mode-hook . gnus-dired-mode))
 
 ;;; ------------------------------
 ;;; Web Browsing settings
 ;;; ------------------------------
-
-(use-package newsticker
-  :config
-  (setq newsticker-url-list
-        '(;; ("title" "URL" other options)
-          ("Free Software Foundation Europe" "https://fsfe.org/news/news.it.rss")
-          ("Free Software Foundation USA" "https://static.fsf.org/fsforg/rss/blogs.xml")
-          ("(or Emacs" "http://oremacs.com/atom.xml")
-          ("Emacs Blog" "http://emacsblog.org/feed/")
-          ("Howardism - Howard Abrams blog" "http://howardism.org/index.xml")
-          ("Endless parentheses" "http://endlessparentheses.com/atom.xml")
-          ("Mastering Emacs" "https://www.masteringemacs.org/feed")
-          ("Scripter" "https://scripter.co/posts/atom.xml")
-          ("One Of Us" "https://oneofus.la/have-emacs-will-hack/feed.xml")
-          ("Org-mode upcoming changes" "https://updates.orgmode.org/feed/changes")
-          ("Reddit - Emacs" "https://www.reddit.com/r/emacs.rss")
-          ("Reddit - Org-mode" "https://www.reddit.com/r/orgmode.rss")
-          ("Reddit - Stallman Was Right" "https://www.reddit.com/r/StallmanWasRight.rss")
-          ("XKCd" "https://xkcd.com/atom.xml"))))
 
 (use-package elfeed
   :ensure t
   :defer t
   :config
   (setq elfeed-use-curl t)
+  (setq elfeed-curl-max-connections 10)
+  (setq elfeed-db-directory "~/.emacs.d/elfeed/")
+  (setq elfeed-enclosure-default-dir "~/Downloads/")
+  (setq elfeed-search-filter "@4-months-ago +unread")
+  (setq elfeed-sort-order 'descending)
+  (setq elfeed-search-clipboard-type 'CLIPBOARD)
+  (setq elfeed-search-title-max-width 100)
+  (setq elfeed-search-title-min-width 30)
+  (setq elfeed-search-trailing-width 25)
+  (setq elfeed-show-truncate-long-urls t)
+  (setq elfeed-show-unique-buffers t)
+
   (setq elfeed-feeds
         '("http://nullprogram.com/feed/"
           "http://planet.emacsen.org/atom.xml"
@@ -758,72 +993,143 @@
           "https://undeadly.org/cgi?action=rss"
           "https://www.phoronix.com/rss.php"
           "http://planetsysadmin.com/atom.xml"
-          "https://planet.lisp.org/rss20.xml"
+          ("http://oremacs.com/atom.xml" emacs)
+          ("http://emacsblog.org/feed/" emacs)
+          ("http://endlessparentheses.com/atom.xml" emacs)
+          ("https://www.masteringemacs.org/feed" emacs)
+          "https://scripter.co/posts/atom.xml"
+          ("https://oneofus.la/have-emacs-will-hack/feed.xml" emacs)
+          ("https://updates.orgmode.org/feed/changes" emacs org)
+          ("https://www.reddit.com/r/emacs.rss" emacs reddit)
+          ("https://www.reddit.com/r/orgmode.rss" reddit emacs org)
+          ("https://xkcd.com/atom.xml" xkcd)
+          ("https://planet.lisp.org/rss20.xml" lisp)
           "https://lobste.rs/t/emacs.lisp.security.ask.ai.openbsd.programming.rss")))
 
 (use-package eww
+  :commands (eww
+             eww-browse-url
+             eww-search-words
+             eww-open-in-new-buffer
+             eww-open-file
+             prot/eww-visit-history)
   :config
-  (setq eww-use-external-browser-for-content-type "\\`\\(video/\\|audio/\\|application/ogg\\|pdf\\)")
-  (setq browse-url-browser-function 'eww-browse-url)
+  (setq eww-restore-desktop nil)
+  (setq eww-desktop-remove-duplicates t)
+  (setq eww-header-line-format "%u")
+  (setq eww-search-prefix "https://duckduckgo.com/html/?q=")
+  (setq eww-download-directory (expand-file-name "Downloads" "~"))
+  (setq eww-suggest-uris
+        '(eww-links-at-point
+          ;;eww-prompt-history
+          thing-at-point-url-at-point))
+  (setq eww-bookmarks-directory (expand-file-name "eww-bookmarks" user-emacs-directory))
+  (setq eww-history-limit 150)
+  (setq eww-use-external-browser-for-content-type
+        "\\`\\(video/\\|audio/\\|application/ogg\\|pdf\\)")
+  (setq eww-browse-url-new-window-is-tab nil)
+  (setq eww-form-checkbox-selected-symbol "[X]")
+  (setq eww-form-checkbox-symbol "[ ]")
+  :bind (:map eww-mode-map
+              ("n" . next-line)
+              ("p" . previous-line)
+              ("f" . forward-char)
+              ("b" . backward-char)
+              ("B" . eww-back-url)
+              ("N" . eww-next-url)
+              ("P" . eww-previous-url)))
+
+(use-package browse-url
+  :after eww
+  :config
   (setq browse-url-new-window-flag nil)
-  (setq browse-url-firefox-new-window-is-tab t))
+  (setq browse-url-firefox-new-window-is-tab t)
+  (setq browse-url-browser-function 'eww-browse-url))
 
 ;;; ------------------------------
 ;;; Completion
 ;;; ------------------------------
 
-;; XXX: setup provs window rules or check them out
-(use-package icomplete
+(use-package icomplete-vertical
+  :ensure t
   :config
+  (setq icomplete-vertical-prospects-height 10))
+
+(use-package icomplete
+  :after (minibuffer icomplete-vertical)
+  :demand t
+  :config
+  (setq icomplete-delay-completions-threshold 100)
+  (setq icomplete-max-delay-chars 2)
+  (setq icomplete-compute-delay 0.2)
   (setq icomplete-prospects-height 1)
   (setq icomplete-in-buffer t)
-  (setq icomplete-delay-completions-threshold 0.3)
-  (setq icomplete-max-delay-chars 0)
-  (setq icomplete-show-matches-on-no-input t)
-  (setq icomplete-hide-common-prefix nil)
   (setq icomplete-separator " | ")
   (setq icomplete-with-completion-tables t)
+  (setq icomplete-tidy-shadowed-file-names t)
+  (setq icomplete-show-matches-on-no-input nil)
+  (setq icomplete-hide-common-prefix nil)
+  (setq completion-flex-nospace nil)
   (icomplete-mode)
   :bind (:map icomplete-minibuffer-map
-              ("<down>" . icomplete-forward-completions)
+              ("<return>" . icomplete-force-complete-and-exit)
+              ("M-t" . icomplete-force-complete)
+              ("C-j" . exit-minibuffer)
               ("C-n" . icomplete-forward-completions)
-              ("<up>" . icomplete-backward-completions)
               ("C-p" . icomplete-backward-completions)
+              ("C-s" . icomplete-forward-completions)
+              ("C-r" . icomplete-backward-completions)
+              ("<C-backspace>" . icomplete-fido-backward-updir)
+              ("DEL" . icomplete-fido-backward-updir)
               ("C-v" . icomplete-vertical-toggle)))
-
-;: XXX: eval
-;; (use-package orderless
-;;   :ensure t
-;;   :init (icomplete-mode)
-;;   :config (setq completion-styles '(orderless)))
 
 (use-package minibuffer
   :config
-  (setq completions-format 'vertical)
-  (setq read-file-name-completion-ignore-case t)
-  ;;completion-styles (append completion-styles '(initials))
-  (setq completion-styles '(partial-completion substring))
-  (setq completion-category-overrides '((file (styles basic substring))))
-  (setq read-file-name-completion-ignore-case t)
-  (setq read-buffer-completion-ignore-case t)
   (setq completion-ignore-case t)
+  (setq read-buffer-completion-ignore-case t)
+  (setq read-file-name-completion-ignore-case t)
+  (setq minibuffer-beginning-of-buffer-movement t)
+  (setq completions-format 'vertical)
   (setq completion-show-help nil)
-  (setq completion-cycle-threshold 3)
-  (unless (version< emacs-version "27")
-    (setq completion-flex-nospace nil))
-  (setq completion-pcm-complete-word-inserts-delimiters t)
-  (setq completion-pcm-word-delimiters "-_./:| ")
-  (setq completion-styles '(partial-completion substring initials flex))
-  (setq completion-category-overrides
-        '((file (styles initials basic))
-          (buffer (styles initials basic))
-          (info-menu (styles basic))))
   (setq enable-recursive-minibuffers t)
   (setq read-answer-short t)
-  (setq resize-mini-windows t)
+  (setq resize-mini-windows 'grow-only)
   (file-name-shadow-mode 1)
   (minibuffer-depth-indicate-mode 1)
-  (minibuffer-electric-default-mode 1))
+  (minibuffer-electric-default-mode 1)
+  :bind (:map completion-list-mode-map
+              ("n" . next-line)
+              ("p" . previous-line)
+              ("f" . next-completion)
+              ("b" . previous-completion)))
+
+(use-package orderless
+  :ensure t
+  :after icomplete
+  :config (setq completion-styles '(orderless)))
+
+(use-package imenu
+  :config
+  (setq imenu-auto-rescan t)
+  (setq imenu-max-item-length 100)
+  (setq imenu-space-replacement ".")
+  (setq imenu-level-separator ":"))
+
+;; XXX: this or hippie-expand, how company-mode fits in?
+(use-package dabbrev
+  :after (minibuffer icomplete) ; read those as well
+  :config
+  (setq dabbrev-abbrev-char-regexp "\\sw\\|\\s_")
+  (setq dabbrev-abbrev-skip-leading-regexp "[$*/=']")
+  (setq dabbrev-backward-only nil)
+  (setq dabbrev-case-distinction 'case-replace)
+  (setq dabbrev-case-fold-search t)
+  (setq dabbrev-case-replace 'case-replace)
+  (setq dabbrev-check-other-buffers t)
+  (setq dabbrev-eliminate-newlines nil)
+  (setq dabbrev-upcase-means-case-search t)
+  :bind (("C-M-/" . dabbrev-expand)
+         ("C-S-M-/" . dabbrev-completion)))
 
 (use-package company
   :ensure t
@@ -846,9 +1152,11 @@
 (use-package dired
   :bind (("C-x C-j" . dired-jump)
          ("C-x 4 C-j" . dired-jump-other-window))
-  :hook (dired-mode-hook . hl-line-mode)
+  :hook ((dired-mode-hook . hl-line-mode)
+         (dired-mode-hook . dired-hide-details-mode))
   :config
   (require 'dired-x)
+  (setq dired-dwim-target t)
   (setq dired-recursive-copies 'always)
   (setq dired-recursive-deletes 'always)
   (setq dired-isearch-filenames t)
@@ -875,7 +1183,35 @@
   :ensure t
   :defer t
   :hook (bongo-player-started-hook . bongo-no-autoplay-video)
+  :bind (("<C-XF86AudioPlay>" . bongo-pause/resume)
+         ("<C-XF86AudioNext>" . bongo-next)
+         ("<C-XF86AudioPrev>" . bongo-previous)
+         ("<M-XF86AudioPlay>" . bongo-show)
+         :map bongo-playlist-mode-map
+         ("n" . bongo-next-object)
+         ("p" . bongo-previous-object)
+         ("R" . bongo-rename-line)
+         ("j" . bongo-dired-line)
+         ("J" . dired-jump)
+         ("I" . bongo-insert-special))
   :config
+  (setq bongo-default-directory (expand-file-name "Music" "~"))
+  (setq bongo-prefer-library-buffers nil)
+  (setq bongo-insert-whole-directory-trees t)
+  (setq bongo-logo nil)
+  (setq bongo-display-track-icons nil)
+  (setq bongo-display-track-lengths nil)
+  (setq bongo-display-header-icons nil)
+  (setq bongo-display-playback-mode-indicator t)
+  (setq bongo-display-inline-playback-progress t)
+  (setq bongo-join-inserted-tracks nil)
+  (setq bongo-field-separator (propertize " · " 'face 'shadow))
+  (setq bongo-mark-played-tracks t)
+  (setq bongo-header-line-mode nil)
+  (setq bongo-mode-line-indicator-mode nil)
+  (setq bongo-enabled-backends '(vlc mpv))
+  (setq bongo-vlc-program-name "cvlc")
+
   (defun bongo-no-autoplay-video ()
     "don't autoplay next track if playing video"
     (with-bongo-playlist-buffer
@@ -883,16 +1219,22 @@
             (bongo-player-get bongo-player 'file-name))
        (setq bongo-next-action 'bongo-stop))))
 
-  (setq bongo-custom-backend-matchers
-        `((mplayer
-           (local-file "file:" "http:" "ftp:")
-           "ogg" "flac" "mp3" "m4a" "mka" "wav" "wma"
-           "mpg" "mpeg" "vob" "avi" "ogm" "mp4" "m4v"
-           "mkv" "flv" "mov" "asf" "wmv" "rm" "rmvb" "ts"))))
+  ;; (setq bongo-custom-backend-matchers
+  ;;       `((mplayer
+  ;;          (local-file "file:" "http:" "ftp:")
+  ;;          "ogg" "flac" "mp3" "m4a" "mka" "wav" "wma"
+  ;;          "mpg" "mpeg" "vob" "avi" "ogm" "mp4" "m4v"
+  ;;          "mkv" "flv" "mov" "asf" "wmv" "rm" "rmvb" "ts")))
+  )
 
 ;;; ------------------------------
 ;;; Programming settings
 ;;; ------------------------------
+
+(use-package eldoc
+  :diminish
+  :config
+  (global-eldoc-mode 1))
 
 (use-package vc
   :config
@@ -900,6 +1242,7 @@
   (setq vc-command-messages t)
   ;; (setq vc-cvs-global-switches '("-P" "d"))
   ;; (setq vc-cvs-stay-local t)
+  ;; (setq diff-font-lock-prettify t)
   ;; (setq vc-find-revision-no-save t)
   ;; :bind (("C-x v b" . vc-retrieve-tag)  ; "branch" switch
   ;;        ("C-x v t" . vc-create-tag)
@@ -933,10 +1276,14 @@
   (setq ediff-window-setup-function 'ediff-setup-windows-plain)
   (setq ediff-split-window-function 'split-window-horizontally)
   (setq ediff-diff-options "-w")
-  :hook (ediff-after-quit-hook-internal-hook . winner-undo))
+  ;;:hook (ediff-after-quit-hook-internal-hook . winner-undo)
+  )
+
+(use-package subword
+  :diminish
+  :hook (prog-mode-hook . subword-mode))
 
 (use-package prog-mode
-  :diminish subword-mode
   :config
   (defun my/prog-mode-hook ()
     "Hook to run when entering generic prog-mode."
@@ -946,9 +1293,7 @@
     (font-lock-add-keywords nil '(("\\<\\(FIXME\\|TODO\\|XXX+\\|BUG\\):"
                                    1 font-lock-warning-face prepend))))
   :hook ((prog-mode-hook . electric-pair-mode)
-         (prog-mode-hook . subword-mode)
          (prog-mode-hook . which-function-mode)
-         ;;(prog-mode-hook . flyspell-prog-mode)
          (prog-mode-hook . my/prog-mode-hook)))
 
 (use-package magit
@@ -956,22 +1301,25 @@
   :bind ("C-x v /" . magit-status))
 
 (use-package eglot
-  :ensure t)
+  :ensure t
+  :bind ((:map eglot-mode-map
+               ("C-c h" . eglot-help-at-point)
+               ;; XXX: check if these need bindings or just M-x
+               ;; ("C-c e r" . eglot-rename)
+               ;; ("C-c e f" . eglot-format)
+               ;; ("C-c e a" . eglot-code-actions)
+               ;; ("C-c e h" . eglot-help-at-point)
+               ;; ("C-c e e" . eglot-events-buffer)
+               ;; ("C-c e x" . xref-find-definitions)
+               )))
 
 (use-package flymake
-  ;;:config
-  ;; (remove-hook 'flymake-diagnostic-functions 'flymake-proc-legacy-flymake)
-  ;; (setq flymake-proc-allowed-file-name-masks
-  ;;       (cons '(".+\\.ts$"
-  ;;               flymake-proc-simple-make-init
-  ;;               flymake-proc-simple-cleanup
-  ;;               flymake-proc-get-real-file-name)
-  ;;             flymake-proc-allowed-file-name-masks))
-  )
-
-;; XXX: project specific variables?
-(use-package flymake-eslint
   :ensure t)
+
+(use-package flymake-eslint
+  :ensure t
+  :config
+  (setq flymake-eslint-defer-binary-check t))
 
 ;;; Go programming
 
@@ -981,7 +1329,6 @@
   :hook ((before-save-hook . gofmt-before-save)
          (go-mode-hook . eglot-ensure))
   :bind (:map go-mode-map
-              ("C-c m" . gofmt)
               ("M-." . godef-jump)
               ("C-c C-r" . go-remove-unused-imports)
               ("C-c g i" . go-goto-imports)
@@ -1011,7 +1358,6 @@
 
 (use-package sly
   :ensure t
-  :pin melpa
   ;;:hook (sly-mode-hook . lisp-mode)
   :config
   (let ((sbcl-bin-path (expand-file-name "lib/sbcl" "~")))
@@ -1034,7 +1380,6 @@
 
 (use-package sly-repl-ansi-color
   :ensure t
-  :pin melpa
   :after sly
   :config (sly-enable-contrib 'sly-repl-ansi-color))
 
@@ -1061,9 +1406,8 @@
   :ensure t
   :defer t
   :config
-(setq cider-lein-parameters "repl :headless :host localhost")
-(setq nrepl-hide-special-buffers t)
-  :hook (cider-mode-hook . eldoc-mode))
+  (setq cider-lein-parameters "repl :headless :host localhost")
+  (setq nrepl-hide-special-buffers t))
 
 (use-package geiser
   :disabled
@@ -1135,7 +1479,7 @@
 
 (use-package web-mode
   :ensure t
-  :after (flycheck eglot)
+  :after eglot
   :mode (("\\.jsp\\'" . web-mode)
          ("\\.ap[cp]x\\'" . web-mode)
          ("\\.erb\\'" . web-mode)
@@ -1150,21 +1494,22 @@
     (setq web-mode-markup-indent-offset 2)
     (setq web-mode-css-indent-offset 2)
     (setq web-mode-code-indent-offset 4)
-     (when (member (file-name-extension buffer-file-name) '("tsx" "jsx"))
-       (eglot-ensure)))
-  (flycheck-add-mode 'typescript-tslint 'web-mode)
-  (flycheck-add-mode 'javascript-eslint 'web-mode)
-  (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
+    ;; (when (member (file-name-extension buffer-file-name) '("tsx" "jsx"))
+    ;;   (eglot-ensure)))
+    )
+  ;; (flycheck-add-mode 'typescript-tslint 'web-mode)
+  ;; (flycheck-add-mode 'javascript-eslint 'web-mode)
+  ;; (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
   :hook (web-mode-hook . my/web-mode-hook))
 
-(use-package flycheck
-  :ensure t
-  :diminish flycheck-mode
-  :hook (after-init-hook . global-flycheck-mode)
-  :config
-  (setq flycheck-phpcs-standard "Zend")
-  (flycheck-add-mode 'javascript-eslint 'typescript-mode)
-  (flycheck-add-mode 'typescript-tslint 'web-mode))
+;; (use-package flycheck
+;;   :ensure t
+;;   :diminish flycheck-mode
+;;   :hook (after-init-hook . global-flycheck-mode)
+;;   :config
+;;   (setq flycheck-phpcs-standard "Zend")
+;;   (flycheck-add-mode 'javascript-eslint 'typescript-mode)
+;;   (flycheck-add-mode 'typescript-tslint 'web-mode))
 
 ;;; ------------------------------
 ;;; Functions
@@ -1199,13 +1544,6 @@
 
 ;; Load optional local startup files
 (load (expand-file-name "init-local.el" user-emacs-directory) t t)
-
-;; Create *scratch* automatically
-(run-with-idle-timer 1 t
-                     '(lambda ()
-                        (unless (get-buffer "*scratch*")
-                          (with-current-buffer (get-buffer-create "*scratch*")
-                            (lisp-interaction-mode)))))
 
 ;; Only start server mode for non-admin accounts
 (unless (and (string-equal "root" (getenv "USER"))
