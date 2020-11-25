@@ -286,6 +286,10 @@
   :bind (("C-z" . nil)
          ("C-x C-z" . nil)
          ("C-h h" . nil)
+         ("M-u" . upcase-dwim)
+         ("M-l" . downcase-dwim)
+         ("M-c" . capitalize-dwim)
+         ("M-SPC" . cycle-spacing)
          ("C-x C-k" . kill-region)
          ("C-w" . my/backward-kill-word-or-region)
          ("C-c C-j" . join-line)
@@ -507,6 +511,7 @@
 (use-package files
   :hook (after-save-hook . executable-make-buffer-file-executable-if-script-p)
   :config
+  (setq view-read-only t)
   (setq large-file-warning-threshold 50000000) ;; 50mb
   (setq backup-directory-alist `((".*" . ,temporary-file-directory)))
   (setq make-backup-files t)
