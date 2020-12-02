@@ -3,7 +3,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2020-09-03 21:23:24 (tmy)>
+;;; Time-stamp: <2020-12-02 09:29:27 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -11,7 +11,6 @@
 ;;; - fix warnings on this file
 ;;; - elisp-hook
 ;;; - check desktop.el
-;;; - use server-after-make-frame-hook for desktop
 
 ;;; Code:
 
@@ -43,6 +42,19 @@
 ;;; ------------------------------
 ;;; General
 ;;; ------------------------------
+
+(use-package gnutls
+  :config
+  ;; silence gnutls warnings
+  (setq gnutls-min-prime-bits nil
+        gnutls-verify-error nil)
+  ;; workaround for emacs bug, fixed in 26.3+
+  (when (version<= emacs-version "26.3")
+    (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")))
+
+;; https://bugs.debian.org/766397
+(when (version<= emacs-version "27")
+  (setq tls-program '("gnutls-cli --x509cafile %t -p %p %h")))
 
 (use-package expand-region
   :ensure t
@@ -105,10 +117,13 @@
   (setq ispell-program-name "aspell")
   (setq ispell-dictionary "en_GB"))
 
-;;(add-hook 'before-save-hook 'whitespace-cleanup)
 (add-hook 'before-save-hook 'time-stamp)
 (add-hook 'comint-output-filter-functions 'comint-watch-for-password-prompt)
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
+
+(use-package whitespace
+  :diminish
+  :config (global-whitespace-mode))
 
 (use-package which-key
   :ensure t
@@ -124,7 +139,13 @@
   (when (version<= "27" emacs-version)
     (setq grep-find-use-xargs 'exec-plus)))
 
+;; Check if I could use default binding of  C-x C-o instead of extra package.
+;; (delete-blank-lines)
+;; On blank line, delete all surrounding blank lines, leaving just one.
+;; On isolated blank line, delete that one.
+;; On nonblank line, delete any immediately following blank lines.
 (use-package hungry-delete
+  :disabled
   :ensure t
   :diminish
   :config (global-hungry-delete-mode))
@@ -160,29 +181,28 @@
                              (electric-pair-mode -1)
                              (electric-quote-mode -1))))
 
-;; (defun th/pdf-view-revert-buffer-maybe (file)
-;;   (let ((buf (find-buffer-visiting file)))
-;;     (when buf
-;;   (with-current-buffer buf
-;;     (when (derived-mode-p 'pdf-view-mode)
-;;       (pdf-view-revert-buffer nil t))))))
-;; (add-hook 'TeX-after-TeX-LaTeX-command-finished-hook
-;;     #'th/pdf-view-revert-buffer-maybe)
-
+(defun th/pdf-view-revert-buffer-maybe (file)
+  (let ((buf (find-buffer-visiting file)))
+    (when buf
+  (with-current-buffer buf
+    (when (derived-mode-p 'pdf-view-mode)
+      (pdf-view-revert-buffer nil t))))))
+(add-hook 'TeX-after-TeX-LaTeX-command-finished-hook
+    #'th/pdf-view-revert-buffer-maybe)
 
 (use-package tex
   :defer t
   :ensure auctex
   :hook (latex-mode-hook . auto-fill-mode)
   :init
-  ;;  (((output-dvi has-no-display-manager)
-  ;;  "dvi2tty")
-  ;; ((output-dvi style-pstricks)
-  ;;  "dvips and gv")
-  ;; (output-dvi "xdvi")
-  ;; (output-pdf "Evince")
-  ;; (output-html "xdg-open"))
-  (setq TeX-view-program-selection '((output-pdf "pdf-tools")))
+  (setq TeX-view-program-selection
+        '(((output-dvi has-no-display-manager)
+           "dvi2tty")
+          ((output-dvi style-pstricks)
+           "dvips and gv")
+          (output-dvi "xdvi")
+        (output-pdf "pdf-tools")
+          (output-html "xdg-open")))
   (setq TeX-view-program-list '(("pdf-tools" "TeX-pdf-tools-sync-view")))
   :config
   (setq TeX-auto-save t)
@@ -273,22 +293,30 @@
 (use-package frame
   :config (blink-cursor-mode -1))
 
-;; (use-package winner
-;;   :commands winner-undo
-;;   :bind
-;;   (("C-c w" . winner-undo)
-;;    ("C-c W" . winner-redo))
-;;   :config
-;;   (winner-mode))
+(use-package winner
+  :commands winner-undo
+  :bind
+  (("C-c w" . winner-undo)
+   ("C-c W" . winner-redo))
+  :config
+  (winner-mode))
+
+(defun pulse-line (&rest _)
+  "Pulse the current line."
+  (pulse-momentary-highlight-one-line (point)))
+
+;; (dolist (command '(scroll-up-command scroll-down-command
+;;                                      recenter-top-bottom other-window))
+;;   (advice-add command :after #'pulse-line))
 
 ;; default emacs configurations
 (use-package emacs
   :bind (("C-z" . nil)
-         ("C-x C-z" . nil)
-         ("C-h h" . nil)
          ("M-u" . upcase-dwim)
          ("M-l" . downcase-dwim)
          ("M-c" . capitalize-dwim)
+         ("C-x C-z" . nil)
+         ("C-h h" . nil)
          ("M-SPC" . cycle-spacing)
          ("C-x C-k" . kill-region)
          ("C-w" . my/backward-kill-word-or-region)
@@ -298,7 +326,6 @@
          ("M-o" . other-window)
          ("C-c s" . eshell)
          ("C-c r" . rgrep)
-         ("C-c g" . magit-status)
          ("C-c m" . gnus)
          ("C-c b" . bookmark-bmenu-list))
 ;; Tranlate-map C-x -> C-t, M-x -> M-t
@@ -356,11 +383,24 @@
 
   (add-hook 'help-mode-hook (lambda () (setq truncate-lines t)))
 
-  ;; Set Default font if present
-  (let ((my-font-name "tamsyn-16"))
-    (when (find-font (font-spec :name my-font-name))
-      (add-to-list 'default-frame-alist `(font . ,my-font-name))
-      (set-face-attribute 'default nil :font my-font-name)))
+  (defvar *my-font* "Source Code Pro-14")
+
+  (defun set-custom-font (frame)
+    (interactive)
+    (set-face-attribute 'default frame
+                        :font *my-font*
+                        :weight 'semibold)
+    (set-face-attribute 'variable-pitch frame
+                        :font *my-font*
+                        :weight 'semibold)
+    (set-face-attribute 'fixed-pitch frame
+                        :font *my-font*
+                        :weight 'semibold)
+    (set-face-attribute 'tooltip frame
+                        :font *my-font*
+                        :weight 'semibold))
+
+  (add-to-list 'after-make-frame-functions 'set-custom-font t)
 
   ;; Graphical Emacs seems to freeze when handling clipboard, so
   ;; decrease the selection timeout so it won't wait for so long.
@@ -368,6 +408,7 @@
   ;; XXX: why is this needed?
   (when (eq system-type 'berkeley-unix)
     (setq x-selection-timeout 10))
+
   (setq save-interprogram-paste-before-kill t)
 
   (setq select-enable-clipboard t)
@@ -409,12 +450,16 @@
 ;;   :ensure t
 ;;   :config (load-theme 'gruvbox-dark-soft t nil))
 
-(use-package modus-vivendi-theme
+(use-package material-theme
   :ensure t
-  :config
-  (setq modus-operandi-theme-proportional-fonts t)
-  (setq modus-operandi-theme-scale-headings t)
-  (load-theme 'modus-vivendi t nil))
+  :config (load-theme 'material t nil))
+
+;; (use-package modus-vivendi-theme
+;;   :ensure t
+;;   :config
+;;   (setq modus-operandi-theme-proportional-fonts t)
+;;   (setq modus-operandi-theme-scale-headings t)
+;;   (load-theme 'modus-vivendi t nil))
 
 ;;; ------------------------------
 ;;; Calendar and diary settings
@@ -571,10 +616,11 @@
   (set (make-local-variable 'transient-mark-mode) nil))
 (ad-activate 'term-char-mode)
 
-;; (use-package ssh-tunnels
-;;   :ensure t
-;;   :config
-;;   (setq ssh-tunnels-configurations '((:name "foo" :host "bar.fi " :remote-port 54321))))
+(use-package ssh-tunnels
+  :ensure t
+  ;;:config
+  ;;(setq ssh-tunnels-configurations '((:name "foo" :host "bar.fi " :remote-port 54321)))
+  )
 
 ;;; ------------------------------
 ;;; Org-mode
@@ -583,9 +629,8 @@
 (use-package org
   :demand t
   :config
-  (setq org-directory "~/Org)")
+  (setq org-directory "~/Org")
   (setq org-default-notes-file "~/Org/notes.org")
-  ;;(setq org-agenda-files '("./notes.org" "./tasks.org" "./work.org"))
   (setq org-agenda-files '("~/Org"))
   (setq org-outline-path-complete-in-steps nil)
   (setq org-insert-mode-line-in-empty-file t)
@@ -596,7 +641,6 @@
   (setq org-special-ctrl-a/e t)
   (setq org-todo-keywords '((sequence "TODO(t)" "WIP(w!)" "|" "DONE(d@!)")
                             (sequence "|" "CANCELED(c@/!)")
-                            (sequence "MEET(m)" "|" "MET(M)")
                             (sequence "STALLED(s@/!)" "|")
                             (sequence "PENDING(p@/!)" "|")))
   (setq org-fontify-quote-and-verse-blocks t)
@@ -604,24 +648,17 @@
   (setq org-highest-priority ?A)
   (setq org-lowest-priority ?C)
   (setq org-default-priority ?B)
-
-  ;; tags
-  ;; (setq org-tag-alist                   ; TODO review org tag list
-  ;;       '((:startgroup)
-  ;;         ("@work")
-  ;;         ("@priv")
-  ;;         (:endgroup)
-  ;;         ("emacs")
-  ;;         ("masters")
-  ;;         ("mail")))
-
+  (setq org-tag-alist ;; use these or set file tags?
+        '(("work" . ?w)
+          ("emacs" . ?e)
+          ("school" . ?s)
+          ("thesis" . ?t)
+          ("mail" . ?m)))
 
   (setq org-confirm-babel-evaluate t)
   (setq org-log-done 'note)
   (setq org-log-note-clock-out t)
   (setq org-read-date-prefer-future t)
-
-   ;; general
   (setq org-adapt-indentation nil)
   (setq org-special-ctrl-a/e t)
   (setq org-special-ctrl-k t)
@@ -637,31 +674,25 @@
 (use-package ol
 :config
 (setq org-link-keep-stored-after-insertion t)
-:bind (:map org-mode-map
-            ("C-c l" . org-store-link)
-            ("C-c L" . org-toggle-link-display)
-            ("C-c C-y" . org-insert-last-stored-link)))
+:bind (("C-c l" . org-store-link)
+       :map org-mode-map
+       ("C-c L" . org-toggle-link-display)
+       ("C-c C-y" . org-insert-last-stored-link)))
 
 (use-package org-capture
   :after org
   :config
   (setq org-capture-templates
-        '(("b" "Basic task for future review" entry
-           (file+headline "tasks.org" "Basic tasks that need to be reviewed")
-           "* %^{Title}\n:PROPERTIES:\n:CAPTURED: %U\n:END:\n\n%i %l")
-          ("w" "Work")
-          ("wt" "Task or assignment" entry
-           (file+headline "work.org" "Tasks and assignments")
-           "* TODO [#A] %^{Title} :@work:\nSCHEDULED: %^t\n:PROPERTIES:\n:CAPTURED: %U\n:END:\n\n%i %?")
-          ("wm" "Meeting, event, appointment" entry
-           (file+headline "work.org" "Meetings, events, and appointments")
-           "* MEET [#A] %^{Title} :@work:\nSCHEDULED: %^T\n:PROPERTIES:\n:CAPTURED: %U\n:END:\n\n%i %?")
-          ("t" "Task with a due date" entry
-           (file+headline "tasks.org" "Task list with a date")
-           "* %^{Scope of task||TODO|STUDY|MEET} %^{Title} %^g\nSCHEDULED: %^t\n:PROPERTIES:\n:CAPTURED: %U\n:END:\n\n%i %?")
-          ("r" "Reply to an email" entry
-           (file+headline "tasks.org" "Mail correspondence")
-           "* TODO [#B] %:subject :mail:\nSCHEDULED: %t\n:PROPERTIES:\n:CONTEXT: %a\n:END:\n\n%i %?")))
+        '(("t" "Todo" entry (file+headline "tasks.org" "Tasks")
+           "* TODO %?\n  %i\n  %a")
+          ("s" "School work" entry (file+headline "school.org" "School work")
+           "* TODO %?\n  %i\n  %a")
+          ("w" "Work tasks" entry (file+headline "work.org" "Work tasks")
+           "* TODO %?\n  %i\n  %a")
+          ("n" "Notes" entry (file+datetree "notes.org")
+           "* %?\nEntered on %U\n  %i\n  %a")
+          ("j" "Journal" entry (file+datetree "journal.org")
+           "* %?\nEntered on %U\n  %i\n  %a")))
 
   (setq org-capture-templates-contexts
         '(("r" ((in-mode . "gnus-article-mode")
@@ -675,78 +706,24 @@
   (setq org-agenda-start-on-weekday 1)  ; Monday
   (setq org-agenda-confirm-kill t)
   (setq org-agenda-show-all-dates t)
-
-
-  ;; XXX: evaluate these
   (setq org-agenda-show-outline-path nil)
   (setq org-agenda-window-setup 'current-window)
   (setq org-agenda-custom-commands-contexts nil)
-  (setq org-agenda-prefix-format
-        '((agenda . " %i %-12:c%?-12t% s")
-          (todo . " %i %-12:c")
-          (tags . " %i %-12:c")
-          (search . " %i %-12:c")))
-  (setq org-agenda-sorting-strategy
-        '(((agenda habit-down time-up priority-down category-keep)
-           (todo priority-down category-keep)
-           (tags priority-down category-keep)
-           (search category-keep))))
-
-  (setq org-agenda-remove-times-when-in-prefix nil)
-  (setq org-agenda-remove-timeranges-from-blocks nil)
-  (setq org-agenda-compact-blocks nil)
-  (setq org-agenda-block-separator ?—)
-
-  ;;(setq org-agenda-bulk-mark-char "#")
-
   (setq org-agenda-insert-diary-strategy 'date-tree)
   (setq org-agenda-insert-diary-extract-time t)
   (setq org-agenda-include-diary t)
-
-  (setq org-agenda-start-with-follow-mode t)
+  ;;(setq org-agenda-start-with-follow-mode t)
   (setq org-agenda-follow-indirect t)
-
   (setq org-agenda-dim-blocked-tasks t)
   (setq org-agenda-todo-list-sublevels t)
-
   (setq org-agenda-include-deadlines t)
   (setq org-deadline-warning-days 7)
-  (setq org-agenda-skip-scheduled-if-done nil)
+  (setq org-agenda-skip-scheduled-if-done t)
   (setq org-agenda-skip-scheduled-if-deadline-is-shown t)
   (setq org-agenda-skip-timestamp-if-deadline-is-shown t)
   (setq org-agenda-skip-deadline-prewarning-if-scheduled 1)
-  (setq org-scheduled-past-days 365)
-  (setq org-deadline-past-days 365)
-
   (setq org-agenda-time-leading-zero t)
   (setq org-agenda-timegrid-use-ampm nil)
-  (setq org-agenda-current-time-string
-        "now - - - - - - - - - - - - - - - - - - - - - - - - -"
-        ;;"—·—·—·—·—·—·—·—·—"
-        )
-  (setq org-agenda-time-grid
-        '((daily today require-timed)
-          (0700 0800 0900 1000 1100
-                1200 1300 1400 1500 1600
-                1700 1800 1900 2000 2100)
-          "......" "----------------"
-          ;;" -----" "—————————————————"
-          ))
-
-  (setq org-agenda-todo-ignore-with-date t)
-  (setq org-agenda-todo-ignore-timestamp t)
-  (setq org-agenda-todo-ignore-scheduled t)
-  (setq org-agenda-todo-ignore-deadlines t)
-  (setq org-agenda-todo-ignore-time-comparison-use-seconds t)
-  (setq org-agenda-tags-todo-honor-ignore-options nil)
-
-  (setq org-agenda-show-inherited-tags t)
-  (setq org-agenda-use-tag-inheritance
-        '(todo search agenda))
-  (setq org-agenda-hide-tags-regexp nil)
-  (setq org-agenda-remove-tags nil)
-  (setq org-agenda-tags-column -120)
-
   :bind (("C-c a" . org-agenda)))
 
 (use-package org-src
@@ -764,6 +741,18 @@
   (setq org-export-with-toc t)
   (setq org-export-headline-levels 3)
   (setq org-export-dispatch-use-expert-ui nil))
+
+(use-package ox-latex
+  :after ox
+  :config
+  (add-to-list 'org-latex-classes
+               '("IEEEtran" "\\documentclass[11pt]{IEEEtran}"
+                 ("\\section{%s}" . "\\section*{%s}")
+                 ("\\subsection{%s}" . "\\subsection*{%s}")
+                 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                 ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
+               t))
 
 ;;; ------------------------------
 ;;; Buffer management
@@ -892,13 +881,9 @@
   (setq smtpmail-smtp-server         "smtp.fastmail.com")
   (setq smtpmail-local-domain        "bittivirhe.fi")
   (setq smtpmail-smtp-service        465)
-  (setq smtpmail-stream-type         'ssl))
-
-(use-package smtpmail-async
-  :after smtpmail
-  :config
-  (setq send-mail-function 'async-smtpmail-send-it)
-  (setq message-send-mail-function 'async-smtpmail-send-it))
+  (setq smtpmail-stream-type         'ssl)
+  (setq send-mail-function 'smtpmail-send-it)
+  (setq message-send-mail-function 'smtpmail-send-it))
 
 (use-package message
   :config
@@ -1025,9 +1010,7 @@
   (setq eww-search-prefix "https://duckduckgo.com/html/?q=")
   (setq eww-download-directory (expand-file-name "Downloads" "~"))
   (setq eww-suggest-uris
-        '(eww-links-at-point
-          ;;eww-prompt-history
-          thing-at-point-url-at-point))
+        '(eww-links-at-point thing-at-point-url-at-point))
   (setq eww-bookmarks-directory (expand-file-name "eww-bookmarks" user-emacs-directory))
   (setq eww-history-limit 150)
   (setq eww-use-external-browser-for-content-type
@@ -1108,10 +1091,10 @@
               ("f" . next-completion)
               ("b" . previous-completion)))
 
-(use-package orderless
-  :ensure t
-  :after icomplete
-  :config (setq completion-styles '(orderless)))
+;; (use-package orderless
+;;   :ensure t
+;;   :after icomplete
+;;   :config (setq completion-styles '(orderless)))
 
 (use-package imenu
   :config
@@ -1172,7 +1155,7 @@
 
   (setq dired-omit-files "^#\\|\\.$\\|~$\\|^RCS$\\|,v$")
   (setq dired-guess-shell-alist-user
-        '(("\\.avi$\\|\\.mkv$\\|\\.mov$\\|\\.mpeg$\\|\\.mp4$" "mplayer"
+        '(("\\.avi$\\|\\.mkv$\\|\\.mov$\\|\\.mpeg$\\|\\.mp4$" "cvlc"
            "\\.rar$" "unrar e")))
   (setq dired-guess-shell-gnutar (unless (eq system-type 'berkeley-unix)
                                    "tar")))
@@ -1192,6 +1175,7 @@
          ("<C-XF86AudioNext>" . bongo-next)
          ("<C-XF86AudioPrev>" . bongo-previous)
          ("<M-XF86AudioPlay>" . bongo-show)
+         ("C-c B" . bongo)
          :map bongo-playlist-mode-map
          ("n" . bongo-next-object)
          ("p" . bongo-previous-object)
@@ -1224,13 +1208,12 @@
             (bongo-player-get bongo-player 'file-name))
        (setq bongo-next-action 'bongo-stop))))
 
-  ;; (setq bongo-custom-backend-matchers
-  ;;       `((mplayer
-  ;;          (local-file "file:" "http:" "ftp:")
-  ;;          "ogg" "flac" "mp3" "m4a" "mka" "wav" "wma"
-  ;;          "mpg" "mpeg" "vob" "avi" "ogm" "mp4" "m4v"
-  ;;          "mkv" "flv" "mov" "asf" "wmv" "rm" "rmvb" "ts")))
-  )
+  (setq bongo-custom-backend-matchers
+        `((vlc
+           (local-file "file:" "http:" "ftp:")
+           "ogg" "flac" "mp3" "m4a" "mka" "wav" "wma"
+           "mpg" "mpeg" "vob" "avi" "ogm" "mp4" "m4v"
+           "mkv" "flv" "mov" "asf" "wmv" "rm" "rmvb" "ts"))))
 
 ;;; ------------------------------
 ;;; Programming settings
@@ -1244,17 +1227,7 @@
 (use-package vc
   :config
   (setq vc-suppress-confirm t)
-  (setq vc-command-messages t)
-  ;; (setq vc-cvs-global-switches '("-P" "d"))
-  ;; (setq vc-cvs-stay-local t)
-  ;; (setq diff-font-lock-prettify t)
-  ;; (setq vc-find-revision-no-save t)
-  ;; :bind (("C-x v b" . vc-retrieve-tag)  ; "branch" switch
-  ;;        ("C-x v t" . vc-create-tag)
-  ;;        ("C-x v I" . vc-log-incoming)  ; the actual git fetch
-  ;;        ("C-x v F" . vc-update)        ; "F" because "P" is push
-  ;;        ("C-x v d" . vc-diff)))
-  )
+  (setq vc-command-messages t))
 
 (use-package compile
   :config
@@ -1281,8 +1254,7 @@
   (setq ediff-window-setup-function 'ediff-setup-windows-plain)
   (setq ediff-split-window-function 'split-window-horizontally)
   (setq ediff-diff-options "-w")
-  ;;:hook (ediff-after-quit-hook-internal-hook . winner-undo)
-  )
+  :hook (ediff-after-quit-hook-internal-hook . winner-undo))
 
 (use-package subword
   :diminish
@@ -1303,20 +1275,12 @@
 
 (use-package magit
   :ensure t
-  :bind ("C-x v /" . magit-status))
+  :bind ("C-c g" . magit-status))
 
 (use-package eglot
   :ensure t
   :bind ((:map eglot-mode-map
-               ("C-c h" . eglot-help-at-point)
-               ;; XXX: check if these need bindings or just M-x
-               ;; ("C-c e r" . eglot-rename)
-               ;; ("C-c e f" . eglot-format)
-               ;; ("C-c e a" . eglot-code-actions)
-               ;; ("C-c e h" . eglot-help-at-point)
-               ;; ("C-c e e" . eglot-events-buffer)
-               ;; ("C-c e x" . xref-find-definitions)
-               )))
+               ("C-c h" . eglot-help-at-point))))
 
 (use-package flymake
   :ensure t)
@@ -1499,22 +1463,23 @@
     (setq web-mode-markup-indent-offset 2)
     (setq web-mode-css-indent-offset 2)
     (setq web-mode-code-indent-offset 4)
-    ;; (when (member (file-name-extension buffer-file-name) '("tsx" "jsx"))
-    ;;   (eglot-ensure)))
-    )
-  ;; (flycheck-add-mode 'typescript-tslint 'web-mode)
-  ;; (flycheck-add-mode 'javascript-eslint 'web-mode)
-  ;; (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
+    (when (member (file-name-extension buffer-file-name) '("tsx" "jsx"))
+      (eglot-ensure)))
+  (when (require 'flycheck nil 'noerror)
+    (flycheck-add-mode 'typescript-tslint 'web-mode)
+    (flycheck-add-mode 'javascript-eslint 'web-mode)
+    (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append))
   :hook (web-mode-hook . my/web-mode-hook))
 
-;; (use-package flycheck
-;;   :ensure t
-;;   :diminish flycheck-mode
-;;   :hook (after-init-hook . global-flycheck-mode)
-;;   :config
-;;   (setq flycheck-phpcs-standard "Zend")
-;;   (flycheck-add-mode 'javascript-eslint 'typescript-mode)
-;;   (flycheck-add-mode 'typescript-tslint 'web-mode))
+(use-package flycheck
+  :disabled
+  :ensure t
+  :diminish flycheck-mode
+  :hook (after-init-hook . global-flycheck-mode)
+  :config
+  (setq flycheck-phpcs-standard "Zend")
+  (flycheck-add-mode 'javascript-eslint 'typescript-mode)
+  (flycheck-add-mode 'typescript-tslint 'web-mode))
 
 ;;; ------------------------------
 ;;; Functions
@@ -1551,9 +1516,10 @@
 (load (expand-file-name "init-local.el" user-emacs-directory) t t)
 
 ;; Only start server mode for non-admin accounts
-(unless (and (string-equal "root" (getenv "USER"))
+(unless (string-equal "root" (getenv "USER"))
+  (when (and (fboundp 'server-running-p)
              (server-running-p))
-  (server-start))
+    (server-start)))
 
 (provide 'init)
 
