@@ -1,9 +1,9 @@
 ;;; init.el --- Emacs lisp initialization file
 ;;; -*- mode: emacs-lisp; coding: utf-8-unix; indent-tabs-mode: nil -*-
 ;;;
-;;; Author: Timo Myyrä <timo.myyra@wickedbsd.net>
+;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2020-12-02 09:29:27 (tmy)>
+;;; Time-stamp: <2020-12-16 23:23:57 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -26,6 +26,7 @@
 (require 'package)
 
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+;;(add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)
 
 ;; avoid re-initializing packages
 (unless package--initialized (package-initialize))
@@ -134,6 +135,13 @@
 ;;; Text editing
 ;;; ------------------------------
 
+;; | Key chord           | Description       |
+;; |---------------------+-------------------|
+;; | find-dired          | find + pattern    |
+;; | find-name-dired     | find + name       |
+;; | find-grep-dired     | find + grep       |
+;; | find-lisp-find-dired| use emacs regexp  |
+
 (use-package grep
   :config
   (when (version<= "27" emacs-version)
@@ -160,10 +168,6 @@
 ;;   (add-to-list 'sp-lisp-modes 'sly-mode)
 ;;   (sp-local-pair #'sly-mrepl-mode "'" nil :actions nil))
 
-;; (use-package adjust-parens
-;;   :disabled
-;;   :ensure t)
-
 (use-package electric
   :config
   (setq electric-pair-inhibit-predicate 'electric-pair-conservative-inhibit)
@@ -171,7 +175,7 @@
   (setq electric-pair-pairs '((8216 . 8217) (8220 . 8221) (171 . 187)))
   (setq electric-pair-skip-self 'electric-pair-default-skip-self)
   (setq electric-pair-skip-whitespace nil)
-  (setq electric-pair-skip-whitespace-chars '(9 10 32))
+  ;;(setq electric-pair-skip-whitespace-chars '(9 10 32))
   (setq electric-quote-context-sensitive t)
   (setq electric-quote-paragraph t)
   (setq electric-quote-string nil)
@@ -179,7 +183,8 @@
   :hook (after-init-hook . (lambda ()
                              (electric-indent-mode 1)
                              (electric-pair-mode -1)
-                             (electric-quote-mode -1))))
+                             (electric-quote-mode -1)
+                             )))
 
 (defun th/pdf-view-revert-buffer-maybe (file)
   (let ((buf (find-buffer-visiting file)))
@@ -193,7 +198,9 @@
 (use-package tex
   :defer t
   :ensure auctex
-  :hook (latex-mode-hook . auto-fill-mode)
+  :hook ((latex-mode-hook . auto-fill-mode)
+         (tex-mode-hook . (lambda ()
+                            (setq ispell-parser 'tex))))
   :init
   (setq TeX-view-program-selection
         '(((output-dvi has-no-display-manager)
@@ -212,6 +219,7 @@
   (setq TeX-electric-macro t)
   (setq TeX-newline-function 'reindent-then-newline-and-indent))
 
+;; doc-view / doc-view-presentation
 (use-package pdf-tools
   :ensure t
   :mode ("\\.pdf\\'" . pdf-view-mode)
@@ -224,6 +232,16 @@
   :config
   (setq pdf-view-display-size 'fit-page)
   (pdf-tools-install :no-query))
+
+(use-package nov
+  :ensure t
+  :mode ("\\.epub\\'" . nov-mode)
+  :config
+  (defun my-nov-setup-hook ()
+    (face-remap-add-relative 'variable-pitch :family "Liberation Serif"
+                             :height 1.0)
+    (set (make-local-variable 'show-trailing-whitespace) nil))
+  (add-hook 'nov-mode-hook 'my-nov-setup-hook))
 
 (use-package markdown-mode
   :ensure t
@@ -293,6 +311,15 @@
 (use-package frame
   :config (blink-cursor-mode -1))
 
+;; | Key chord | Description                  |
+;; |-----------+------------------------------|
+;; | C-x 4 C-f | Find-file other-window       |
+;; | C-x 4 d   | Dired other-window           |
+;; | C-x 4 C-o | Display buffer other-window  |
+;; | C-x 4 b   | Set buffer in other-window   |
+;; | C-x 4 0   | Kill buffer and window       |
+;; | C-x 4 p   | Run project cmd in window    |
+
 (use-package winner
   :commands winner-undo
   :bind
@@ -310,11 +337,24 @@
 ;;   (advice-add command :after #'pulse-line))
 
 ;; default emacs configurations
+
+;; | Key chord | Description                  |
+;; |-----------+------------------------------|
+;; | M-- M-l   | Change case of preceding word|
+;; | C-M-f/b   | Move by sexp                 |
+;; | C-M-d/u   | Move into/out of lists       |
+;; | M-s h u   | Undo the highlight           |
+;; | C-s M-r   | Toggle regexp search         |
+;; | M-%       | Run `query-replace'          |
+;; | C-M-%     | `query-replace-regexp'       |
+
 (use-package emacs
-  :bind (("C-z" . nil)
-         ("M-u" . upcase-dwim)
+  :hook ((after-init-hook . auto-compression-mode)
+         (focus-out-hook . garbage-collect))
+  :bind (("M-u" . upcase-dwim)
          ("M-l" . downcase-dwim)
          ("M-c" . capitalize-dwim)
+         ("C-z" . nil)
          ("C-x C-z" . nil)
          ("C-h h" . nil)
          ("M-SPC" . cycle-spacing)
@@ -324,13 +364,10 @@
          ("M-z" . zap-up-to-char)
          ("C-x k" . kill-this-buffer)
          ("M-o" . other-window)
-         ("C-c s" . eshell)
-         ("C-c r" . rgrep)
-         ("C-c m" . gnus)
-         ("C-c b" . bookmark-bmenu-list))
-;; Tranlate-map C-x -> C-t, M-x -> M-t
-  :hook ((after-init-hook . auto-compression-mode)
-         (focus-out-hook . garbage-collect))
+         ("C-z s" . eshell)
+         ("C-z r" . rgrep)
+         ("C-z m" . gnus)
+         ("C-z b" . bookmark-bmenu-list))
   :config
   (defun my/backward-kill-word-or-region ()
     "Kill region or word based on selection."
@@ -338,6 +375,28 @@
     (call-interactively (if (region-active-p)
                             'kill-region
                           'backward-kill-word)))
+
+  (defun become ()
+    "Use TRAMP to open the current buffer with elevated privileges."
+    (interactive)
+    (when buffer-file-name
+      (let ((method (or (executable-find "doas")
+                        (executable-find "sudo"))))
+        (find-alternate-file
+         (concat "/" method ":root@localhost:" buffer-file-name)))))
+
+
+  ;; Tranlate-map C-x -> C-t, M-x -> M-t
+  ;; ;; apparently the best method
+  ;; (define-key key-translation-map [?\C-x] [?\C-u])
+  ;; (define-key key-translation-map [?\C-u] [?\C-x])
+
+  ;; (global-set-key [?\C-.] 'execute-extended-command)
+  ;; (global-set-key [?\C-,] (lookup-key global-map [?\C-x]))
+  ;; (global-set-key [?\C-'] 'hippie-expand)
+
+  ;; (global-set-key (kbd "C-x C-m") 'execute-extended-command)
+  ;; (global-set-key (kbd "\C-c\C-m") 'execute-extended-command) ; {from effective emacs}
 
   (when (fboundp 'tool-bar-mode)
     (tool-bar-mode -1))
@@ -359,9 +418,9 @@
   (setq-default tab-always-indent 'complete)
 
   (setq sentence-end-double-space nil)
+  (setq sentence-end-without-period nil)
   (setq colon-double-space nil)
   (setq use-hard-newlines nil)
-  (setq sentence-end-without-period nil)
 
   ;; keep a little more history to see whats going on
   (setq message-log-max 16384)
@@ -383,24 +442,38 @@
 
   (add-hook 'help-mode-hook (lambda () (setq truncate-lines t)))
 
-  (defvar *my-font* "Source Code Pro-14")
+  ;; Set Default font if present
+  ;; (let ((my-font-name "tamsyn-16"))
+  ;;   (when (find-font (font-spec :name my-font-name))
+  ;;     (add-to-list 'default-frame-alist `(font . ,my-font-name))
+  ;;     (set-face-attribute 'default nil :font my-font-name)))
 
-  (defun set-custom-font (frame)
-    (interactive)
-    (set-face-attribute 'default frame
-                        :font *my-font*
-                        :weight 'semibold)
-    (set-face-attribute 'variable-pitch frame
-                        :font *my-font*
-                        :weight 'semibold)
-    (set-face-attribute 'fixed-pitch frame
-                        :font *my-font*
-                        :weight 'semibold)
-    (set-face-attribute 'tooltip frame
-                        :font *my-font*
-                        :weight 'semibold))
+  (when (member "Source Code Pro" (font-family-list))
+    (set-frame-font "Source Code Pro-12" t t))
 
-  (add-to-list 'after-make-frame-functions 'set-custom-font t)
+  ;;(set-frame-font "Input Mono Narrow-12")
+
+;;  (set-frame-font "Input-12" t t)
+
+;;  (defvar *my-font* "Source Code Pro-14")
+;;(defvar *my-font* "Overpass Mono-14")
+
+  ;; (defun set-custom-font (frame)
+  ;;   (interactive)
+  ;;   (set-face-attribute 'default frame
+  ;;                       :font *my-font*
+  ;;                       :weight 'semibold)
+  ;;   (set-face-attribute 'variable-pitch frame
+  ;;                       :font *my-font*
+  ;;                       :weight 'semibold)
+  ;;   (set-face-attribute 'fixed-pitch frame
+  ;;                       :font *my-font*
+  ;;                       :weight 'semibold)
+  ;;   (set-face-attribute 'tooltip frame
+  ;;                       :font *my-font*
+  ;;                       :weight 'semibold))
+
+  ;; (add-to-list 'after-make-frame-functions 'set-custom-font t)
 
   ;; Graphical Emacs seems to freeze when handling clipboard, so
   ;; decrease the selection timeout so it won't wait for so long.
@@ -423,10 +496,11 @@
   (put 'overwrite-mode 'disabled t)
 
   ;; show buffer name in title
-  (setq frame-title-format
-        '((:eval (if (buffer-file-name)
-		     (concat "Emacs: " (abbreviate-file-name (buffer-file-name)))
-		   "Emacs: %b")))))
+  ;; (setq frame-title-format
+  ;;       '((:eval (if (buffer-file-name)
+  ;;       	     (concat "Emacs: " (abbreviate-file-name (buffer-file-name)))
+  ;;       	   "Emacs: %b"))))
+  )
 
 (use-package simple
   :config
@@ -442,6 +516,12 @@
          (text-mode-hook . auto-fill-mode)
          (before-save-hook . delete-trailing-whitespace)))
 
+(use-package easy-kill
+  :ensure t
+  :config
+  (global-set-key [remap kill-ring-save] #'easy-kill)
+  (global-set-key [remap mark-sexp] #'easy-mark))
+
 (use-package diminish
   :ensure t
   :after use-package)
@@ -453,6 +533,11 @@
 (use-package material-theme
   :ensure t
   :config (load-theme 'material t nil))
+
+;; (use-package color-theme-sanityinc-tomorrow
+;;   :ensure t
+;;   :config
+;;   (load-theme 'sanityinc-tomorrow-eighties t nil))
 
 ;; (use-package modus-vivendi-theme
 ;;   :ensure t
@@ -576,7 +661,7 @@
   (setq exec-path-from-shell-variables
         '("PATH" "MANPATH"
           "JAVA_HOME" "GOPATH"
-          "GERBIL_HOME" "CVS_ROOT"))
+          "GERBIL_HOME" "CVSROOT"))
   (when (memq window-system '(mac ns x))
     (exec-path-from-shell-initialize)))
 
@@ -606,7 +691,7 @@
   (setq eshell-scroll-to-bottom-on-output t))
 
 ;;; customization for term, ansi-term
-;; disable cua and transient mark modes in term-char-mode
+;; disable cua and transnnnnient mark modes in term-char-mode
 (defadvice term-line-mode (after term-line-mode-fixes ())
   (set (make-local-variable 'transient-mark-mode) t))
 (ad-activate 'term-line-mode)
@@ -618,15 +703,16 @@
 
 (use-package ssh-tunnels
   :ensure t
-  ;;:config
-  ;;(setq ssh-tunnels-configurations '((:name "foo" :host "bar.fi " :remote-port 54321)))
-  )
+  :config
+  (setq ssh-tunnels-configurations
+        '((:name "core-dev-db" :type "SH" :login "core-dev-db"))))
 
 ;;; ------------------------------
 ;;; Org-mode
 ;;; ------------------------------
 
 (use-package org
+  ;;:ensure org-plus-contrib ;; for confluence export
   :demand t
   :config
   (setq org-directory "~/Org")
@@ -654,7 +740,10 @@
           ("school" . ?s)
           ("thesis" . ?t)
           ("mail" . ?m)))
-
+  ;; allow shell execution
+  (setq org-babel-load-languages
+        '((emacs . t)
+          (shell . t)))
   (setq org-confirm-babel-evaluate t)
   (setq org-log-done 'note)
   (setq org-log-note-clock-out t)
@@ -996,6 +1085,8 @@
           ("https://planet.lisp.org/rss20.xml" lisp)
           "https://lobste.rs/t/emacs.lisp.security.ask.ai.openbsd.programming.rss")))
 
+
+;; | M-s M-w | eww-search-words       |
 (use-package eww
   :commands (eww
              eww-browse-url
@@ -1091,10 +1182,22 @@
               ("f" . next-completion)
               ("b" . previous-completion)))
 
-;; (use-package orderless
-;;   :ensure t
-;;   :after icomplete
-;;   :config (setq completion-styles '(orderless)))
+(use-package selectrum
+  :disabled
+  :ensure t
+  :config
+  (selectrum-mode +1)
+  ;; to make sorting and filtering more intelligent
+  (selectrum-prescient-mode +1)
+  ;; to save your command history on disk, so the sorting gets more
+  ;; intelligent over time
+  (prescient-persist-mode +1))
+
+(use-package orderless
+  :disabled
+  :ensure t
+  :after icomplete
+  :config (setq completion-styles '(orderless)))
 
 (use-package imenu
   :config
@@ -1103,21 +1206,21 @@
   (setq imenu-space-replacement ".")
   (setq imenu-level-separator ":"))
 
-;; XXX: this or hippie-expand, how company-mode fits in?
 (use-package dabbrev
-  :after (minibuffer icomplete) ; read those as well
   :config
-  (setq dabbrev-abbrev-char-regexp "\\sw\\|\\s_")
   (setq dabbrev-abbrev-skip-leading-regexp "[$*/=']")
   (setq dabbrev-backward-only nil)
   (setq dabbrev-case-distinction 'case-replace)
-  (setq dabbrev-case-fold-search t)
+  (setq dabbrev-case-fold-search 'case-fold-search)
   (setq dabbrev-case-replace 'case-replace)
   (setq dabbrev-check-other-buffers t)
   (setq dabbrev-eliminate-newlines nil)
   (setq dabbrev-upcase-means-case-search t)
-  :bind (("C-M-/" . dabbrev-expand)
-         ("C-S-M-/" . dabbrev-completion)))
+  :bind (("C-," . dabbrev-expand)
+         ("C-." . dabbrev-completion)))
+
+(use-package hippie-expand
+  :bind ("C-'" . hippie-expand))
 
 (use-package company
   :ensure t
@@ -1229,6 +1332,10 @@
   (setq vc-suppress-confirm t)
   (setq vc-command-messages t))
 
+;; (use-package vc-got
+;;   :load-path "/home/tmy/.emacs.d/elisp/vc-got/"
+;;   :init (push 'Got vc-handled-backends))
+
 (use-package compile
   :config
   (setq compilation-save-buffers-predicate nil)
@@ -1275,7 +1382,10 @@
 
 (use-package magit
   :ensure t
-  :bind ("C-c g" . magit-status))
+  :bind ("C-c g" . magit-status)
+  :config (setq magit-repository-directories
+                '(("~/git" . 1)
+                  ("~/quicklisp/local-projects" . 1))))
 
 (use-package eglot
   :ensure t
@@ -1448,7 +1558,6 @@
 
 (use-package web-mode
   :ensure t
-  :after eglot
   :mode (("\\.jsp\\'" . web-mode)
          ("\\.ap[cp]x\\'" . web-mode)
          ("\\.erb\\'" . web-mode)
@@ -1463,7 +1572,8 @@
     (setq web-mode-markup-indent-offset 2)
     (setq web-mode-css-indent-offset 2)
     (setq web-mode-code-indent-offset 4)
-    (when (member (file-name-extension buffer-file-name) '("tsx" "jsx"))
+    (when (and (member (file-name-extension buffer-file-name) '("tsx" "jsx"))
+               (require 'eglot nil 'noerror))
       (eglot-ensure)))
   (when (require 'flycheck nil 'noerror)
     (flycheck-add-mode 'typescript-tslint 'web-mode)
