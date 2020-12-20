@@ -3,7 +3,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2020-12-16 23:23:57 (tmy)>
+;;; Time-stamp: <2020-12-20 22:16:08 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -122,9 +122,9 @@
 (add-hook 'comint-output-filter-functions 'comint-watch-for-password-prompt)
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
 
-(use-package whitespace
-  :diminish
-  :config (global-whitespace-mode))
+;; (use-package whitespace
+;;   :diminish
+;;   :config (global-whitespace-mode))
 
 (use-package which-key
   :ensure t
@@ -149,6 +149,7 @@
 
 ;; Check if I could use default binding of  C-x C-o instead of extra package.
 ;; (delete-blank-lines)
+;; flush-lines, keep-lines -> useful when looking for example log file
 ;; On blank line, delete all surrounding blank lines, leaving just one.
 ;; On isolated blank line, delete that one.
 ;; On nonblank line, delete any immediately following blank lines.
@@ -180,11 +181,10 @@
   (setq electric-quote-paragraph t)
   (setq electric-quote-string nil)
   (setq electric-quote-replace-double t)
-  :hook (after-init-hook . (lambda ()
-                             (electric-indent-mode 1)
-                             (electric-pair-mode -1)
-                             (electric-quote-mode -1)
-                             )))
+  :hook ((after-init-hook . electric-indent-mode)
+         ;;(after-init-hook . electric-pair-mode -1)
+         ;;(after-init-hook . electric-quote-mode -1)
+	 ))
 
 (defun th/pdf-view-revert-buffer-maybe (file)
   (let ((buf (find-buffer-visiting file)))
@@ -199,6 +199,7 @@
   :defer t
   :ensure auctex
   :hook ((latex-mode-hook . auto-fill-mode)
+         (latex-mode-hook . auto-fill-mode)
          (tex-mode-hook . (lambda ()
                             (setq ispell-parser 'tex))))
   :init
@@ -238,7 +239,7 @@
   :mode ("\\.epub\\'" . nov-mode)
   :config
   (defun my-nov-setup-hook ()
-    (face-remap-add-relative 'variable-pitch :family "Liberation Serif"
+    (face-remap-add-relative 'variable-pitch :family "DejaVu Serif Book"
                              :height 1.0)
     (set (make-local-variable 'show-trailing-whitespace) nil))
   (add-hook 'nov-mode-hook 'my-nov-setup-hook))
@@ -265,6 +266,17 @@
          ("\\.xslt\\'"  . nxml-mode)
          ("\\.pom$"     . nxml-mode))
   :config
+  (defun bf-pretty-print-xml-region (begin end)
+  "Function formats XML elements in region between BEGIN and END."
+  (interactive "r")
+  (save-excursion
+    (nxml-mode)
+    (goto-char begin)
+    (while (search-forward-regexp "\>[ \\t]*\<" nil t)
+      (backward-char) (insert "\n"))
+    (indent-region begin end))
+  (message "Ah, much better!"))
+
   ;; Any file start with xml will be treat as nxml-mode
   (add-to-list 'magic-mode-alist '("<\\?xml" . nxml-mode))
   ;; Use nxml-mode instead of sgml, xml or html mode.
@@ -343,19 +355,12 @@
 ;; | M-- M-l   | Change case of preceding word|
 ;; | C-M-f/b   | Move by sexp                 |
 ;; | C-M-d/u   | Move into/out of lists       |
-;; | M-s h u   | Undo the highlight           |
-;; | C-s M-r   | Toggle regexp search         |
-;; | M-%       | Run `query-replace'          |
-;; | C-M-%     | `query-replace-regexp'       |
-
 (use-package emacs
   :hook ((after-init-hook . auto-compression-mode)
          (focus-out-hook . garbage-collect))
   :bind (("M-u" . upcase-dwim)
          ("M-l" . downcase-dwim)
          ("M-c" . capitalize-dwim)
-         ("C-z" . nil)
-         ("C-x C-z" . nil)
          ("C-h h" . nil)
          ("M-SPC" . cycle-spacing)
          ("C-x C-k" . kill-region)
@@ -364,6 +369,8 @@
          ("M-z" . zap-up-to-char)
          ("C-x k" . kill-this-buffer)
          ("M-o" . other-window)
+         ("C-x C-z" . nil)
+         ("C-z" . nil)
          ("C-z s" . eshell)
          ("C-z r" . rgrep)
          ("C-z m" . gnus)
@@ -385,9 +392,8 @@
         (find-alternate-file
          (concat "/" method ":root@localhost:" buffer-file-name)))))
 
-
   ;; Tranlate-map C-x -> C-t, M-x -> M-t
-  ;; ;; apparently the best method
+  ;; apparently the best method
   ;; (define-key key-translation-map [?\C-x] [?\C-u])
   ;; (define-key key-translation-map [?\C-u] [?\C-x])
 
@@ -443,37 +449,11 @@
   (add-hook 'help-mode-hook (lambda () (setq truncate-lines t)))
 
   ;; Set Default font if present
-  ;; (let ((my-font-name "tamsyn-16"))
-  ;;   (when (find-font (font-spec :name my-font-name))
-  ;;     (add-to-list 'default-frame-alist `(font . ,my-font-name))
-  ;;     (set-face-attribute 'default nil :font my-font-name)))
-
-  (when (member "Source Code Pro" (font-family-list))
-    (set-frame-font "Source Code Pro-12" t t))
-
-  ;;(set-frame-font "Input Mono Narrow-12")
-
-;;  (set-frame-font "Input-12" t t)
-
-;;  (defvar *my-font* "Source Code Pro-14")
-;;(defvar *my-font* "Overpass Mono-14")
-
-  ;; (defun set-custom-font (frame)
-  ;;   (interactive)
-  ;;   (set-face-attribute 'default frame
-  ;;                       :font *my-font*
-  ;;                       :weight 'semibold)
-  ;;   (set-face-attribute 'variable-pitch frame
-  ;;                       :font *my-font*
-  ;;                       :weight 'semibold)
-  ;;   (set-face-attribute 'fixed-pitch frame
-  ;;                       :font *my-font*
-  ;;                       :weight 'semibold)
-  ;;   (set-face-attribute 'tooltip frame
-  ;;                       :font *my-font*
-  ;;                       :weight 'semibold))
-
-  ;; (add-to-list 'after-make-frame-functions 'set-custom-font t)
+  (when (find-font (font-spec :name "Input Mono Narrow-12"))
+    (set-face-attribute 'default nil :family "Input Mono Narrow" :height 120)
+    (set-face-attribute 'variable-pitch nil :family "Input Serif")
+    (set-face-attribute 'fixed-pitch nil :family "Input Mono Narrow")
+    (set-face-attribute 'tooltip nil :family "Input Mono Narrow"))
 
   ;; Graphical Emacs seems to freeze when handling clipboard, so
   ;; decrease the selection timeout so it won't wait for so long.
@@ -493,14 +473,7 @@
   (put 'upcase-region 'disabled nil)
   (put 'downcase-region 'disabled nil)
   (put 'dired-find-alternate-file 'disabled nil)
-  (put 'overwrite-mode 'disabled t)
-
-  ;; show buffer name in title
-  ;; (setq frame-title-format
-  ;;       '((:eval (if (buffer-file-name)
-  ;;       	     (concat "Emacs: " (abbreviate-file-name (buffer-file-name)))
-  ;;       	   "Emacs: %b"))))
-  )
+  (put 'overwrite-mode 'disabled t))
 
 (use-package simple
   :config
@@ -530,21 +503,41 @@
 ;;   :ensure t
 ;;   :config (load-theme 'gruvbox-dark-soft t nil))
 
-(use-package material-theme
-  :ensure t
-  :config (load-theme 'material t nil))
+;; Nice theme but doesn't set proper faces in org-mode
+;; (use-package material-theme
+;;   :ensure t
+;;   :config (load-theme 'material t nil))
 
 ;; (use-package color-theme-sanityinc-tomorrow
 ;;   :ensure t
 ;;   :config
 ;;   (load-theme 'sanityinc-tomorrow-eighties t nil))
 
-;; (use-package modus-vivendi-theme
-;;   :ensure t
-;;   :config
-;;   (setq modus-operandi-theme-proportional-fonts t)
-;;   (setq modus-operandi-theme-scale-headings t)
-;;   (load-theme 'modus-vivendi t nil))
+(use-package modus-themes
+  :ensure t
+  :init
+  (setq modus-themes-slanted-constructs t
+        modus-themes-bold-constructs t
+        modus-themes-fringes 'intense ; {nil,'subtle,'intense}
+        modus-themes-mode-line '3d ; {nil,'3d,'moody}
+        modus-themes-syntax nil ; Lots of options---continue reading the manual
+        modus-themes-intense-hl-line nil
+        modus-themes-paren-match 'subtle-bold ; {nil,'subtle-bold,'intense,'intense-bold}
+        modus-themes-links 'neutral-underline ; Lots of options---continue reading the manual
+        modus-themes-prompts 'intense ; {nil,'subtle,'intense}
+        modus-themes-completions 'moderate ; {nil,'moderate,'opinionated}
+        modus-themes-region 'bg-only-no-extend ; {nil,'no-extend,'bg-only,'bg-only-no-extend}
+        modus-themes-diffs nil ; {nil,'desaturated,'fg-only,'bg-only}
+        modus-themes-org-blocks 'rainbow ; {nil,'grayscale,'rainbow}
+        modus-themes-headings ; Lots of options---continue reading the manual
+        '((1 . section)
+          (2 . section-no-bold)
+          (3 . rainbow-line)
+          (t . rainbow-line-no-bold))
+        modus-themes-variable-pitch-headings t
+        modus-themes-scale-headings t)
+  :config
+  (modus-themes-load-vivendi))
 
 ;;; ------------------------------
 ;;; Calendar and diary settings
@@ -691,7 +684,7 @@
   (setq eshell-scroll-to-bottom-on-output t))
 
 ;;; customization for term, ansi-term
-;; disable cua and transnnnnient mark modes in term-char-mode
+;; disable cua and transient mark modes in term-char-mode
 (defadvice term-line-mode (after term-line-mode-fixes ())
   (set (make-local-variable 'transient-mark-mode) t))
 (ad-activate 'term-line-mode)
@@ -705,11 +698,19 @@
   :ensure t
   :config
   (setq ssh-tunnels-configurations
-        '((:name "core-dev-db" :type "SH" :login "core-dev-db"))))
+        '((:name "core-dev-db" :type "SH" :login "core-dev-db")
+          (:name "core-prod-db" :type "SH" :login "core-prod-db")
+          (:name "kube-prod" :type "SH" :login "kube-prod")
+          (:name "kube-test" :type "SH" :login "kube-test"))))
 
 ;;; ------------------------------
 ;;; Org-mode
 ;;; ------------------------------
+
+;; (defun zmg/org-file-sync ()
+;;   "Sync org-files to/from remote server."
+;;   (async-shell-command  (concat "rsync -v " org-directory ))
+;;   )
 
 (use-package org
   ;;:ensure org-plus-contrib ;; for confluence export
@@ -758,6 +759,8 @@
   (setq org-loop-over-headlines-in-active-region 'start-level)
   (setq org-imenu-depth 3)
   :hook ((org-mode-hook . flyspell-mode)
+         (org-mode-hook . variable-pitch-mode)
+         (org-mode-hook . visual-line-mode)
          (message-mode-hook . turn-on-orgtbl)))
 
 (use-package ol
@@ -1182,23 +1185,6 @@
               ("f" . next-completion)
               ("b" . previous-completion)))
 
-(use-package selectrum
-  :disabled
-  :ensure t
-  :config
-  (selectrum-mode +1)
-  ;; to make sorting and filtering more intelligent
-  (selectrum-prescient-mode +1)
-  ;; to save your command history on disk, so the sorting gets more
-  ;; intelligent over time
-  (prescient-persist-mode +1))
-
-(use-package orderless
-  :disabled
-  :ensure t
-  :after icomplete
-  :config (setq completion-styles '(orderless)))
-
 (use-package imenu
   :config
   (setq imenu-auto-rescan t)
@@ -1225,7 +1211,7 @@
 (use-package company
   :ensure t
   :diminish company-mode
-  :hook (after-init-hook . global-company-mode)
+  :hook (prog-mode-hook . company-mode)
   :bind (("M-/" . company-complete)
          :map company-active-map
          ("C-n" . company-select-next)
@@ -1267,8 +1253,9 @@
   :config
   (setq dired-isearch-filenames 'dwim)
   ;; The following variables were introduced in Emacs 27.1
-  (setq dired-create-destination-dirs 'ask)
-  (setq dired-vc-rename-file t))
+  (unless (version<= emacs-version "27")
+    (setq dired-create-destination-dirs 'ask)
+    (setq dired-vc-rename-file t)))
 
 (use-package bongo
   :ensure t
@@ -1278,7 +1265,7 @@
          ("<C-XF86AudioNext>" . bongo-next)
          ("<C-XF86AudioPrev>" . bongo-previous)
          ("<M-XF86AudioPlay>" . bongo-show)
-         ("C-c B" . bongo)
+         ("C-z B" . bongo)
          :map bongo-playlist-mode-map
          ("n" . bongo-next-object)
          ("p" . bongo-previous-object)
@@ -1371,12 +1358,13 @@
   :config
   (defun my/prog-mode-hook ()
     "Hook to run when entering generic prog-mode."
-    (setq whitespace-line-column 80
-          whitespace-style '(face lines-tail)
-          which-func-unknown "TOP LEVEL")
+    (set (make-local-variable 'which-func-unknown) "TOP LEVEL")
+    (set (make-local-variable 'whitespace-line-column) 80)
+    (set (make-local-variable 'whitespace-style) '(face lines-tail))
     (font-lock-add-keywords nil '(("\\<\\(FIXME\\|TODO\\|XXX+\\|BUG\\):"
                                    1 font-lock-warning-face prepend))))
   :hook ((prog-mode-hook . electric-pair-mode)
+         (prog-mode-hook . whitespace-mode)
          (prog-mode-hook . which-function-mode)
          (prog-mode-hook . my/prog-mode-hook)))
 
@@ -1398,6 +1386,9 @@
 (use-package flymake-eslint
   :ensure t
   :config
+  (setq flymake-eslint-executable-name "eslint")
+  (setq flymake-eslint-executable-args nil)
+  (setq flymake-eslint-show-rule-name t)
   (setq flymake-eslint-defer-binary-check t))
 
 ;;; Go programming
@@ -1590,21 +1581,6 @@
   (setq flycheck-phpcs-standard "Zend")
   (flycheck-add-mode 'javascript-eslint 'typescript-mode)
   (flycheck-add-mode 'typescript-tslint 'web-mode))
-
-;;; ------------------------------
-;;; Functions
-;;; ------------------------------
-
-(defun bf-pretty-print-xml-region (begin end)
-  "Function formats XML elements in region between BEGIN and END."
-  (interactive "r")
-  (save-excursion
-    (nxml-mode)
-    (goto-char begin)
-    (while (search-forward-regexp "\>[ \\t]*\<" nil t)
-      (backward-char) (insert "\n"))
-    (indent-region begin end))
-  (message "Ah, much better!"))
 
 ;;; ------------------------------
 ;;; Finalizers
