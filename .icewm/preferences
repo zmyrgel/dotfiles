@@ -682,23 +682,16 @@ SuspendCommand="zzz"
 
 # KeyWinRestore="Alt+F5"
 
-# KeyWinPrev="Alt+Shift+F6"
-
-# KeyWinNext="Alt+F6"
-
-# KeyWinMove="Alt+F7"
-
+#KeyWinPrev="Alt+Shift+F6"
+#KeyWinNext="Alt+F6"
+# KeyWinMove="Alt+F7
 # KeyWinSize="Alt+F8"
 
 # KeyWinMinimize="Alt+F9"
-
-# KeyWinMaximize="Alt+F10"
-
-# KeyWinMaximizeVert="Alt+Shift+F10"
-
-# KeyWinMaximizeHoriz=""
-
-# KeyWinFullscreen="Alt+F11"
+KeyWinMaximize="Super+m"
+KeyWinMaximizeVert="Alt+Shift+F10"
+KeyWinMaximizeHoriz=""
+KeyWinFullscreen="Super+F11"
 
 # KeyWinHide="Alt+Shift+F12"
 
@@ -734,10 +727,10 @@ KeySysSwitchLast="Alt+Shift+Tab"
 # KeySysWinPrev="Alt+Shift+Esc"
 
 #  Switch to the next window in the Task Bar
-# KeyTaskBarSwitchNext=""
+KeyTaskBarSwitchNext=""
 
 #  Switch to the previous window in the Task Bar
-# KeyTaskBarSwitchPrev=""
+KeyTaskBarSwitchPrev=""
 
 #  Move the Task Bar button of the current window right
 # KeyTaskBarMoveNext=""
