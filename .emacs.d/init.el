@@ -3,7 +3,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2020-12-20 22:16:08 (tmy)>
+;;; Time-stamp: <2021-01-11 22:59:57 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -195,11 +195,15 @@
 (add-hook 'TeX-after-TeX-LaTeX-command-finished-hook
     #'th/pdf-view-revert-buffer-maybe)
 
+;; | Key chord      | Description     |
+;; |----------------+-----------------|
+;; | C-c [          | add cite        |
+;; | C-c =          | show toc        |
 (use-package tex
   :defer t
   :ensure auctex
   :hook ((latex-mode-hook . auto-fill-mode)
-         (latex-mode-hook . auto-fill-mode)
+         (latex-mode-hook . reftex-mode)
          (tex-mode-hook . (lambda ()
                             (setq ispell-parser 'tex))))
   :init
