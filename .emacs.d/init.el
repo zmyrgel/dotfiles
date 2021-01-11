@@ -3,7 +3,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2021-01-11 22:59:57 (tmy)>
+;;; Time-stamp: <2021-01-11 23:00:34 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -43,23 +43,6 @@
 ;;; ------------------------------
 ;;; General
 ;;; ------------------------------
-
-(use-package gnutls
-  :config
-  ;; silence gnutls warnings
-  (setq gnutls-min-prime-bits nil
-        gnutls-verify-error nil)
-  ;; workaround for emacs bug, fixed in 26.3+
-  (when (version<= emacs-version "26.3")
-    (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")))
-
-;; https://bugs.debian.org/766397
-(when (version<= emacs-version "27")
-  (setq tls-program '("gnutls-cli --x509cafile %t -p %p %h")))
-
-(use-package expand-region
-  :ensure t
-  :bind (("C-=" . er/expand-region)))
 
 (use-package delsel
   :hook (after-init-hook . delete-selection-mode))
@@ -146,28 +129,6 @@
   :config
   (when (version<= "27" emacs-version)
     (setq grep-find-use-xargs 'exec-plus)))
-
-;; Check if I could use default binding of  C-x C-o instead of extra package.
-;; (delete-blank-lines)
-;; flush-lines, keep-lines -> useful when looking for example log file
-;; On blank line, delete all surrounding blank lines, leaving just one.
-;; On isolated blank line, delete that one.
-;; On nonblank line, delete any immediately following blank lines.
-(use-package hungry-delete
-  :disabled
-  :ensure t
-  :diminish
-  :config (global-hungry-delete-mode))
-
-;; (use-package smartparens
-;;   :diminish
-;;   :ensure t
-;;   :init (require 'smartparens-config)
-;;   :config
-;;   (smartparens-global-mode 1)
-;;   (add-to-list 'sp-lisp-modes 'sly-mrepl-mode)
-;;   (add-to-list 'sp-lisp-modes 'sly-mode)
-;;   (sp-local-pair #'sly-mrepl-mode "'" nil :actions nil))
 
 (use-package electric
   :config
@@ -281,8 +242,6 @@
     (indent-region begin end))
   (message "Ah, much better!"))
 
-  ;; Any file start with xml will be treat as nxml-mode
-  (add-to-list 'magic-mode-alist '("<\\?xml" . nxml-mode))
   ;; Use nxml-mode instead of sgml, xml or html mode.
   (mapc
    (lambda (pair)
@@ -292,7 +251,6 @@
    auto-mode-alist))
 
 (use-package ansible-vault
-  ;;; TODO: add vault-identity support
   :ensure t)
 
 (use-package typescript-mode
@@ -344,14 +302,6 @@
   :config
   (winner-mode))
 
-(defun pulse-line (&rest _)
-  "Pulse the current line."
-  (pulse-momentary-highlight-one-line (point)))
-
-;; (dolist (command '(scroll-up-command scroll-down-command
-;;                                      recenter-top-bottom other-window))
-;;   (advice-add command :after #'pulse-line))
-
 ;; default emacs configurations
 
 ;; | Key chord | Description                  |
@@ -395,18 +345,6 @@
                         (executable-find "sudo"))))
         (find-alternate-file
          (concat "/" method ":root@localhost:" buffer-file-name)))))
-
-  ;; Tranlate-map C-x -> C-t, M-x -> M-t
-  ;; apparently the best method
-  ;; (define-key key-translation-map [?\C-x] [?\C-u])
-  ;; (define-key key-translation-map [?\C-u] [?\C-x])
-
-  ;; (global-set-key [?\C-.] 'execute-extended-command)
-  ;; (global-set-key [?\C-,] (lookup-key global-map [?\C-x]))
-  ;; (global-set-key [?\C-'] 'hippie-expand)
-
-  ;; (global-set-key (kbd "C-x C-m") 'execute-extended-command)
-  ;; (global-set-key (kbd "\C-c\C-m") 'execute-extended-command) ; {from effective emacs}
 
   (when (fboundp 'tool-bar-mode)
     (tool-bar-mode -1))
@@ -452,25 +390,35 @@
 
   (add-hook 'help-mode-hook (lambda () (setq truncate-lines t)))
 
-  ;; Set Default font if present
+  ;; ;; Set Default font if present
   (when (find-font (font-spec :name "Input Mono Narrow-12"))
-    (set-face-attribute 'default nil :family "Input Mono Narrow" :height 120)
+    (set-face-attribute 'default nil :family "Input Mono Narrow" :height 110)
     (set-face-attribute 'variable-pitch nil :family "Input Serif")
     (set-face-attribute 'fixed-pitch nil :family "Input Mono Narrow")
     (set-face-attribute 'tooltip nil :family "Input Mono Narrow"))
+
+  ;; (when (find-font (font-spec :name "Source Code Pro"))
+  ;;   (set-face-attribute 'default nil :family "Source Code Pro" :height 120)
+  ;;   (set-face-attribute 'variable-pitch nil :family "Source Sans Pro Regular")
+  ;;   (set-face-attribute 'fixed-pitch nil :family "Source code Pro")
+  ;;   (set-face-attribute 'tooltip nil :family "Source Code Pro"))
 
   ;; Graphical Emacs seems to freeze when handling clipboard, so
   ;; decrease the selection timeout so it won't wait for so long.
   ;; https://omecha.info/blog/org-capture-freezes-emacs.html
   ;; XXX: why is this needed?
+  ;; DEBUG: X vs. console?
+  ;; DEBUG: what function gets stuck
+  ;; DEBUG: minimal repro with emacs -Q
   (when (eq system-type 'berkeley-unix)
     (setq x-selection-timeout 10))
 
-  (setq save-interprogram-paste-before-kill t)
-
-  (setq select-enable-clipboard t)
-
   (defalias 'yes-or-no-p 'y-or-n-p)
+
+  ;; Don't prompt if killing buffer with process attached
+  (setq kill-buffer-query-functions
+        (remq 'process-kill-buffer-query-function
+              kill-buffer-query-functions))
 
   ;; enabled disabled features
   (put 'narrow-to-region 'disabled nil)
@@ -502,10 +450,6 @@
 (use-package diminish
   :ensure t
   :after use-package)
-
-;; (use-package gruvbox-theme
-;;   :ensure t
-;;   :config (load-theme 'gruvbox-dark-soft t nil))
 
 ;; Nice theme but doesn't set proper faces in org-mode
 ;; (use-package material-theme
@@ -867,34 +811,6 @@
   (setq ibuffer-default-sorting-mode 'major-mode)
   (setq ibuffer-expert t)
   :hook (ibuffer-mode-hook . ibuffer-auto-mode))
-
-(use-package ibuffer-vc
-  :ensure t
-  :defer t
-  :config
-  ;; sort buffer list by repositories
-  (add-hook 'ibuffer-hook
-            (lambda ()
-              (ibuffer-vc-set-filter-groups-by-vc-root)
-              (unless (eq ibuffer-sorting-mode 'alphabetic)
-                (ibuffer-do-sort-by-alphabetic))))
-  ;; show file vc status in buffer list
-  (setq ibuffer-formats
-        '((mark modified read-only vc-status-mini " "
-                (name 18 18 :left :elide)
-                " "
-                (size 9 -1 :right)
-                " "
-                (mode 16 16 :left :elide)
-                " "
-                (vc-status 16 16 :left)
-                " "
-                filename-and-process))))
-
-;; Don't prompt if killing buffer with process attached
-(setq kill-buffer-query-functions
-      (remq 'process-kill-buffer-query-function
-            kill-buffer-query-functions))
 
 ;;; -----------------------------
 ;;; IRC
