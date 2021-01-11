@@ -712,8 +712,7 @@
   (setq org-return-follows-link nil)
   (setq org-loop-over-headlines-in-active-region 'start-level)
   (setq org-imenu-depth 3)
-  :hook ((org-mode-hook . flyspell-mode)
-         (org-mode-hook . variable-pitch-mode)
+  :hook ((org-mode-hook . variable-pitch-mode)
          (org-mode-hook . visual-line-mode)
          (message-mode-hook . turn-on-orgtbl)))
 
