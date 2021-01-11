@@ -333,8 +333,7 @@
          ("C-z" . nil)
          ("C-z s" . eshell)
          ("C-z r" . rgrep)
-         ("C-z m" . gnus)
-         ("C-z b" . bookmark-bmenu-list))
+         ("C-z b" . bookmark-jump))
   :config
   (defun my/backward-kill-word-or-region ()
     "Kill region or word based on selection."
@@ -933,6 +932,7 @@
         '((nnimap "work-gmail"
                   (nnimap-address "imap.gmail.com")
                   (nnimap-server-port "993")
+                  (nnir-search-engine imap)
                   (nnimap-stream ssl))
           (nnimap "imap-metro"
                   (nnimap-address "imap.metropolia.fi")
@@ -940,8 +940,9 @@
                   (nnimap-stream tls))
           (nnimap "fastmail"
                   (nnimap-address "imap.fastmail.com")
+                  (nnir-search-engine imap)
                   (nnimap-stream tls))))
-  :bind ("C-c m" . gnus))
+  :bind ("C-z m" . gnus))
 
 (use-package gnus-art
   :config
