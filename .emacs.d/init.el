@@ -227,6 +227,8 @@
   :magic ("---" . yaml-mode))
 
 (use-package nxml-mode
+  ;; Any file start with xml will be treat as nxml-mode
+  :magic ("<\\?xml" . nxml-mode)
   :mode (("\\.plist\\'" . nxml-mode)
          ("\\.rss\\'"   . nxml-mode)
          ("\\.svg\\'"   . nxml-mode)
