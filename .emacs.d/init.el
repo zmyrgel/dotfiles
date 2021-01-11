@@ -523,7 +523,7 @@
   (setq calendar-view-diary-initially-flag t)
   (setq calendar-mark-diary-entries-flag t)
   (setq diary-show-holidays-flag t)
-  (setq diary-file (expand-file-name "diary" user-emacs-directory)))
+  (setq diary-file "/ssh:tmy@mars.bittivirhe.fi:diary"))
 
 (use-package solar
   :config
@@ -662,18 +662,12 @@
 ;;; Org-mode
 ;;; ------------------------------
 
-;; (defun zmg/org-file-sync ()
-;;   "Sync org-files to/from remote server."
-;;   (async-shell-command  (concat "rsync -v " org-directory ))
-;;   )
-
 (use-package org
-  ;;:ensure org-plus-contrib ;; for confluence export
   :demand t
   :config
-  (setq org-directory "~/Org")
-  (setq org-default-notes-file "~/Org/notes.org")
-  (setq org-agenda-files '("~/Org"))
+  (setq org-directory "/ssh:tmy@mars.bittivirhe.fi:Org")
+  (setq org-default-notes-file (concat org-directory "/notes.org"))
+  (setq org-agenda-files (list org-directory))
   (setq org-outline-path-complete-in-steps nil)
   (setq org-insert-mode-line-in-empty-file t)
   (setq org-enforce-todo-checkbox-dependencies t)
@@ -758,7 +752,6 @@
   (setq org-agenda-insert-diary-strategy 'date-tree)
   (setq org-agenda-insert-diary-extract-time t)
   (setq org-agenda-include-diary t)
-  ;;(setq org-agenda-start-with-follow-mode t)
   (setq org-agenda-follow-indirect t)
   (setq org-agenda-dim-blocked-tasks t)
   (setq org-agenda-todo-list-sublevels t)
