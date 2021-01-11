@@ -114,6 +114,10 @@
   :diminish
   :config (which-key-mode))
 
+(use-package so-long
+  :config
+  (global-so-long-mode 1))
+
 ;;; ------------------------------
 ;;; Text editing
 ;;; ------------------------------
