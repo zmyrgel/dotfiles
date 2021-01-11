@@ -369,7 +369,9 @@
   (setq-default indent-tabs-mode nil)
   (setq-default fill-column 72)
   (setq-default tab-always-indent 'complete)
+  (setq-default bidi-paragraph-direction 'left-to-right)
 
+  (setq bidi-inhibit-bpa t)
   (setq sentence-end-double-space nil)
   (setq sentence-end-without-period nil)
   (setq colon-double-space nil)
