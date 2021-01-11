@@ -3,7 +3,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2021-01-11 23:01:03 (tmy)>
+;;; Time-stamp: <2021-01-11 23:10:59 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -26,7 +26,6 @@
 (require 'package)
 
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
-;;(add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)
 
 ;; avoid re-initializing packages
 (unless package--initialized (package-initialize))
@@ -263,7 +262,9 @@
   :ensure t
   :after flymake-eslint
   :hook ((typescript-mode-hook . eglot-ensure)
-         (typescript-mode-hook . flymake-eslint-enable)))
+         (typescript-mode-hook . flymake-eslint-enable))
+  :config
+  (setq whitespace-line-column 120))
 
 (use-package yasnippet
   :ensure t
@@ -342,12 +343,17 @@
                             'kill-region
                           'backward-kill-word)))
 
+  ;; FIXME: remote tramp uses multihop
+  ;;/ssh:homer@powerplant|sudo:powerplant:/root/stuff.txt
+  ;; /ssh:user@foo.example.fi|sudo:root@foo.example.fi:/path/to/file
+  ;; FIXME: make this work for dired buffers too for remote admin tasks
   (defun become ()
     "Use TRAMP to open the current buffer with elevated privileges."
     (interactive)
     (when buffer-file-name
-      (let ((method (or (executable-find "doas")
-                        (executable-find "sudo"))))
+      (let* ((cmd (or (executable-find "doas")
+                      (executable-find "sudo")))
+             (method (substring cmd -4)))
         (find-alternate-file
          (concat "/" method ":root@localhost:" buffer-file-name)))))
 
@@ -476,7 +482,7 @@
         modus-themes-fringes 'intense ; {nil,'subtle,'intense}
         modus-themes-mode-line '3d ; {nil,'3d,'moody}
         modus-themes-syntax nil ; Lots of options---continue reading the manual
-        modus-themes-intense-hl-line nil
+        modus-themes-intense-hl-line t
         modus-themes-paren-match 'subtle-bold ; {nil,'subtle-bold,'intense,'intense-bold}
         modus-themes-links 'neutral-underline ; Lots of options---continue reading the manual
         modus-themes-prompts 'intense ; {nil,'subtle,'intense}
@@ -666,7 +672,7 @@
   :demand t
   :config
   (setq org-directory "/ssh:tmy@mars.bittivirhe.fi:Org")
-  (setq org-default-notes-file (concat org-directory "/notes.org"))
+  (setq org-default-notes-file (expand-file-name "notes.org" org-directory))
   (setq org-agenda-files (list org-directory))
   (setq org-outline-path-complete-in-steps nil)
   (setq org-insert-mode-line-in-empty-file t)
@@ -690,10 +696,6 @@
           ("school" . ?s)
           ("thesis" . ?t)
           ("mail" . ?m)))
-  ;; allow shell execution
-  (setq org-babel-load-languages
-        '((emacs . t)
-          (shell . t)))
   (setq org-confirm-babel-evaluate t)
   (setq org-log-done 'note)
   (setq org-log-note-clock-out t)
@@ -707,6 +709,10 @@
   (setq org-return-follows-link nil)
   (setq org-loop-over-headlines-in-active-region 'start-level)
   (setq org-imenu-depth 3)
+  ;; allow shell execution
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((shell . t)))
   :hook ((org-mode-hook . variable-pitch-mode)
          (org-mode-hook . visual-line-mode)
          (message-mode-hook . turn-on-orgtbl)))
@@ -1444,8 +1450,7 @@
 
 (use-package cc-mode
   :bind (:map c-mode-map
-              ("C-c m" . man-follow)
-              ("C-c C-d" . gdb)
+              ("C-h M" . man-follow)
               ("C-m" . c-context-line-break)
               ("C-c o" . ff-find-other-file))
   :hook ((c-mode-common-hook . which-function-mode)
