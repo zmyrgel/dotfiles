@@ -3,7 +3,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2021-01-11 23:00:34 (tmy)>
+;;; Time-stamp: <2021-01-11 23:01:03 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -722,17 +722,25 @@
 (use-package org-capture
   :after org
   :config
-  (setq org-capture-templates
-        '(("t" "Todo" entry (file+headline "tasks.org" "Tasks")
-           "* TODO %?\n  %i\n  %a")
-          ("s" "School work" entry (file+headline "school.org" "School work")
-           "* TODO %?\n  %i\n  %a")
-          ("w" "Work tasks" entry (file+headline "work.org" "Work tasks")
-           "* TODO %?\n  %i\n  %a")
-          ("n" "Notes" entry (file+datetree "notes.org")
-           "* %?\nEntered on %U\n  %i\n  %a")
-          ("j" "Journal" entry (file+datetree "journal.org")
-           "* %?\nEntered on %U\n  %i\n  %a")))
+  (let ((todo-template (concat "* TODO %^{Title}\n"
+                               ":PROPERTIES:\n"
+                               ":CAPTURED: %U\n"
+                               ":END:\n\n"
+                               "%i%l")))
+    ;; "* TODO %?\n  %i\n  %a"
+    (setq org-capture-templates
+          `(("t" "Todo" entry (file+headline "todo.org" "Tasks")
+             ,todo-template)
+            ("s" "School work" entry (file+headline "school.org" "School work")
+             ,todo-template)
+            ("m" "Master's thesis" entry (file+headline "school.org" "Thesis")
+             ,todo-template)
+            ("w" "Work tasks" entry (file+headline "work.org" "Work tasks")
+             ,todo-template)
+            ("n" "Notes" entry (file+datetree "notes.org")
+             "* %?\nEntered on %U\n  %i\n  %a")
+            ("j" "Journal" entry (file+datetree "journal.org")
+             "* %?\nEntered on %U\n  %i\n  %a"))))
 
   (setq org-capture-templates-contexts
         '(("r" ((in-mode . "gnus-article-mode")
@@ -1008,7 +1016,6 @@
           ("https://xkcd.com/atom.xml" xkcd)
           ("https://planet.lisp.org/rss20.xml" lisp)
           "https://lobste.rs/t/emacs.lisp.security.ask.ai.openbsd.programming.rss")))
-
 
 ;; | M-s M-w | eww-search-words       |
 (use-package eww
