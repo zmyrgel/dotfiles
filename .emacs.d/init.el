@@ -208,7 +208,7 @@
   :mode ("\\.epub\\'" . nov-mode)
   :config
   (defun my-nov-setup-hook ()
-    (face-remap-add-relative 'variable-pitch :family "DejaVu Serif Book"
+    (face-remap-add-relative 'variable-pitch :family "ETBembo Roman"
                              :height 1.0)
     (set (make-local-variable 'show-trailing-whitespace) nil))
   (add-hook 'nov-mode-hook 'my-nov-setup-hook))
