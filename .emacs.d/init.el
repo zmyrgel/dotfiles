@@ -1477,6 +1477,31 @@
     (setq cperl-invalid-face 'default))
   :hook (cperl-mode-hook . my/cperl-mode-hook))
 
+(use-package elpy
+  :ensure t
+  :defer t
+  :init
+  (advice-add 'python-mode :before 'elpy-enable)
+  :config
+  (setq elpy-rpc-python-command "python3")
+  ;; Use IPython for REPL
+  (setq python-shell-interpreter "jupyter"
+        python-shell-interpreter-args "console --simple-prompt"
+        python-shell-prompt-detect-failure-warning nil)
+  (add-to-list 'python-shell-completion-native-disabled-interpreters
+               "jupyter"))
+
+(use-package py-autopep8
+  :ensure t
+  :hook (elpy-mode-hook . py-autopep8-enable-on-save))
+
+;; integrate with jupyter
+(use-package ein
+  :ensure t
+  :config
+  (setq ein:jupyter-server-command "jupyter-notebook")
+  (setq ein:jupyter-server-use-subcommand nil))
+
 (use-package web-mode
   :ensure t
   :mode (("\\.jsp\\'" . web-mode)
