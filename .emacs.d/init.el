@@ -1240,9 +1240,13 @@
   (setq vc-suppress-confirm t)
   (setq vc-command-messages t))
 
-;; (use-package vc-got
-;;   :load-path "/home/tmy/.emacs.d/elisp/vc-got/"
-;;   :init (push 'Got vc-handled-backends))
+(use-package vc-got
+  :if (file-directory-p "~/git/vc-got")
+  :load-path (expand-file-name "~/git/vc-got")
+  :defer t
+  :init
+  (add-to-list 'vc-handled-backends 'Got)
+  (add-to-list 'vc-directory-exclusion-list ".got"))
 
 (use-package compile
   :config
@@ -1351,7 +1355,7 @@
   :ensure t
   ;;:hook (sly-mode-hook . lisp-mode)
   :config
-  (let ((sbcl-bin-path (expand-file-name "lib/sbcl" "~")))
+  (let ((sbcl-bin-path (expand-file-name "~/lib/sbcl")))
     (when (file-exists-p sbcl-bin-path)
       (setenv "SBCL_HOME" sbcl-bin-path)))
   (setq sly-lisp-implementations '((sbcl ("sbcl" "--dynamic-space-size" "2048"))
@@ -1361,13 +1365,11 @@
                                    (abcl ("abcl"))))
 
   (setq common-lisp-hyperspec-symbol-table
-        (concat
-         (cond ((file-directory-p "/usr/local/share/doc/clisp-hyperspec")
-                "file:/usr/local/share/doc/clisp-hyperspec/")
-               ((file-directory-p "~/lisp/docs/HyperSpec")
-                (concat "file:" (getenv "HOME") "/lisp/docs/HyperSpec/"))
-               (t "http://www.lispworks.com/documentation/HyperSpec/"))
-         "Data/Map_Sym.txt")))
+        (let ((pkg-path "/usr/local/share/doc/clisp-hyperspec/Data/Map_Sym.txt")
+              (home-path "~/lisp/docs/HyperSpec/Data/Map_Sym.txt"))
+          (cond ((file-exists-p pkg-path) pkg-path)
+                ((file-exists-p home-path) home-path)
+                (t "http://www.lispworks.com/documentation/HyperSpec/Data/Map_Sym.txt"))))
 
 (use-package sly-repl-ansi-color
   :ensure t
