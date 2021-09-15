@@ -2,7 +2,7 @@
 ;; Main configuration file for StumpWM
 ;;
 ;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
-;; Time-stamp: <2020-01-01 13:00:07 (tmy)>
+;; Time-stamp: <2021-09-15 23:34:35 (tmy)>
 ;; URL: https://github.com/zmyrgel/dotfiles/
 ;; Copyright (C) 2012 Timo Myyrä
 ;;
@@ -33,16 +33,15 @@
 ;; ---------------------------------------
 ;; Define global configurations
 
-(defvar *font* "-*-spleen-medium-r-normal--16-*-*-*-*-*-iso10646-1"
+(defvar *font* "-*-terminus-medium-r-normal--16-*-*-*-*-*-iso10646-1"
   "Font to use for displaying stumwm ui elements.")
 
 ;;"-*-terminus-*-r-normal-*-16-*-*-*-*-*-*-*"
 
-(defvar *fg-color* "gainsboro")
+;;(defvar *fg-color* "gainsboro")
+;;(defvar *bg-color* "gray7")
 
-(defvar *bg-color* "gray7")
-
-(defvar *contrib-path* (merge-pathnames ".stumpwm.d/contrib"
+(defvar *contrib-path* (merge-pathnames ".stumpwm.d/modules"
                                         (user-homedir-pathname)))
 
 (defvar *wallpaper-path* (merge-pathnames "wallpapers"
@@ -85,7 +84,6 @@ mode-line"
 ;;   "Font specification for stumpwm windows.")
 
 ;; (set-font *font*)
-
 
 (setf *mouse-focus-policy* :click)
 
@@ -138,6 +136,9 @@ mode-line"
 
 (unless (head-mode-line (current-head))
   (toggle-mode-line (current-screen) (current-head)))
+
+;;(setf *screen-mode-line-format* "(%h){%g} [%W]")
+(setf *screen-mode-line-format* "{%g} [%W]")
 
 ;; (setf *screen-mode-line-format*
 ;;       "[^9*^B%n^b^n] %W
@@ -205,83 +206,6 @@ mode-line"
         (*random-state* (make-random-state t)))
     (namestring (nth (random (length file-list)) file-list))))
 
-;; (defun audio-volume-down ()
-;;   "Tell OS audio to lower its volume."
-;;   (let ((cmd (if (member :openbsd *features*)
-;;                  "mixerctl outputs.master=-10"
-;;                  "pactl set-sink-mute @DEFAULT_SINK@ false; pactl set-sink-volume @DEFAULT_SINK@ -5%")))
-;;     (uiop:run-program cmd :force-shell t)))
-
-;; (defun audio-volume-up ()
-;;   "Tell OS audio to raise its volume."
-;;   (let ((cmd (if (member :openbsd *features*)
-;;                  "mixerctl outputs.master=+10"
-;;                  "pactl set-sink-mute @DEFAULT_SINK@ false; pactl set-sink-volume @DEFAULT_SINK@ +5%")))
-;;     (uiop:run-program cmd :force-shell t)))
-
-;; (defun audio-toggle-mute ()
-;;   "Toggle audio mute state."
-;;   (let ((cmd (if (member :openbsd *features*)
-;;                  "mixerctl -t outputs.master.mute"
-;;                  "pactl set-sink-mute @DEFAULT_SINK@ toggle")))
-;;     (uiop:run-program cmd :force-shell nil)))
-
-;; (defun control-volume (action)
-;;   "Function to control volume by given ACTION. Action is keywword :up, :down or :mute."
-;;   (ecase action
-;;     (:up (audio-volume-up))
-;;     (:down (audio-volume-down))
-;;     (:mute (audio-toggle-mute))))
-
-;;(define-key *top-map* (kbd "XF86AudioLowerVolume") (control-volume :down))
-;;(define-key *top-map* (kbd "XF86AudioRaiseVolume") (control-volume :up))
-;;(define-key *top-map* (kbd "XF86AudioMute") (control-volume :mute-toggle))
-
-(defun xrandr-connected-displays ()
-  "Return a list of connected display names as noticed by xrandr."
-  (let ((result nil))
-    (ppcre:do-register-groups (disp)
-        ("([a-zA-Z0-9]+) connected" (uiop:run-program "xrandr --query" :output :string))
-      (push disp result))
-    result))
-
-(defun display-mode (display-name mode)
-  "Set the display status to MODE on the given DISPLAY-NAME."
-  (uiop:run-program (format nil "xrandr --output ~a --~a" display-name mode)))
-
-(defun work-displays-p (displays)
-  "Returns t when displays match the set used at work."
-  (and displays
-       (member "eDP1" displays :test #'string=)
-       (member "HDMI2" displays :test #'string=)))
-
-(defun multiple-connected-p (displays)
-  "Return T if there are multiple connected displays."
-  (and displays (>= 2 (length displays))))
-
-(defun internal-display (displays)
-  "Return the internal display as string from given list of displays."
-  (loop for d in displays
-        when (string= d "eDP1")
-          return d))
-
-(defun set-displays ()
-  "If external display is connected to laptop, turn off laptop and set
-external display to auto mode."
-  (let ((displays (xrandr-connected-displays)))
-    (when (and displays
-               (member "eDP1" displays :test #'string=)
-               (member "HDMI2" displays :test #'string=))
-      (display-mode "HDMI2" "auto")
-      (display-mode "eDP1" "off"))))
-
-(defun get-monitors ()
-  (let (int-disp ext-disp)
-    (dolist (disp (xrandr-connected-displays))
-      (cond ((string= (subseq disp 0 3) "eDP") (setf int-disp disp))
-            ((string= (subseq disp 0 4) "HDMI") (setf ext-disp disp))))
-    (values int-disp ext-disp)))
-
 (defun set-wallpaper ()
   (run-shell-command "xwallpaper --maximize ~/wallpapers/pluto_blueskies.png"))
 
@@ -295,18 +219,59 @@ external display to auto mode."
   (loop for app in (list "xsetroot -solid rgb:11/11/11"
                          "xsetroot -cursor_name left_ptr -fg black -bg white"
                          "wmname LG3D"
-                         "pgrep mpd || mpd ~/.mpdconf")
+                         ;;"pgrep mpd || mpd ~/.mpdconf"
+                         )
         do (run-shell-command app)))
 
-(defun nm-list-connections ()
+#+linux
+(progn
+  (defun nm-list-connections ()
   "List connections known by NM."
-  (run-shell-command "nmcli con show" t))
+  (run-shell-command "nmcli con show" t)))
 
 ;; ---------------------------------------
 ;; MODULES
 
-;; (load-module "stumptray")
-;; (stumptray::stumptray)
+(handler-case (progn
+                (load-module "stumptray")
+                (stumptray::stumptray))
+  (error (c)
+    (format t "Unable to find module.~&")
+    (values nil c)))
+
+#+openbsd
+(handler-case (progn
+                (load-module "stumpwm-sndioctl")
+                (define-key *top-map* (kbd "XF86AudioMute") "toggle-mute")
+                (define-key *top-map* (kbd "XF86AudioLowerVolume") "volume-down")
+                (define-key *top-map* (kbd "XF86AudioRaiseVolume") "volume-up"))
+  (error (c)
+    (format t "Unable to find module.~&")
+    (values nil c)))
+
+(handler-case (progn
+                (load-module "globalwindows")
+                ;;(define-key *root-map* (kbd "M-1") "global-windowlist")
+                ;;(define-key *root-map* (kbd "M-2") "global-pull-windowlist")
+                )
+  (error (c)
+    (format t "Unable to find module.~&")
+    (values nil c)))
+
+(handler-case (progn
+                (load-module "urgentwindows")
+                (define-key *root-map* (kbd "u") "raise-urgent"))
+  (error (c)
+    (format t "Unable to find module.~&")
+    (values nil c)))
+
+(handler-case (progn
+                (load-module "notifications")
+                (setf (uiop:strcat *screen-mode-line-format*) " (%N)")
+                (define-key *root-map* (kbd "N") '*notifications-map*))
+  (error (c)
+    (format t "Unable to find module.~&")
+    (values nil c)))
 
 ;; ---------------------------------------
 ;; Commands
@@ -317,6 +282,8 @@ external display to auto mode."
   (let ((cmd (read-one-line (current-screen) ": " :initial-input initial)))
     (when cmd
       (eval-command cmd t))))
+
+;; (defcommand suspend )
 
 (defcommand paste-x-selection () (:rest)
   "Universal rat-less X paste."
@@ -342,7 +309,7 @@ external display to auto mode."
 (defmacro make-web-jump (name prefix)
   `(defcommand ,(intern name) (search) ((:rest ,(concatenate 'string name " search: ")))
                (when (string/= search "")
-                 (run-shell-command (concatengate 'string ,*browser* " " ,prefix (quri:url-encode search))))))
+                 (run-shell-command (concatenate 'string ,*browser* " " ,prefix (quri:url-encode search))))))
 
 (make-web-jump "ddg" "https://www.duckduckgo.com?q=")
 
@@ -373,8 +340,8 @@ external display to auto mode."
 (define-key *root-map* (kbd "L") (uiop:strcat "exec " *x-lock-command*))
 
 ;; Emacs Style Frame Splitting
-(loop for n below 10
-   do (undefine-key *root-map* (kbd (write-to-string n))))
+;;(loop for n below 10
+;;   do (undefine-key *root-map* (kbd (write-to-string n))))
 
 ;;(define-key *root-map* (kbd "0") "remove")
 ;;(define-key *root-map* (kbd "1") "only")
@@ -403,9 +370,9 @@ external display to auto mode."
 (define-key *root-map* (kbd "B") "mode-line")
 
 ;; s-[0-9] moves to a numbered group.
-(loop for i from 1 to 9
-   do (define-key *top-map* (kbd (format nil "s-~A" i))
-	(format nil "gselect ~A" i)))
+;;(loop for i from 1 to 9
+;;   do (define-key *top-map* (kbd (format nil "s-~A" i))
+;;	(format nil "gselect ~A" i)))
 
 ;; ;; Query addresses
 ;; (defvar *query-map* nil
@@ -418,11 +385,24 @@ external display to auto mode."
 ;;         (define-key m (kbd "w") "wikipedia")
 ;;         m))
 
+;; Allow to quickly cycle groups
+(define-key *top-map* (kbd "s-,") "gprev")
+(define-key *top-map* (kbd "s-.") "gnext")
+
 ;; Swap quoteright and " in commands
 (define-key *groups-map* (kbd "quoteright") "grouplist")
 (define-key *groups-map* (kbd "\"") "gselect")
-(define-key *groups-map* (kbd "quoteright") "windowlist")
-(define-key *groups-map* (kbd "\"") "select")
+(define-key *root-map* (kbd "quoteright") "windowlist")
+(define-key *root-map* (kbd "\"") "select")
+
+;; undefine unused bindings
+(undefine-key *root-map* (kbd "C-c"))
+(undefine-key *root-map* (kbd "C-a"))
+(undefine-key *root-map* (kbd "C-p"))
+(undefine-key *root-map* (kbd "C-n"))
+(undefine-key *root-map* (kbd "C-m"))
+(undefine-key *root-map* (kbd "C-l"))
+(undefine-key *root-map* (kbd "C-k"))
 
 ;; (setf *root-map*
 ;;       (let ((m (make-sparse-keymap)))
