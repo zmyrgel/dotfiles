@@ -3,7 +3,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2021-01-11 23:10:59 (tmy)>
+;;; Time-stamp: <2022-01-02 23:13:11 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -25,7 +25,8 @@
 
 (require 'package)
 
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+(add-to-list 'package-archives
+             '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 
 ;; avoid re-initializing packages
 (unless package--initialized (package-initialize))
@@ -98,7 +99,35 @@
   (setq flyspell-issue-message-flag nil)
   (setq flyspell-issue-welcome-flag nil)
   (setq ispell-program-name "aspell")
-  (setq ispell-dictionary "en_GB"))
+  (setq ispell-dictionary "en_US"))
+
+(use-package wcheck-mode
+  :ensure t
+  :config
+  (global-set-key (kbd "C-c s")
+                  (let ((map (make-sparse-keymap)))
+                    (define-key map "w" 'wcheck-mode)
+                    (define-key map "l" 'wcheck-change-language)
+                    (define-key map "a" 'wcheck-actions)
+                    (define-key map "f" 'wcheck-jump-forward)
+                    (define-key map "b" 'wcheck-jump-backward)
+                    map))
+  (setq wcheck-language-data
+        `(("British English"
+           (program . ,(or (executable-find "ispell") "ispell"))
+           (args "-l" "-d" "british")
+           (action-program . ,(or (executable-find "ispell") "ispell"))
+           (action-args "-a" "-d" "british")
+           (action-parser . wcheck-parser-ispell-suggestions))
+          ("Finnish"
+           (program . ,(or (executable-find "enchant-2")
+                           (executable-find "enchant")))
+           (args "-l" "-d" "fi")
+           (syntax . my-finnish-syntax-table)
+           (action-program . "/usr/bin/enchant")
+           (action-args "-a" "-d" "fi")
+           (action-parser . wcheck-parser-ispell-suggestions))
+          )))
 
 (add-hook 'before-save-hook 'time-stamp)
 (add-hook 'comint-output-filter-functions 'comint-watch-for-password-prompt)
@@ -133,6 +162,10 @@
   (when (version<= "27" emacs-version)
     (setq grep-find-use-xargs 'exec-plus)))
 
+;;; TODO: "''"'
+;; - "{{}" <-- does not pair inner open paren
+;; - "string"" <-- adds pair at the end of string
+;; - ''Lineinfile <-- doubles quotes on beginning of string
 (use-package electric
   :config
   (setq electric-pair-inhibit-predicate 'electric-pair-conservative-inhibit)
@@ -204,13 +237,16 @@
 
 (use-package nov
   :ensure t
-  :mode ("\\.epub\\'" . nov-mode)
+  :mode "\\.epub\\'"
   :config
   (defun my-nov-setup-hook ()
     (face-remap-add-relative 'variable-pitch :family "ETBembo Roman"
                              :height 1.0)
     (set (make-local-variable 'show-trailing-whitespace) nil))
   (add-hook 'nov-mode-hook 'my-nov-setup-hook))
+
+(use-package x509-mode
+  :ensure t)
 
 (use-package markdown-mode
   :ensure t
@@ -256,6 +292,7 @@
    auto-mode-alist))
 
 (use-package ansible-vault
+  ;;; TODO: add vault-identity support
   :ensure t)
 
 (use-package typescript-mode
@@ -357,18 +394,19 @@
         (find-alternate-file
          (concat "/" method ":root@localhost:" buffer-file-name)))))
 
-  (when (fboundp 'tool-bar-mode)
-    (tool-bar-mode -1))
-  (when (fboundp 'scroll-bar-mode)
-    (scroll-bar-mode -1))
-  (when (fboundp 'horizontal-scroll-bar-mode)
+  (when (display-graphic-p)
+    (tool-bar-mode -1)
+    (scroll-bar-mode -1)
     (horizontal-scroll-bar-mode -1))
-  (menu-bar-mode t)
+  (menu-bar-mode -1)
 
   (setq case-fold-search t)
   (setq load-prefer-newer t)
 
-  (setq-default show-trailing-whitespace t)
+  ;; XXX: does this help with LSP stuff?
+  (setq read-process-output-max (* 1024 1024)) ; 1mb
+
+  (setq-default show-trailing-whitespace nil)
   (setq-default require-final-newline t)
   (setq-default cursor-type 'box)
   (setq-default truncate-lines t)
@@ -404,27 +442,17 @@
   (add-hook 'help-mode-hook (lambda () (setq truncate-lines t)))
 
   ;; ;; Set Default font if present
-  (when (find-font (font-spec :name "Input Mono Narrow-12"))
-    (set-face-attribute 'default nil :family "Input Mono Narrow" :height 110)
+  (when (find-font (font-spec :name "Input Mono Narrow"))
+    (set-face-attribute 'default nil :family "Input Mono Narrow" :height 100)
     (set-face-attribute 'variable-pitch nil :family "Input Serif")
     (set-face-attribute 'fixed-pitch nil :family "Input Mono Narrow")
     (set-face-attribute 'tooltip nil :family "Input Mono Narrow"))
 
-  ;; (when (find-font (font-spec :name "Source Code Pro"))
-  ;;   (set-face-attribute 'default nil :family "Source Code Pro" :height 120)
-  ;;   (set-face-attribute 'variable-pitch nil :family "Source Sans Pro Regular")
-  ;;   (set-face-attribute 'fixed-pitch nil :family "Source code Pro")
-  ;;   (set-face-attribute 'tooltip nil :family "Source Code Pro"))
-
-  ;; Graphical Emacs seems to freeze when handling clipboard, so
-  ;; decrease the selection timeout so it won't wait for so long.
-  ;; https://omecha.info/blog/org-capture-freezes-emacs.html
-  ;; XXX: why is this needed?
-  ;; DEBUG: X vs. console?
-  ;; DEBUG: what function gets stuck
-  ;; DEBUG: minimal repro with emacs -Q
-  (when (eq system-type 'berkeley-unix)
-    (setq x-selection-timeout 10))
+  ;; (when (find-font (font-spec :name "Overpass"))
+  ;;   (set-face-attribute 'default nil :family "Overpass Mono" :height 100)
+  ;;   (set-face-attribute 'variable-pitch nil :family "Overpass Regular")
+  ;;   (set-face-attribute 'fixed-pitch nil :family "Overpass")
+  ;;   (set-face-attribute 'tooltip nil :family "Overpass"))
 
   (defalias 'yes-or-no-p 'y-or-n-p)
 
@@ -464,17 +492,12 @@
   :ensure t
   :after use-package)
 
-;; Nice theme but doesn't set proper faces in org-mode
-;; (use-package material-theme
-;;   :ensure t
-;;   :config (load-theme 'material t nil))
+(use-package dracula-theme
+  :ensure t
+  :config (load-theme 'dracula t nil))
 
-;; (use-package color-theme-sanityinc-tomorrow
-;;   :ensure t
-;;   :config
-;;   (load-theme 'sanityinc-tomorrow-eighties t nil))
-
-(use-package modus-themes
+(use-package modus-themes ;; non-elpa but in base?
+  :disabled
   :ensure t
   :init
   (setq modus-themes-slanted-constructs t
@@ -482,7 +505,7 @@
         modus-themes-fringes 'intense ; {nil,'subtle,'intense}
         modus-themes-mode-line '3d ; {nil,'3d,'moody}
         modus-themes-syntax nil ; Lots of options---continue reading the manual
-        modus-themes-intense-hl-line t
+        modus-themes-intense-hl-line nil
         modus-themes-paren-match 'subtle-bold ; {nil,'subtle-bold,'intense,'intense-bold}
         modus-themes-links 'neutral-underline ; Lots of options---continue reading the manual
         modus-themes-prompts 'intense ; {nil,'subtle,'intense}
@@ -499,6 +522,12 @@
         modus-themes-scale-headings t)
   :config
   (modus-themes-load-vivendi))
+
+;; (defvar zenburn-override-colors-alist
+;;   '(("zenburn-bg" . "#313131")))
+;; (setq zenburn-override-colors-alist
+;;   '(("zenburn-bg" . "#313131")))
+;; (load-theme 'zenburn t)
 
 ;;; ------------------------------
 ;;; Calendar and diary settings
@@ -567,6 +596,7 @@
   :config
   (setq recentf-save-file (expand-file-name "recentf" user-emacs-directory))
   (setq recentf-max-saved-items 50)
+  (add-to-list 'recentf-exclude "\\elpa")
   :hook (after-init-hook . recentf-mode))
 
 (use-package bookmark
@@ -609,15 +639,15 @@
 
 (use-package exec-path-from-shell
   :ensure t
+  :if (memq window-system '(mac ns x))
   :config
+  (exec-path-from-shell-initialize)
   (when (eq system-type 'berkeley-unix)
     (setq exec-path-from-shell-arguments '("-l")))
   (setq exec-path-from-shell-variables
         '("PATH" "MANPATH"
           "JAVA_HOME" "GOPATH"
-          "GERBIL_HOME" "CVSROOT"))
-  (when (memq window-system '(mac ns x))
-    (exec-path-from-shell-initialize)))
+          "GERBIL_HOME" "CVSROOT")))
 
 (use-package sh-script
   :config (defun my/sh-mode-hook ()
@@ -655,24 +685,17 @@
   (set (make-local-variable 'transient-mark-mode) nil))
 (ad-activate 'term-char-mode)
 
-(use-package ssh-tunnels
-  :ensure t
-  :config
-  (setq ssh-tunnels-configurations
-        '((:name "core-dev-db" :type "SH" :login "core-dev-db")
-          (:name "core-prod-db" :type "SH" :login "core-prod-db")
-          (:name "kube-prod" :type "SH" :login "kube-prod")
-          (:name "kube-test" :type "SH" :login "kube-test"))))
-
 ;;; ------------------------------
 ;;; Org-mode
 ;;; ------------------------------
 
 (use-package org
   :demand t
+  :init
+  (setq org-list-allow-alphabetical t)
   :config
   (setq org-directory "/ssh:tmy@mars.bittivirhe.fi:Org")
-  (setq org-default-notes-file (expand-file-name "notes.org" org-directory))
+  (setq org-default-notes-file (concat org-directory "/notes.org"))
   (setq org-agenda-files (list org-directory))
   (setq org-outline-path-complete-in-steps nil)
   (setq org-insert-mode-line-in-empty-file t)
@@ -712,7 +735,8 @@
   ;; allow shell execution
   (org-babel-do-load-languages
    'org-babel-load-languages
-   '((shell . t)))
+   '((shell . t)
+     (emacs . t)))
   :hook ((org-mode-hook . variable-pitch-mode)
          (org-mode-hook . visual-line-mode)
          (message-mode-hook . turn-on-orgtbl)))
@@ -795,11 +819,25 @@
   (setq org-export-headline-levels 3)
   (setq org-export-dispatch-use-expert-ui nil))
 
+;; (setq org-latex-pdf-process
+;;       (list
+;;        "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
+
+;; (setq org-latex-to-pdf-process (list "latexmk -pdf %f"))
+
 (use-package ox-latex
   :after ox
   :config
   (add-to-list 'org-latex-classes
                '("IEEEtran" "\\documentclass[11pt]{IEEEtran}"
+                 ("\\section{%s}" . "\\section*{%s}")
+                 ("\\subsection{%s}" . "\\subsection*{%s}")
+                 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                 ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
+               t)
+ (add-to-list 'org-latex-classes
+               '("koma-article" "\\documentclass{scrartcl}"
                  ("\\section{%s}" . "\\section*{%s}")
                  ("\\subsection{%s}" . "\\subsection*{%s}")
                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
@@ -825,6 +863,30 @@
   (setq ibuffer-expert t)
   :hook (ibuffer-mode-hook . ibuffer-auto-mode))
 
+(use-package ibuffer-vc
+  :disabled
+  :ensure t
+  :defer t
+  :config
+  ;; sort buffer list by repositories
+  (add-hook 'ibuffer-hook
+            (lambda ()
+              (ibuffer-vc-set-filter-groups-by-vc-root)
+              (unless (eq ibuffer-sorting-mode 'alphabetic)
+                (ibuffer-do-sort-by-alphabetic))))
+  ;; show file vc status in buffer list
+  (setq ibuffer-formats
+        '((mark modified read-only vc-status-mini " "
+                (name 18 18 :left :elide)
+                " "
+                (size 9 -1 :right)
+                " "
+                (mode 16 16 :left :elide)
+                " "
+                (vc-status 16 16 :left)
+                " "
+                filename-and-process))))
+
 ;;; -----------------------------
 ;;; IRC
 ;;; ------------------------------
@@ -832,16 +894,16 @@
 (use-package rcirc
   :config
   (setq rcirc-server-alist
-        '(("irc.freenode.net"
+        '(("irc.libera.chat"
            :channels ("#openbsd" "#lisp"))))
   (setq rcirc-default-nick "zmyrgel")
   (setq rcirc-default-user-name "zmyrgel")
   (setq rcirc-default-full-name "Curious Minds Want To Know")
 
-  (let ((nickserv-pass (secrets-get-secret "default" "freenode-pass")))
+  (let ((nickserv-pass (secrets-get-secret "default" "libera-pass")))
     (when nickserv-pass
       (setq rcirc-authinfo
-            `(("freenode" nickserv "zmyrgel" ,nickserv-pass)))))
+            `(("libera" nickserv "zmyrgel" ,nickserv-pass)))))
 
   (setq rcirc-omit-responses '("JOIN" "PART" "QUIT" "NICK" "AWAY"))
   (setq rcirc-time-format "%Y-%m-%d %H:%M ")
@@ -1066,6 +1128,9 @@
 ;;; Completion
 ;;; ------------------------------
 
+(use-package orderless
+  :ensure t)
+
 (use-package icomplete-vertical
   :ensure t
   :config
@@ -1099,8 +1164,31 @@
               ("DEL" . icomplete-fido-backward-updir)
               ("C-v" . icomplete-vertical-toggle)))
 
-(use-package minibuffer
+(use-package marginalia
+  :ensure t
   :config
+  (marginalia-mode))
+
+(use-package embark
+  :ensure t
+  :bind
+  (("C-." . embark-act)
+   ("M-." . embark-dwim)
+   ("C-h B" . embark-bindings))
+  :init
+  ;; Optionally replace the key help with a completing-read interface
+  (setq prefix-help-command #'embark-prefix-help-command)
+  :config
+  ;; Hide the mode line of the Embark live/completions buffers
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none)))))
+
+(use-package minibuffer
+  :after (orderless)
+  :config
+  (setq completion-styles '(orderless))
   (setq completion-ignore-case t)
   (setq read-buffer-completion-ignore-case t)
   (setq read-file-name-completion-ignore-case t)
@@ -1255,7 +1343,7 @@
 
 (use-package vc-got
   :if (file-directory-p "~/git/vc-got")
-  :load-path (expand-file-name "~/git/vc-got")
+  :load-path "~/git/vc-got"
   :defer t
   :init
   (add-to-list 'vc-handled-backends 'Got)
@@ -1268,6 +1356,13 @@
   (setq compilation-ask-about-save nil)
   (setq compilation-always-kill t)
   (setq compilation-window-height 12))
+
+;;(require 'ansi-color)
+(defun colorize-compilation-buffer ()
+  (let ((inhibit-read-only t))
+    (ansi-color-apply-on-region (point-min) (point-max))))
+
+(add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
 
 ;; or use smerge-ediff to resolve conflicts
 (use-package smerge-mode
@@ -1368,7 +1463,7 @@
   :ensure t
   ;;:hook (sly-mode-hook . lisp-mode)
   :config
-  (let ((sbcl-bin-path (expand-file-name "~/lib/sbcl")))
+  (let ((sbcl-bin-path (expand-file-name "lib/sbcl" "~")))
     (when (file-exists-p sbcl-bin-path)
       (setenv "SBCL_HOME" sbcl-bin-path)))
   (setq sly-lisp-implementations '((sbcl ("sbcl" "--dynamic-space-size" "2048"))
@@ -1377,12 +1472,12 @@
                                    (chicken ("csi"))
                                    (abcl ("abcl"))))
 
-  (setq common-lisp-hyperspec-symbol-table
+    (setq common-lisp-hyperspec-symbol-table
         (let ((pkg-path "/usr/local/share/doc/clisp-hyperspec/Data/Map_Sym.txt")
               (home-path "~/lisp/docs/HyperSpec/Data/Map_Sym.txt"))
           (cond ((file-exists-p pkg-path) pkg-path)
                 ((file-exists-p home-path) home-path)
-                (t "http://www.lispworks.com/documentation/HyperSpec/Data/Map_Sym.txt"))))
+                (t "http://www.lispworks.com/documentation/HyperSpec/Data/Map_Sym.txt")))))
 
 (use-package sly-repl-ansi-color
   :ensure t
@@ -1403,6 +1498,12 @@
   (setq quack-run-scheme-prompt-defaults-to-last-p t)
   (setq quack-smart-open-paren-p t)
   (setq quack-switch-to-scheme-method 'other-window))
+
+(use-package racket-mode
+  :ensure t)
+
+(use-package flymake-racket
+  :ensure t)
 
 (use-package clojure-mode
   :ensure t
@@ -1451,6 +1552,7 @@
 (use-package cc-mode
   :bind (:map c-mode-map
               ("C-h M" . man-follow)
+              ("C-c C-d" . gdb)
               ("C-m" . c-context-line-break)
               ("C-c o" . ff-find-other-file))
   :hook ((c-mode-common-hook . which-function-mode)
@@ -1460,7 +1562,8 @@
   :config
   (defun my/c-mode ()
     "My C programming options."
-    (c-set-style "bsd"))
+    (c-set-style "bsd")
+    (setq indent-tabs-mode t))
   (defun my/c++-mode ()
     "My C++ programming options."
     (setq fill-column 100)
@@ -1530,7 +1633,8 @@
     (flycheck-add-mode 'typescript-tslint 'web-mode)
     (flycheck-add-mode 'javascript-eslint 'web-mode)
     (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append))
-  :hook (web-mode-hook . my/web-mode-hook))
+  :hook ((web-mode-hook . my/web-mode-hook)
+         (web-mode-hook . flymake-eslint-enable)))
 
 (use-package flycheck
   :disabled
@@ -1541,6 +1645,22 @@
   (setq flycheck-phpcs-standard "Zend")
   (flycheck-add-mode 'javascript-eslint 'typescript-mode)
   (flycheck-add-mode 'typescript-tslint 'web-mode))
+
+(use-package restclient
+  :ensure t)
+
+(use-package swank-js
+  :ensure t)
+
+;; k8s-mode, kubel, kubernetes-tramp
+;; gnus, rmail, notmuch, mu4e mu4e-alert, offlineimap
+;; nav?
+;; oauth2
+;; org-roam
+;; keepass-mode, pass, teams-id
+;; rcirc vs. erc?
+;; sly-*
+;; kill-ring browsing?
 
 ;;; ------------------------------
 ;;; Finalizers
