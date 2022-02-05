@@ -3,7 +3,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2021-01-11 23:10:59 (tmy)>
+;;; Time-stamp: <2022-02-05 09:38:16 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -18,14 +18,14 @@
 ;; collection.  The default is 800 kilobytes.  Measured in bytes.
 (setq gc-cons-threshold (* 50 1000 1000))
 
-(defconst elisp-dir (expand-file-name "elisp" user-emacs-directory))
+(defconst elisp-dir (locate-user-emacs-file "elisp"))
 
-(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(setq custom-file (locate-user-emacs-file "custom.el"))
 (load custom-file 'noerror)
 
 (require 'package)
 
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 
 ;; avoid re-initializing packages
 (unless package--initialized (package-initialize))
@@ -98,17 +98,42 @@
   (setq flyspell-issue-message-flag nil)
   (setq flyspell-issue-welcome-flag nil)
   (setq ispell-program-name "aspell")
-  (setq ispell-dictionary "en_GB"))
+  (setq ispell-dictionary "en_US"))
+
+(use-package wcheck-mode
+  :ensure t
+  :config
+  (global-set-key (kbd "C-c s")
+                  (let ((map (make-sparse-keymap)))
+                    (define-key map "w" 'wcheck-mode)
+                    (define-key map "l" 'wcheck-change-language)
+                    (define-key map "a" 'wcheck-actions)
+                    (define-key map "f" 'wcheck-jump-forward)
+                    (define-key map "b" 'wcheck-jump-backward)
+                    map))
+  (setq wcheck-language-data
+        `(("British English"
+           (program . ,(or (executable-find "ispell") "ispell"))
+           (args "-l" "-d" "british")
+           (action-program . ,(or (executable-find "ispell") "ispell"))
+           (action-args "-a" "-d" "british")
+           (action-parser . wcheck-parser-ispell-suggestions))
+          ("Finnish"
+           (program . ,(or (executable-find "enchant-2")
+                           (executable-find "enchant")))
+           (args "-l" "-d" "fi")
+           (syntax . my-finnish-syntax-table)
+           (action-program . "/usr/bin/enchant")
+           (action-args "-a" "-d" "fi")
+           (action-parser . wcheck-parser-ispell-suggestions))
+          )))
 
 (add-hook 'before-save-hook 'time-stamp)
 (add-hook 'comint-output-filter-functions 'comint-watch-for-password-prompt)
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
 
-;; (use-package whitespace
-;;   :diminish
-;;   :config (global-whitespace-mode))
-
 (use-package which-key
+  :disabled
   :ensure t
   :diminish
   :config (which-key-mode))
@@ -133,6 +158,10 @@
   (when (version<= "27" emacs-version)
     (setq grep-find-use-xargs 'exec-plus)))
 
+;;; TODO: "''"'
+;; - "{{}" <-- does not pair inner open paren
+;; - "string"" <-- adds pair at the end of string
+;; - ''Lineinfile <-- doubles quotes on beginning of string
 (use-package electric
   :config
   (setq electric-pair-inhibit-predicate 'electric-pair-conservative-inhibit)
@@ -166,6 +195,7 @@
 (use-package tex
   :defer t
   :ensure auctex
+  :mode ("\\.[tT]e[xX]\\'" . latex-mode)
   :hook ((latex-mode-hook . auto-fill-mode)
          (latex-mode-hook . reftex-mode)
          (tex-mode-hook . (lambda ()
@@ -204,7 +234,7 @@
 
 (use-package nov
   :ensure t
-  :mode ("\\.epub\\'" . nov-mode)
+  :mode "\\.epub\\'"
   :config
   (defun my-nov-setup-hook ()
     (face-remap-add-relative 'variable-pitch :family "ETBembo Roman"
@@ -256,6 +286,7 @@
    auto-mode-alist))
 
 (use-package ansible-vault
+  ;;; TODO: add vault-identity support
   :ensure t)
 
 (use-package typescript-mode
@@ -357,18 +388,19 @@
         (find-alternate-file
          (concat "/" method ":root@localhost:" buffer-file-name)))))
 
-  (when (fboundp 'tool-bar-mode)
-    (tool-bar-mode -1))
-  (when (fboundp 'scroll-bar-mode)
-    (scroll-bar-mode -1))
-  (when (fboundp 'horizontal-scroll-bar-mode)
+  (when (display-graphic-p)
+    (tool-bar-mode -1)
+    (scroll-bar-mode -1)
     (horizontal-scroll-bar-mode -1))
-  (menu-bar-mode t)
+  (menu-bar-mode -1)
 
   (setq case-fold-search t)
   (setq load-prefer-newer t)
 
-  (setq-default show-trailing-whitespace t)
+  ;; XXX: does this help with LSP stuff?
+  (setq read-process-output-max (* 1024 1024)) ; 1mb
+
+  (setq-default show-trailing-whitespace nil)
   (setq-default require-final-newline t)
   (setq-default cursor-type 'box)
   (setq-default truncate-lines t)
@@ -404,27 +436,11 @@
   (add-hook 'help-mode-hook (lambda () (setq truncate-lines t)))
 
   ;; ;; Set Default font if present
-  (when (find-font (font-spec :name "Input Mono Narrow-12"))
-    (set-face-attribute 'default nil :family "Input Mono Narrow" :height 110)
+  (when (find-font (font-spec :name "Input Mono Narrow"))
+    (set-face-attribute 'default nil :family "Input Mono Narrow" :height 100)
     (set-face-attribute 'variable-pitch nil :family "Input Serif")
     (set-face-attribute 'fixed-pitch nil :family "Input Mono Narrow")
     (set-face-attribute 'tooltip nil :family "Input Mono Narrow"))
-
-  ;; (when (find-font (font-spec :name "Source Code Pro"))
-  ;;   (set-face-attribute 'default nil :family "Source Code Pro" :height 120)
-  ;;   (set-face-attribute 'variable-pitch nil :family "Source Sans Pro Regular")
-  ;;   (set-face-attribute 'fixed-pitch nil :family "Source code Pro")
-  ;;   (set-face-attribute 'tooltip nil :family "Source Code Pro"))
-
-  ;; Graphical Emacs seems to freeze when handling clipboard, so
-  ;; decrease the selection timeout so it won't wait for so long.
-  ;; https://omecha.info/blog/org-capture-freezes-emacs.html
-  ;; XXX: why is this needed?
-  ;; DEBUG: X vs. console?
-  ;; DEBUG: what function gets stuck
-  ;; DEBUG: minimal repro with emacs -Q
-  (when (eq system-type 'berkeley-unix)
-    (setq x-selection-timeout 10))
 
   (defalias 'yes-or-no-p 'y-or-n-p)
 
@@ -464,41 +480,13 @@
   :ensure t
   :after use-package)
 
-;; Nice theme but doesn't set proper faces in org-mode
-;; (use-package material-theme
+;; (use-package dracula-theme
 ;;   :ensure t
-;;   :config (load-theme 'material t nil))
+;;   :config (load-theme 'dracula t nil))
 
-;; (use-package color-theme-sanityinc-tomorrow
-;;   :ensure t
-;;   :config
-;;   (load-theme 'sanityinc-tomorrow-eighties t nil))
-
-(use-package modus-themes
-  :ensure t
-  :init
-  (setq modus-themes-slanted-constructs t
-        modus-themes-bold-constructs t
-        modus-themes-fringes 'intense ; {nil,'subtle,'intense}
-        modus-themes-mode-line '3d ; {nil,'3d,'moody}
-        modus-themes-syntax nil ; Lots of options---continue reading the manual
-        modus-themes-intense-hl-line t
-        modus-themes-paren-match 'subtle-bold ; {nil,'subtle-bold,'intense,'intense-bold}
-        modus-themes-links 'neutral-underline ; Lots of options---continue reading the manual
-        modus-themes-prompts 'intense ; {nil,'subtle,'intense}
-        modus-themes-completions 'moderate ; {nil,'moderate,'opinionated}
-        modus-themes-region 'bg-only-no-extend ; {nil,'no-extend,'bg-only,'bg-only-no-extend}
-        modus-themes-diffs nil ; {nil,'desaturated,'fg-only,'bg-only}
-        modus-themes-org-blocks 'rainbow ; {nil,'grayscale,'rainbow}
-        modus-themes-headings ; Lots of options---continue reading the manual
-        '((1 . section)
-          (2 . section-no-bold)
-          (3 . rainbow-line)
-          (t . rainbow-line-no-bold))
-        modus-themes-variable-pitch-headings t
-        modus-themes-scale-headings t)
-  :config
-  (modus-themes-load-vivendi))
+ (use-package custom
+   :config
+   (load-theme 'modus-vivendi t nil))
 
 ;;; ------------------------------
 ;;; Calendar and diary settings
@@ -560,24 +548,25 @@
 
 (use-package saveplace
   :config
-  (setq save-place-file (expand-file-name "places" user-emacs-directory))
+  (setq save-place-file (locate-user-emacs-file "places"))
   (save-place-mode 1))
 
 (use-package recentf
   :config
-  (setq recentf-save-file (expand-file-name "recentf" user-emacs-directory))
+  (setq recentf-save-file (locate-user-emacs-file "recentf"))
   (setq recentf-max-saved-items 50)
+  (add-to-list 'recentf-exclude "\\elpa")
   :hook (after-init-hook . recentf-mode))
 
 (use-package bookmark
   :config
-  (setq bookmark-default-file (expand-file-name "bookmarks" user-emacs-directory))
+  (setq bookmark-default-file (locate-user-emacs-file "bookmarks"))
   (setq bookmark-save-flag 1))
 
 (use-package savehist
   :config
-  (setq savehist-file (expand-file-name "savehist" user-emacs-directory))
-  (setq history-length 30000)
+  (setq savehist-file (locate-user-emacs-file "savehist"))
+  (setq history-length 10000)
   (setq history-delete-duplicates t)
   (setq savehist-save-minibuffer-history t)
   (setq savehist-additional-variables '(search ring regexp-search-ring))
@@ -587,7 +576,7 @@
 (use-package abbrev
   :hook (kill-emacs-hook . write-abbrev-file)
   :config
-  (setq abbrev-file-name (expand-file-name "abbrev_defs" user-emacs-directory))
+  (setq abbrev-file-name (locate-user-emacs-file "abbrev_defs"))
   (setq save-abbrevs t)
   (when (file-exists-p abbrev-file-name)
     (quietly-read-abbrev-file)))
@@ -609,15 +598,15 @@
 
 (use-package exec-path-from-shell
   :ensure t
+  :if (memq window-system '(mac ns x))
   :config
+  (exec-path-from-shell-initialize)
   (when (eq system-type 'berkeley-unix)
     (setq exec-path-from-shell-arguments '("-l")))
   (setq exec-path-from-shell-variables
         '("PATH" "MANPATH"
           "JAVA_HOME" "GOPATH"
-          "GERBIL_HOME" "CVSROOT"))
-  (when (memq window-system '(mac ns x))
-    (exec-path-from-shell-initialize)))
+          "GERBIL_HOME" "CVSROOT")))
 
 (use-package sh-script
   :config (defun my/sh-mode-hook ()
@@ -655,24 +644,17 @@
   (set (make-local-variable 'transient-mark-mode) nil))
 (ad-activate 'term-char-mode)
 
-(use-package ssh-tunnels
-  :ensure t
-  :config
-  (setq ssh-tunnels-configurations
-        '((:name "core-dev-db" :type "SH" :login "core-dev-db")
-          (:name "core-prod-db" :type "SH" :login "core-prod-db")
-          (:name "kube-prod" :type "SH" :login "kube-prod")
-          (:name "kube-test" :type "SH" :login "kube-test"))))
-
 ;;; ------------------------------
 ;;; Org-mode
 ;;; ------------------------------
 
 (use-package org
   :demand t
+  :init
+  (setq org-list-allow-alphabetical t)
   :config
   (setq org-directory "/ssh:tmy@mars.bittivirhe.fi:Org")
-  (setq org-default-notes-file (expand-file-name "notes.org" org-directory))
+  (setq org-default-notes-file (concat org-directory "/notes.org"))
   (setq org-agenda-files (list org-directory))
   (setq org-outline-path-complete-in-steps nil)
   (setq org-insert-mode-line-in-empty-file t)
@@ -712,7 +694,8 @@
   ;; allow shell execution
   (org-babel-do-load-languages
    'org-babel-load-languages
-   '((shell . t)))
+   '((shell . t)
+     (emacs . t)))
   :hook ((org-mode-hook . variable-pitch-mode)
          (org-mode-hook . visual-line-mode)
          (message-mode-hook . turn-on-orgtbl)))
@@ -794,12 +777,26 @@
   (setq org-export-with-toc t)
   (setq org-export-headline-levels 3)
   (setq org-export-dispatch-use-expert-ui nil))
+;; ("latexmk -f -pdf -%latex -interaction=nonstopmode -output-directory=%o %f")
+;; (setq org-latex-pdf-process
+;;       (list
+;;        "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
+
+;; (setq org-latex-to-pdf-process (list "latexmk -pdf %f"))
 
 (use-package ox-latex
   :after ox
   :config
   (add-to-list 'org-latex-classes
                '("IEEEtran" "\\documentclass[11pt]{IEEEtran}"
+                 ("\\section{%s}" . "\\section*{%s}")
+                 ("\\subsection{%s}" . "\\subsection*{%s}")
+                 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                 ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
+               t)
+ (add-to-list 'org-latex-classes
+               '("koma-article" "\\documentclass{scrartcl}"
                  ("\\section{%s}" . "\\section*{%s}")
                  ("\\subsection{%s}" . "\\subsection*{%s}")
                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
@@ -832,16 +829,16 @@
 (use-package rcirc
   :config
   (setq rcirc-server-alist
-        '(("irc.freenode.net"
+        '(("irc.libera.chat"
            :channels ("#openbsd" "#lisp"))))
   (setq rcirc-default-nick "zmyrgel")
   (setq rcirc-default-user-name "zmyrgel")
   (setq rcirc-default-full-name "Curious Minds Want To Know")
 
-  (let ((nickserv-pass (secrets-get-secret "default" "freenode-pass")))
+  (let ((nickserv-pass (secrets-get-secret "default" "libera-pass")))
     (when nickserv-pass
       (setq rcirc-authinfo
-            `(("freenode" nickserv "zmyrgel" ,nickserv-pass)))))
+            `(("libera" nickserv "zmyrgel" ,nickserv-pass)))))
 
   (setq rcirc-omit-responses '("JOIN" "PART" "QUIT" "NICK" "AWAY"))
   (setq rcirc-time-format "%Y-%m-%d %H:%M ")
@@ -885,7 +882,7 @@
   (pcomplete-erc-setup)
 
   (setq erc-pcomplete-order-nickname-completions t)
-  (setq erc-log-channels-directory (expand-file-name ".irclogs" "~"))
+  (setq erc-log-channels-directory (locate-user-emacs-file "erc-logs"))
   (setq erc-log-insert-log-on-open nil)
   (setq erc-log-file-coding-system 'utf-8-unix)
   (setq erc-save-buffer-on-part t)
@@ -1039,7 +1036,7 @@
   (setq eww-download-directory (expand-file-name "Downloads" "~"))
   (setq eww-suggest-uris
         '(eww-links-at-point thing-at-point-url-at-point))
-  (setq eww-bookmarks-directory (expand-file-name "eww-bookmarks" user-emacs-directory))
+  (setq eww-bookmarks-directory (locate-user-emacs-file "eww-bookmarks"))
   (setq eww-history-limit 150)
   (setq eww-use-external-browser-for-content-type
         "\\`\\(video/\\|audio/\\|application/ogg\\|pdf\\)")
@@ -1065,6 +1062,19 @@
 ;;; ------------------------------
 ;;; Completion
 ;;; ------------------------------
+
+(use-package orderless
+  :ensure t
+  :config
+  ;;(setq orderless-component-separator " +")
+  ;; (setq orderless-matching-styles '(orderless-prefixes
+  ;;                                   orderless-initialism
+  ;;                                   orderless-regexp))
+  ;; (setq orderless-style-dispatchers
+  ;;       '(orderless-literal
+  ;;         orderless-initialism
+  ;;         orderless-flex))
+  )
 
 (use-package icomplete-vertical
   :ensure t
@@ -1099,15 +1109,57 @@
               ("DEL" . icomplete-fido-backward-updir)
               ("C-v" . icomplete-vertical-toggle)))
 
-(use-package minibuffer
+(use-package marginalia
+  :ensure t
   :config
+  ;;(setq marginalia-max-relative-age 0)  ; time is absolute here!
+  (marginalia-mode))
+
+(use-package embark
+  :ensure t
+  :bind
+  (("C-." . embark-act)
+   ("M-." . embark-dwim)
+   ("C-h B" . embark-bindings))
+  :init
+  ;; Optionally replace the key help with a completing-read interface
+  (setq prefix-help-command #'embark-prefix-help-command)
+  :config
+  ;; Hide the mode line of the Embark live/completions buffers
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none)))))
+
+(use-package minibuffer
+  :after (orderless)
+  :config
+  (setq completion-styles
+        '(basic substring initials flex partial-completion orderless))
+  (setq completion-category-overrides
+        '((file (styles . (basic partial-completion orderless)))))
+  (let ((map minibuffer-local-completion-map))
+    (define-key map (kbd "SPC") nil)
+    (define-key map (kbd "?") nil))
+  (setq completion-cycle-threshold 2) ;; todo
+  (setq completion-flex-nospace nil)
+  (setq completion-pcm-complete-word-inserts-delimiters nil)
+  (setq completion-pcm-word-delimiters "-_./:| ")
+  (setq completions-detailed t)
+  ;; Grouping of completions for Emacs 28
+  (setq completions-group t)
+  (setq completions-group-sort nil)
+  (setq minibuffer-prompt-properties
+        '(read-only t cursor-intangible t face minibuffer-prompt))
+  (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
   (setq completion-ignore-case t)
   (setq read-buffer-completion-ignore-case t)
   (setq read-file-name-completion-ignore-case t)
   (setq minibuffer-beginning-of-buffer-movement t)
   (setq completions-format 'vertical)
   (setq completion-show-help nil)
-  (setq enable-recursive-minibuffers t)
+  (setq minibuffer-eldef-shorten-default t) ;; todo
+  (setq echo-keystrokes 0.25)           ; from the C source code
   (setq read-answer-short t)
   (setq resize-mini-windows 'grow-only)
   (file-name-shadow-mode 1)
@@ -1135,14 +1187,10 @@
   (setq dabbrev-case-replace 'case-replace)
   (setq dabbrev-check-other-buffers t)
   (setq dabbrev-eliminate-newlines nil)
-  (setq dabbrev-upcase-means-case-search t)
-  :bind (("C-," . dabbrev-expand)
-         ("C-." . dabbrev-completion)))
-
-(use-package hippie-expand
-  :bind ("C-'" . hippie-expand))
+  (setq dabbrev-upcase-means-case-search t))
 
 (use-package company
+  :disabled
   :ensure t
   :diminish company-mode
   :hook (prog-mode-hook . company-mode)
@@ -1255,7 +1303,7 @@
 
 (use-package vc-got
   :if (file-directory-p "~/git/vc-got")
-  :load-path (expand-file-name "~/git/vc-got")
+  :load-path "~/git/vc-got"
   :defer t
   :init
   (add-to-list 'vc-handled-backends 'Got)
@@ -1268,6 +1316,13 @@
   (setq compilation-ask-about-save nil)
   (setq compilation-always-kill t)
   (setq compilation-window-height 12))
+
+;;(require 'ansi-color)
+(defun colorize-compilation-buffer ()
+  (let ((inhibit-read-only t))
+    (ansi-color-apply-on-region (point-min) (point-max))))
+
+(add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
 
 ;; or use smerge-ediff to resolve conflicts
 (use-package smerge-mode
@@ -1312,6 +1367,11 @@
   :config (setq magit-repository-directories
                 '(("~/git" . 1)
                   ("~/quicklisp/local-projects" . 1))))
+
+(use-package magit-gitflow
+  :if (string= (system-name) "ws-946")
+  :ensure t
+  :hook (magit-mode-hook . turn-on-magit-gitflow))
 
 (use-package eglot
   :ensure t
@@ -1368,7 +1428,7 @@
   :ensure t
   ;;:hook (sly-mode-hook . lisp-mode)
   :config
-  (let ((sbcl-bin-path (expand-file-name "~/lib/sbcl")))
+  (let ((sbcl-bin-path (expand-file-name "lib/sbcl" "~")))
     (when (file-exists-p sbcl-bin-path)
       (setenv "SBCL_HOME" sbcl-bin-path)))
   (setq sly-lisp-implementations '((sbcl ("sbcl" "--dynamic-space-size" "2048"))
@@ -1377,12 +1437,12 @@
                                    (chicken ("csi"))
                                    (abcl ("abcl"))))
 
-  (setq common-lisp-hyperspec-symbol-table
+    (setq common-lisp-hyperspec-symbol-table
         (let ((pkg-path "/usr/local/share/doc/clisp-hyperspec/Data/Map_Sym.txt")
               (home-path "~/lisp/docs/HyperSpec/Data/Map_Sym.txt"))
           (cond ((file-exists-p pkg-path) pkg-path)
                 ((file-exists-p home-path) home-path)
-                (t "http://www.lispworks.com/documentation/HyperSpec/Data/Map_Sym.txt"))))
+                (t "http://www.lispworks.com/documentation/HyperSpec/Data/Map_Sym.txt")))))
 
 (use-package sly-repl-ansi-color
   :ensure t
@@ -1424,17 +1484,8 @@
     (setq geiser-guile-binary "guile2")))
 
 ;;;; PHP programming
-
-(use-package composer
-  :ensure t
-  :defer t)
-
-(use-package company-php
-  :ensure t)
-
 (use-package php-mode
   :ensure t
-  :after company-php
   :mode "\\.php[345]?\\'\\|\\.phtml\\'"
   :config
   (defun my/php-mode-hook ()
@@ -1447,10 +1498,10 @@
   :hook (php-mode-hook . my/php-mode-hook))
 
 ;;;; C programming
-
 (use-package cc-mode
   :bind (:map c-mode-map
               ("C-h M" . man-follow)
+              ("C-c C-d" . gdb)
               ("C-m" . c-context-line-break)
               ("C-c o" . ff-find-other-file))
   :hook ((c-mode-common-hook . which-function-mode)
@@ -1460,7 +1511,8 @@
   :config
   (defun my/c-mode ()
     "My C programming options."
-    (c-set-style "bsd"))
+    (c-set-style "bsd")
+    (setq indent-tabs-mode t))
   (defun my/c++-mode ()
     "My C++ programming options."
     (setq fill-column 100)
@@ -1483,6 +1535,7 @@
   :hook (cperl-mode-hook . my/cperl-mode-hook))
 
 (use-package elpy
+  :disabled
   :ensure t
   :defer t
   :init
@@ -1497,11 +1550,13 @@
                "jupyter"))
 
 (use-package py-autopep8
+  :disabled
   :ensure t
   :hook (elpy-mode-hook . py-autopep8-enable-on-save))
 
 ;; integrate with jupyter
 (use-package ein
+  :disabled
   :ensure t
   :config
   (setq ein:jupyter-server-command "jupyter-notebook")
@@ -1530,7 +1585,8 @@
     (flycheck-add-mode 'typescript-tslint 'web-mode)
     (flycheck-add-mode 'javascript-eslint 'web-mode)
     (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append))
-  :hook (web-mode-hook . my/web-mode-hook))
+  :hook ((web-mode-hook . my/web-mode-hook)
+         (web-mode-hook . flymake-eslint-enable)))
 
 (use-package flycheck
   :disabled
@@ -1541,6 +1597,18 @@
   (setq flycheck-phpcs-standard "Zend")
   (flycheck-add-mode 'javascript-eslint 'typescript-mode)
   (flycheck-add-mode 'typescript-tslint 'web-mode))
+
+(use-package restclient
+  :ensure t)
+
+;; k8s: k8s-mode, kubel, kubernetes-tramp
+;; mail compare: gnus, rmail, notmuch, mu4e mu4e-alert, offlineimap
+;; nav?
+;; org-roam
+;; keepass-mode, pass, teams-id
+;; rcirc vs. erc?
+;; sly-*
+;; kill-ring browsing?
 
 ;;; ------------------------------
 ;;; Finalizers
@@ -1559,7 +1627,7 @@
 (setq gc-cons-threshold (* 2 1000 1000))
 
 ;; Load optional local startup files
-(load (expand-file-name "init-local.el" user-emacs-directory) t t)
+(load (locate-user-emacs-file "init-local.el") t t)
 
 ;; Only start server mode for non-admin accounts
 (unless (string-equal "root" (getenv "USER"))
