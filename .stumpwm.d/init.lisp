@@ -2,7 +2,7 @@
 ;; Main configuration file for StumpWM
 ;;
 ;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
-;; Time-stamp: <2021-09-15 23:34:35 (tmy)>
+;; Time-stamp: <2021-09-18 20:00:24 (tmy)>
 ;; URL: https://github.com/zmyrgel/dotfiles/
 ;; Copyright (C) 2012 Timo Myyrä
 ;;
@@ -84,6 +84,7 @@ mode-line"
 ;;   "Font specification for stumpwm windows.")
 
 ;; (set-font *font*)
+
 
 (setf *mouse-focus-policy* :click)
 
@@ -232,12 +233,12 @@ mode-line"
 ;; ---------------------------------------
 ;; MODULES
 
-(handler-case (progn
-                (load-module "stumptray")
-                (stumptray::stumptray))
-  (error (c)
-    (format t "Unable to find module.~&")
-    (values nil c)))
+;; (handler-case (progn
+;;                 (load-module "stumptray")
+;;                 (stumptray::stumptray))
+;;   (error (c)
+;;     (format t "Unable to find module.~&")
+;;     (values nil c)))
 
 #+openbsd
 (handler-case (progn

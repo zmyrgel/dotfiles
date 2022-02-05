@@ -3,7 +3,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2022-02-05 09:38:16 (tmy)>
+;;; Time-stamp: <2022-02-05 09:43:02 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -241,6 +241,9 @@
                              :height 1.0)
     (set (make-local-variable 'show-trailing-whitespace) nil))
   (add-hook 'nov-mode-hook 'my-nov-setup-hook))
+
+(use-package x509-mode
+  :ensure t)
 
 (use-package markdown-mode
   :ensure t
@@ -487,6 +490,12 @@
  (use-package custom
    :config
    (load-theme 'modus-vivendi t nil))
+
+;; (defvar zenburn-override-colors-alist
+;;   '(("zenburn-bg" . "#313131")))
+;; (setq zenburn-override-colors-alist
+;;   '(("zenburn-bg" . "#313131")))
+;; (load-theme 'zenburn t)
 
 ;;; ------------------------------
 ;;; Calendar and diary settings
@@ -778,6 +787,12 @@
   (setq org-export-headline-levels 3)
   (setq org-export-dispatch-use-expert-ui nil))
 ;; ("latexmk -f -pdf -%latex -interaction=nonstopmode -output-directory=%o %f")
+;; (setq org-latex-pdf-process
+;;       (list
+;;        "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
+
+;; (setq org-latex-to-pdf-process (list "latexmk -pdf %f"))
+
 ;; (setq org-latex-pdf-process
 ;;       (list
 ;;        "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
@@ -1112,7 +1127,7 @@
 (use-package marginalia
   :ensure t
   :config
-  ;;(setq marginalia-max-relative-age 0)  ; time is absolute here!
+  ;;(setq marginalia-max-relative-age 0)
   (marginalia-mode))
 
 (use-package embark
