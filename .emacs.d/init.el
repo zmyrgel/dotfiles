@@ -3,19 +3,16 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2022-02-05 09:43:02 (tmy)>
+;;; Time-stamp: <2022-02-08 22:45:20 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
-;;; Compatibility: GNU Emacs 26.1 (may work with other versions)
+;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Commentary:
 ;;; - fix warnings on this file
-;;; - elisp-hook
-;;; - check desktop.el
 
 ;;; Code:
 
-;; Make startup faster by reducing the frequency of garbage
-;; collection.  The default is 800 kilobytes.  Measured in bytes.
+;; Make startup faster by reducing the frequency of gc
 (setq gc-cons-threshold (* 50 1000 1000))
 
 (defconst elisp-dir (locate-user-emacs-file "elisp"))
@@ -68,9 +65,8 @@
   (setq lazy-count-prefix-format nil)
   (setq lazy-count-suffix-format " (%s/%s)")
   (setq isearch-yank-on-move 'shift)
-  (setq isearch-allow-scroll 'unlimited))
-
-(setq query-replace-highlight t)
+  (setq isearch-allow-scroll 'unlimited)
+  (setq query-replace-highlight t))
 
 ;; mouse options
 (use-package mouse
@@ -84,6 +80,8 @@
   (setq make-pointer-invisible t)
   (setq mouse-wheel-progressive-speed t)
   (setq mouse-wheel-follow-mouse t)
+  (when (fboundp 'context-menu-mode)
+    (context-menu-mode 1))
   :hook (after-init-hook . mouse-wheel-mode))
 
 (use-package flyspell
@@ -132,15 +130,16 @@
 (add-hook 'comint-output-filter-functions 'comint-watch-for-password-prompt)
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
 
-(use-package which-key
-  :disabled
-  :ensure t
-  :diminish
-  :config (which-key-mode))
-
 (use-package so-long
   :config
   (global-so-long-mode 1))
+
+(use-package repeat
+  :if (version<= "28" emacs-version)
+  :config
+  (setq repeat-on-final-keystroke t)
+  (setq set-mark-command-repeat-pop t)
+  (repeat-mode 1))
 
 ;;; ------------------------------
 ;;; Text editing
@@ -158,26 +157,16 @@
   (when (version<= "27" emacs-version)
     (setq grep-find-use-xargs 'exec-plus)))
 
-;;; TODO: "''"'
-;; - "{{}" <-- does not pair inner open paren
-;; - "string"" <-- adds pair at the end of string
-;; - ''Lineinfile <-- doubles quotes on beginning of string
 (use-package electric
   :config
-  (setq electric-pair-inhibit-predicate 'electric-pair-conservative-inhibit)
   (setq electric-pair-preserve-balance t)
-  (setq electric-pair-pairs '((8216 . 8217) (8220 . 8221) (171 . 187)))
-  (setq electric-pair-skip-self 'electric-pair-default-skip-self)
-  (setq electric-pair-skip-whitespace nil)
-  ;;(setq electric-pair-skip-whitespace-chars '(9 10 32))
-  (setq electric-quote-context-sensitive t)
-  (setq electric-quote-paragraph t)
-  (setq electric-quote-string nil)
-  (setq electric-quote-replace-double t)
-  :hook ((after-init-hook . electric-indent-mode)
-         ;;(after-init-hook . electric-pair-mode -1)
-         ;;(after-init-hook . electric-quote-mode -1)
-	 ))
+  (setq electric-pair-pairs '((34 . 34)
+                              (8216 . 8217)
+                              (8220 . 8221)
+                              (123 . 125)))
+  (setq electric-pair-skip-self t)
+  (setq electric-pair-skip-whitespace 'chomp)
+  :hook ((after-init-hook . electric-indent-mode)))
 
 (defun th/pdf-view-revert-buffer-maybe (file)
   (let ((buf (find-buffer-visiting file)))
@@ -216,6 +205,7 @@
   (setq TeX-insert-braces nil)
   (setq TeX-electric-escape t)
   (setq TeX-electric-macro t)
+  (setq TeX-auto-untabify t)
   (setq TeX-newline-function 'reindent-then-newline-and-indent))
 
 ;; doc-view / doc-view-presentation
@@ -286,25 +276,8 @@
      (if (or (eq (cdr pair) 'xml-mode)
              (eq (cdr pair) 'sgml-mode))
          (setcdr pair 'nxml-mode)))
-   auto-mode-alist))
-
-(use-package ansible-vault
-  ;;; TODO: add vault-identity support
-  :ensure t)
-
-(use-package typescript-mode
-  :ensure t
-  :after flymake-eslint
-  :hook ((typescript-mode-hook . eglot-ensure)
-         (typescript-mode-hook . flymake-eslint-enable))
-  :config
-  (setq whitespace-line-column 120))
-
-(use-package yasnippet
-  :ensure t
-  :if (not noninteractive)
-  :diminish yas-minor-mode
-  :commands (yas-global-mode yas-minor-mode))
+   auto-mode-alist)
+  (define-key nxml-mode-map (kbd "C-c C-f") 'bf-pretty-print-xml-region))
 
 ;;; ------------------------------
 ;;; Visual settings
@@ -358,17 +331,14 @@
          ("M-c" . capitalize-dwim)
          ("C-h h" . nil)
          ("M-SPC" . cycle-spacing)
-         ("C-x C-k" . kill-region)
          ("C-w" . my/backward-kill-word-or-region)
          ("C-c C-j" . join-line)
          ("M-z" . zap-up-to-char)
          ("C-x k" . kill-this-buffer)
-         ("M-o" . other-window)
          ("C-x C-z" . nil)
          ("C-z" . nil)
          ("C-z s" . eshell)
-         ("C-z r" . rgrep)
-         ("C-z b" . bookmark-jump))
+         ("C-z r" . rgrep))
   :config
   (defun my/backward-kill-word-or-region ()
     "Kill region or word based on selection."
@@ -399,6 +369,8 @@
 
   (setq case-fold-search t)
   (setq load-prefer-newer t)
+  (setq apropos-do-all t)
+  (setq ad-redefinition-action 'accept)
 
   ;; XXX: does this help with LSP stuff?
   (setq read-process-output-max (* 1024 1024)) ; 1mb
@@ -463,6 +435,7 @@
   :config
   (setq set-mark-command-repeat-pop t)
   (setq next-line-add-newlines nil)
+  (setq kill-do-not-save-duplicates t)
   (setq backward-delete-char-untabify-method nil)
   (setq kill-ring-max 100)
   (setq yank-pop-change-selection t)
@@ -487,15 +460,9 @@
 ;;   :ensure t
 ;;   :config (load-theme 'dracula t nil))
 
- (use-package custom
-   :config
+ (use-package emacs
+   :init
    (load-theme 'modus-vivendi t nil))
-
-;; (defvar zenburn-override-colors-alist
-;;   '(("zenburn-bg" . "#313131")))
-;; (setq zenburn-override-colors-alist
-;;   '(("zenburn-bg" . "#313131")))
-;; (load-theme 'zenburn t)
 
 ;;; ------------------------------
 ;;; Calendar and diary settings
@@ -633,25 +600,33 @@
   (setq comint-completion-autolist t)
   (setq comint-input-ignoredups t)
   (setq comint-completion-addsuffix t)
-  (setq comint-prompt-read-only t))
+  (setq comint-prompt-read-only t)
+  :hook (comint-mode-hook . (lambda ()
+                              (define-key comint-mode-map [remap kill-region]
+                                          'comint-kill-region)
+                              (define-key comint-mode-map [remap kill-whole-line]
+                                          'comint-kill-whole-line))))
 
 (use-package eshell
   :config
   (setq eshell-cmpl-dir-ignore "\\`\\(\\.\\.?\\|CVS\\|\\.svn\\|\\.git\\)/\\'")
   (setq eshell-save-history-on-exit t)
   (setq eshell-scroll-show-maximum-output t)
-  (setq eshell-scroll-to-bottom-on-output t))
-
-;;; customization for term, ansi-term
-;; disable cua and transient mark modes in term-char-mode
-(defadvice term-line-mode (after term-line-mode-fixes ())
-  (set (make-local-variable 'transient-mark-mode) t))
-(ad-activate 'term-line-mode)
-
-(defadvice term-char-mode (after term-char-mode-fixes ())
-  (set (make-local-variable 'cua-mode) nil)
-  (set (make-local-variable 'transient-mark-mode) nil))
-(ad-activate 'term-char-mode)
+  (setq eshell-scroll-to-bottom-on-output t)
+  (setq eshell-cmpl-autolist t)
+  (setq eshell-cmpl-cycle-completions nil)
+  (setq eshell-cmpl-cycle-cutoff-length 2)
+  (setq eshell-cmpl-ignore-case t)
+  (setq eshell-cp-overwrite-files nil)
+  (setq eshell-default-target-is-dot t)
+  (setq eshell-destroy-buffer-when-process-dies t)
+  (setq eshell-hist-ignoredups t)
+  (setq eshell-list-files-after-cd t)
+  (setq eshell-review-quick-commands t)
+  (setq eshell-save-history-on-exit t)
+  (setq eshell-scroll-show-maximum-output nil)
+  (setq eshell-visual-subcommands '(("git" "log" "diff" "show")))
+  (setq eshell-visual-options '(("git" "--help" "--paginate"))))
 
 ;;; ------------------------------
 ;;; Org-mode
@@ -704,7 +679,7 @@
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((shell . t)
-     (emacs . t)))
+     (emacs-lisp . t)))
   :hook ((org-mode-hook . variable-pitch-mode)
          (org-mode-hook . visual-line-mode)
          (message-mode-hook . turn-on-orgtbl)))
@@ -786,22 +761,12 @@
   (setq org-export-with-toc t)
   (setq org-export-headline-levels 3)
   (setq org-export-dispatch-use-expert-ui nil))
-;; ("latexmk -f -pdf -%latex -interaction=nonstopmode -output-directory=%o %f")
-;; (setq org-latex-pdf-process
-;;       (list
-;;        "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
-
-;; (setq org-latex-to-pdf-process (list "latexmk -pdf %f"))
-
-;; (setq org-latex-pdf-process
-;;       (list
-;;        "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
-
-;; (setq org-latex-to-pdf-process (list "latexmk -pdf %f"))
 
 (use-package ox-latex
   :after ox
   :config
+  (setq org-latex-pdf-process
+        '("latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
   (add-to-list 'org-latex-classes
                '("IEEEtran" "\\documentclass[11pt]{IEEEtran}"
                  ("\\section{%s}" . "\\section*{%s}")
@@ -810,7 +775,7 @@
                  ("\\paragraph{%s}" . "\\paragraph*{%s}")
                  ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
                t)
- (add-to-list 'org-latex-classes
+  (add-to-list 'org-latex-classes
                '("koma-article" "\\documentclass{scrartcl}"
                  ("\\section{%s}" . "\\section*{%s}")
                  ("\\subsection{%s}" . "\\subsection*{%s}")
@@ -835,6 +800,7 @@
   :config
   (setq ibuffer-default-sorting-mode 'major-mode)
   (setq ibuffer-expert t)
+  (setq ibuffer-shrink-to-minimum-size t)
   :hook (ibuffer-mode-hook . ibuffer-auto-mode))
 
 ;;; -----------------------------
@@ -947,7 +913,6 @@
   (setq mm-inline-large-images 'resize)
   (setq mm-discouraged-alternatives '("text/html" "text/richtext"))
   (setq mm-text-html-renderer 'shr)
-
   (setq gnus-select-method '(nntp "news.gmane.io"))
   (setq gnus-secondary-select-methods
         '((nnimap "work-gmail"
@@ -1074,60 +1039,32 @@
   (setq browse-url-firefox-new-window-is-tab t)
   (setq browse-url-browser-function 'eww-browse-url))
 
+(use-package restclient
+  :ensure t
+  :defer t
+  :mode (("\\.http\\'" . restclient-mode))
+  ;;TODO: change to only apply json formatting when the content-type is
+  ;;application/json
+  :bind (:map restclient-mode-map
+              ("C-c C-f" . json-mode-beautify)))
+
+;; (use-package company-restclient
+;;   :ensure t
+;;   :after (restclient)
+;;   :config
+;;   (add-to-list 'company-backends 'company-restclient))
+
 ;;; ------------------------------
 ;;; Completion
 ;;; ------------------------------
 
 (use-package orderless
-  :ensure t
-  :config
-  ;;(setq orderless-component-separator " +")
-  ;; (setq orderless-matching-styles '(orderless-prefixes
-  ;;                                   orderless-initialism
-  ;;                                   orderless-regexp))
-  ;; (setq orderless-style-dispatchers
-  ;;       '(orderless-literal
-  ;;         orderless-initialism
-  ;;         orderless-flex))
-  )
-
-(use-package icomplete-vertical
-  :ensure t
-  :config
-  (setq icomplete-vertical-prospects-height 10))
-
-(use-package icomplete
-  :after (minibuffer icomplete-vertical)
-  :demand t
-  :config
-  (setq icomplete-delay-completions-threshold 100)
-  (setq icomplete-max-delay-chars 2)
-  (setq icomplete-compute-delay 0.2)
-  (setq icomplete-prospects-height 1)
-  (setq icomplete-in-buffer t)
-  (setq icomplete-separator " | ")
-  (setq icomplete-with-completion-tables t)
-  (setq icomplete-tidy-shadowed-file-names t)
-  (setq icomplete-show-matches-on-no-input nil)
-  (setq icomplete-hide-common-prefix nil)
-  (setq completion-flex-nospace nil)
-  (icomplete-mode)
-  :bind (:map icomplete-minibuffer-map
-              ("<return>" . icomplete-force-complete-and-exit)
-              ("M-t" . icomplete-force-complete)
-              ("C-j" . exit-minibuffer)
-              ("C-n" . icomplete-forward-completions)
-              ("C-p" . icomplete-backward-completions)
-              ("C-s" . icomplete-forward-completions)
-              ("C-r" . icomplete-backward-completions)
-              ("<C-backspace>" . icomplete-fido-backward-updir)
-              ("DEL" . icomplete-fido-backward-updir)
-              ("C-v" . icomplete-vertical-toggle)))
+  :ensure t)
 
 (use-package marginalia
   :ensure t
   :config
-  ;;(setq marginalia-max-relative-age 0)
+  (setq marginalia-max-relative-age 0)
   (marginalia-mode))
 
 (use-package embark
@@ -1137,54 +1074,57 @@
    ("M-." . embark-dwim)
    ("C-h B" . embark-bindings))
   :init
-  ;; Optionally replace the key help with a completing-read interface
   (setq prefix-help-command #'embark-prefix-help-command)
   :config
-  ;; Hide the mode line of the Embark live/completions buffers
   (add-to-list 'display-buffer-alist
                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
                  nil
                  (window-parameters (mode-line-format . none)))))
 
+(use-package mct
+  :ensure t
+  :config
+  (setq mct-hide-completion-mode-line t)
+  (setq mct-remove-shadowed-file-name t)
+  (setq mct-show-completion-line-numbers nil)
+  (setq mct-completions-format 'one-column)
+  (mct-minibuffer-mode 1)
+  (mct-region-mode 1))
+;; mct-backward-updir.
+
 (use-package minibuffer
   :after (orderless)
   :config
-  (setq completion-styles
-        '(basic substring initials flex partial-completion orderless))
+  (setq completion-styles '(orderless))
+  (setq completion-category-defaults nil)
   (setq completion-category-overrides
-        '((file (styles . (basic partial-completion orderless)))))
-  (let ((map minibuffer-local-completion-map))
-    (define-key map (kbd "SPC") nil)
-    (define-key map (kbd "?") nil))
-  (setq completion-cycle-threshold 2) ;; todo
+        '((file (styles . (basic partial-completion orderless)))
+          (project-file (styles . (basic substring partial-completion orderless)))
+          (imenu (styles . (basic substring orderless)))
+          (kill-ring (styles . (basic substring orderless)))))
+  (setq completion-cycle-threshold 2)
   (setq completion-flex-nospace nil)
   (setq completion-pcm-complete-word-inserts-delimiters nil)
   (setq completion-pcm-word-delimiters "-_./:| ")
   (setq completions-detailed t)
-  ;; Grouping of completions for Emacs 28
-  (setq completions-group t)
-  (setq completions-group-sort nil)
-  (setq minibuffer-prompt-properties
-        '(read-only t cursor-intangible t face minibuffer-prompt))
+  (when (version<= "28" emacs-version)
+    (setq completions-group t)
+    (setq completions-group-sort 'alphabetical)
+    (setq minibuffer-prompt-properties
+          '(read-only t cursor-intangible t face minibuffer-prompt)))
   (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
   (setq completion-ignore-case t)
   (setq read-buffer-completion-ignore-case t)
   (setq read-file-name-completion-ignore-case t)
   (setq minibuffer-beginning-of-buffer-movement t)
-  (setq completions-format 'vertical)
+  (setq completions-format 'one-column)
   (setq completion-show-help nil)
-  (setq minibuffer-eldef-shorten-default t) ;; todo
-  (setq echo-keystrokes 0.25)           ; from the C source code
+  (setq minibuffer-eldef-shorten-default t)
+  (setq echo-keystrokes 0.5)
   (setq read-answer-short t)
-  (setq resize-mini-windows 'grow-only)
   (file-name-shadow-mode 1)
   (minibuffer-depth-indicate-mode 1)
-  (minibuffer-electric-default-mode 1)
-  :bind (:map completion-list-mode-map
-              ("n" . next-line)
-              ("p" . previous-line)
-              ("f" . next-completion)
-              ("b" . previous-completion)))
+  (minibuffer-electric-default-mode 1))
 
 (use-package imenu
   :config
@@ -1204,21 +1144,6 @@
   (setq dabbrev-eliminate-newlines nil)
   (setq dabbrev-upcase-means-case-search t))
 
-(use-package company
-  :disabled
-  :ensure t
-  :diminish company-mode
-  :hook (prog-mode-hook . company-mode)
-  :bind (("M-/" . company-complete)
-         :map company-active-map
-         ("C-n" . company-select-next)
-         ("C-p" . company-select-previous)
-         ("C-d" . company-show-doc-buffer)
-         ("M-." . company-show-location))
-  :config
-  (setq company-dabbrev-downcase nil)
-  (setq company-tooltip-align-annotations t))
-
 ;;; ------------------------------
 ;;; File and directory management
 ;;; ------------------------------
@@ -1234,6 +1159,7 @@
   (setq dired-recursive-copies 'always)
   (setq dired-recursive-deletes 'always)
   (setq dired-isearch-filenames t)
+  (setq dired-omit-verbose nil)
   (setq dired-ls-F-marks-symlinks t)
   ;; Don't pass --dired flag to ls on BSD
   (when (eq system-type 'berkeley-unix)
@@ -1306,6 +1232,12 @@
 ;;; Programming settings
 ;;; ------------------------------
 
+(use-package yasnippet
+  :ensure t
+  :if (not noninteractive)
+  :diminish yas-minor-mode
+  :commands (yas-global-mode yas-minor-mode))
+
 (use-package eldoc
   :diminish
   :config
@@ -1314,7 +1246,46 @@
 (use-package vc
   :config
   (setq vc-suppress-confirm t)
-  (setq vc-command-messages t))
+  (setq vc-command-messages t)
+  (setq vc-find-revision-no-save t)
+  (setq vc-annotate-display-mode 'scale)
+  (setq add-log-keep-changes-together t)
+  (setq vc-git-diff-switches '("--patch-with-stat" "--histogram"))
+  (setq vc-git-print-log-follow t)
+  (setq vc-git-revision-complete-only-branches nil)
+  (setq vc-git-root-log-format
+        '("%d %h %ad %an: %s"
+          "^\\(?:[*/\\|]+\\)\\(?:[*/\\| ]+\\)?\
+\\(?2: ([^)]+) \\)?\\(?1:[0-9a-z]+\\) \
+\\(?4:[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\) \
+\\(?3:.*?\\):"
+          ((1 'log-view-message)
+           (2 'change-log-list nil lax)
+           (3 'change-log-name)
+           (4 'change-log-date))))
+
+  (defun vc-git-checkout-remote ()
+    "Checkout Git remote and set local branch to track it."
+    )
+
+  (defun vc-git-kill-commit-hash (log)
+    "Kill commit hash at point to kill-ring for later use."
+    (interactive)
+    (let ((hash 1))
+      ))
+
+  ;; see:  https://ane.iki.fi/emacs/patches.html
+  (defun vc-git-send-patch ()
+    "Prepare git commits to be sent via email using Git CLI tools.
+
+Perhaps useful to set global option: `git config --global sendemail.annotate yes'."
+    (interactive)
+    (with-editor-async-shell-command "git send-email -1"))
+
+  (defun vc-git-apply-patch (patch project)
+    "path to patch and project (default current if in one)"
+    (interactive)
+    (shell-command-on-region (point-min) (point-max) "git am")))
 
 (use-package vc-got
   :if (file-directory-p "~/git/vc-got")
@@ -1324,6 +1295,10 @@
   (add-to-list 'vc-handled-backends 'Got)
   (add-to-list 'vc-directory-exclusion-list ".got"))
 
+(use-package bug-reference
+  :hook ((prog-mode . bug-reference-prog-mode)
+         (text-mode . bug-reference-mode)))
+
 (use-package compile
   :config
   (setq compilation-save-buffers-predicate nil)
@@ -1332,12 +1307,15 @@
   (setq compilation-always-kill t)
   (setq compilation-window-height 12))
 
-;;(require 'ansi-color)
-(defun colorize-compilation-buffer ()
-  (let ((inhibit-read-only t))
-    (ansi-color-apply-on-region (point-min) (point-max))))
-
-(add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
+(use-package ansi-color
+  :after (compile)
+  :hook (compilation-filter-hook . colorize-compilation-buffer)
+  :preface
+  (autoload 'ansi-color-apply-on-region "ansi-color")
+  (defun colorize-compilation-buffer ()
+    (let ((inhibit-read-only t))
+      (ansi-color-apply-on-region (point-min) ;; TODO: or compilation-filter-start?
+                                  (point-max)))))
 
 ;; or use smerge-ediff to resolve conflicts
 (use-package smerge-mode
@@ -1346,7 +1324,12 @@
 
 (use-package diff-mode
   :config
-  (setq diff-font-lock-prettify nil))
+  (setq diff-advance-after-apply-hunk t)
+  (setq diff-default-read-only t)
+  (setq diff-font-lock-prettify nil)
+  (setq diff-font-lock-syntax 'hunk-also)
+  (setq diff-refine 'font-lock)
+  (setq diff-update-on-the-fly t))
 
 (use-package diff
   :config (setq diff-switches '("-u")))
@@ -1356,6 +1339,8 @@
   (setq ediff-window-setup-function 'ediff-setup-windows-plain)
   (setq ediff-split-window-function 'split-window-horizontally)
   (setq ediff-diff-options "-w")
+  (setq ediff-keep-variants nil)
+  (setq ediff-make-buffers-readonly-at-startup nil)
   :hook (ediff-after-quit-hook-internal-hook . winner-undo))
 
 (use-package subword
@@ -1394,7 +1379,10 @@
                ("C-c h" . eglot-help-at-point))))
 
 (use-package flymake
-  :ensure t)
+  :ensure t
+  :bind ((:map flymake-mode-map
+               ("M-n" . flymake-goto-next-error)
+               ("M-p" . flymake-goto-prev-error))))
 
 (use-package flymake-eslint
   :ensure t
@@ -1422,10 +1410,6 @@
   :hook (go-mode-hook . go-eldoc-setup))
 
 ;;; Ruby
-
-(use-package rvm
-  :ensure t
-  :config (rvm-use-default))
 
 (use-package ruby-mode
   :mode (("\\.\\(?:gemspec\\|irbrc\\|gemrc\\|rake\\|rb\\|ru\\|thor\\)\\'" . ruby-mode)
@@ -1479,6 +1463,38 @@
   (setq quack-smart-open-paren-p t)
   (setq quack-switch-to-scheme-method 'other-window))
 
+(use-package gerbil-mode
+  :when (getenv "GERBIL_HOME")
+  :ensure nil
+  :defer t
+  :mode (("\\.ss\\'"  . gerbil-mode)
+         ("\\.pkg\\'" . gerbil-mode))
+  :bind (:map comint-mode-map
+              (("C-S-n" . comint-next-input)
+               ("C-S-p" . comint-previous-input)
+               ("C-S-l" . clear-comint-buffer))
+              :map gerbil-mode-map
+              (("C-S-l" . clear-comint-buffer)))
+  :init
+  (setf gambit (getenv "GAMBIT_HOME"))
+  (setf gerbil (getenv "GERBIL_HOME"))
+  (autoload 'gerbil-mode
+    (concat gerbil "/etc/gerbil-mode.el") "Gerbil editing mode." t)
+  :hook
+  ((inferior-scheme-mode-hook . gambit-inferior-mode))
+  :config
+  (require 'gambit (concat gambit "/misc/gambit.el"))
+  (setf scheme-program-name (concat gerbil "/bin/gxi"))
+  (let ((tags (locate-dominating-file default-directory "TAGS")))
+    (when tags (visit-tags-table tags)))
+  (visit-tags-table (concat gerbil "/src/TAGS"))
+
+  (defun clear-comint-buffer ()
+    (interactive)
+    (with-current-buffer "*scheme*"
+      (let ((comint-buffer-maximum-size 0))
+        (comint-truncate-buffer)))))
+
 (use-package clojure-mode
   :ensure t
   :mode "\\.clj$")
@@ -1499,6 +1515,7 @@
     (setq geiser-guile-binary "guile2")))
 
 ;;;; PHP programming
+
 (use-package php-mode
   :ensure t
   :mode "\\.php[345]?\\'\\|\\.phtml\\'"
@@ -1513,6 +1530,7 @@
   :hook (php-mode-hook . my/php-mode-hook))
 
 ;;;; C programming
+
 (use-package cc-mode
   :bind (:map c-mode-map
               ("C-h M" . man-follow)
@@ -1570,6 +1588,7 @@
   :hook (elpy-mode-hook . py-autopep8-enable-on-save))
 
 ;; integrate with jupyter
+
 (use-package ein
   :disabled
   :ensure t
@@ -1596,34 +1615,19 @@
     (when (and (member (file-name-extension buffer-file-name) '("tsx" "jsx"))
                (require 'eglot nil 'noerror))
       (eglot-ensure)))
-  (when (require 'flycheck nil 'noerror)
-    (flycheck-add-mode 'typescript-tslint 'web-mode)
-    (flycheck-add-mode 'javascript-eslint 'web-mode)
-    (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append))
   :hook ((web-mode-hook . my/web-mode-hook)
          (web-mode-hook . flymake-eslint-enable)))
 
-(use-package flycheck
-  :disabled
+(use-package typescript-mode
   :ensure t
-  :diminish flycheck-mode
-  :hook (after-init-hook . global-flycheck-mode)
+  :after flymake-eslint
+  :hook ((typescript-mode-hook . eglot-ensure)
+         (typescript-mode-hook . flymake-eslint-enable))
   :config
-  (setq flycheck-phpcs-standard "Zend")
-  (flycheck-add-mode 'javascript-eslint 'typescript-mode)
-  (flycheck-add-mode 'typescript-tslint 'web-mode))
+  (setq whitespace-line-column 120))
 
-(use-package restclient
+(use-package keepass-mode
   :ensure t)
-
-;; k8s: k8s-mode, kubel, kubernetes-tramp
-;; mail compare: gnus, rmail, notmuch, mu4e mu4e-alert, offlineimap
-;; nav?
-;; org-roam
-;; keepass-mode, pass, teams-id
-;; rcirc vs. erc?
-;; sly-*
-;; kill-ring browsing?
 
 ;;; ------------------------------
 ;;; Finalizers
@@ -1638,8 +1642,8 @@
                               (time-subtract after-init-time before-init-time)))
                      gcs-done)))
 
-;; Make gc pauses faster by decreasing the threshold.
-(setq gc-cons-threshold (* 2 1000 1000))
+;; Restore old gc threshold value
+(setq gc-cons-threshold 800000)
 
 ;; Load optional local startup files
 (load (locate-user-emacs-file "init-local.el") t t)
