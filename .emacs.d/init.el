@@ -3,13 +3,13 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2022-02-08 22:45:20 (tmy)>
+;;; Time-stamp: <2022-03-07 07:23:03 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Commentary:
 ;;; - fix warnings on this file
-
+;;;
 ;;; Code:
 
 ;; Make startup faster by reducing the frequency of gc
@@ -39,6 +39,16 @@
 ;;; ------------------------------
 ;;; General
 ;;; ------------------------------
+
+(defun prepend-to-exec-path (path)
+  "Add given PATH to beginning of exec-path if it exists."
+  (let ((full-path (expand-file-name path)))
+    (when (file-exists-p full-path)
+      (add-to-list 'exec-path full-path))))
+
+(prepend-to-exec-path "~/bin")
+(prepend-to-exec-path "~/.local/bin")
+(prepend-to-exec-path "~/workspace/bin")
 
 (use-package delsel
   :hook (after-init-hook . delete-selection-mode))
@@ -90,8 +100,6 @@
              flyspell-buffer
              flyspell-mode
              flyspell-region)
-
-  ;;:hook text-mode-hook
   :config
   (setq flyspell-issue-message-flag nil)
   (setq flyspell-issue-welcome-flag nil)
@@ -168,15 +176,6 @@
   (setq electric-pair-skip-whitespace 'chomp)
   :hook ((after-init-hook . electric-indent-mode)))
 
-(defun th/pdf-view-revert-buffer-maybe (file)
-  (let ((buf (find-buffer-visiting file)))
-    (when buf
-  (with-current-buffer buf
-    (when (derived-mode-p 'pdf-view-mode)
-      (pdf-view-revert-buffer nil t))))))
-(add-hook 'TeX-after-TeX-LaTeX-command-finished-hook
-    #'th/pdf-view-revert-buffer-maybe)
-
 ;; | Key chord      | Description     |
 ;; |----------------+-----------------|
 ;; | C-c [          | add cite        |
@@ -200,6 +199,7 @@
           (output-html "xdg-open")))
   (setq TeX-view-program-list '(("pdf-tools" "TeX-pdf-tools-sync-view")))
   :config
+  (add-hook 'TeX-after-compilation-finished-functions 'TeX-revert-document-buffer)
   (setq TeX-auto-save t)
   (setq TeX-parse-self t)
   (setq TeX-insert-braces nil)
@@ -224,13 +224,13 @@
 
 (use-package nov
   :ensure t
-  :mode "\\.epub\\'"
-  :config
+  :mode ("\\.epub\\'" . nov-mode)
+  :init
   (defun my-nov-setup-hook ()
     (face-remap-add-relative 'variable-pitch :family "ETBembo Roman"
                              :height 1.0)
     (set (make-local-variable 'show-trailing-whitespace) nil))
-  (add-hook 'nov-mode-hook 'my-nov-setup-hook))
+  :hook (nov-mode-hook . my-nov-setup-hook))
 
 (use-package x509-mode
   :ensure t)
@@ -325,7 +325,8 @@
 ;; | C-M-d/u   | Move into/out of lists       |
 (use-package emacs
   :hook ((after-init-hook . auto-compression-mode)
-         (focus-out-hook . garbage-collect))
+         ;;(focus-out-hook . garbage-collect)
+         )
   :bind (("M-u" . upcase-dwim)
          ("M-l" . downcase-dwim)
          ("M-c" . capitalize-dwim)
@@ -346,6 +347,11 @@
     (call-interactively (if (region-active-p)
                             'kill-region
                           'backward-kill-word)))
+
+  (defun emacs-reload-configuration ()
+    "Reload emacs configuration."
+    (interactive)
+    (load-file (locate-user-emacs-file "init.el")))
 
   ;; FIXME: remote tramp uses multihop
   ;;/ssh:homer@powerplant|sudo:powerplant:/root/stuff.txt
@@ -456,10 +462,6 @@
   :ensure t
   :after use-package)
 
-;; (use-package dracula-theme
-;;   :ensure t
-;;   :config (load-theme 'dracula t nil))
-
  (use-package emacs
    :init
    (load-theme 'modus-vivendi t nil))
@@ -539,10 +541,14 @@
   (setq bookmark-default-file (locate-user-emacs-file "bookmarks"))
   (setq bookmark-save-flag 1))
 
+(use-package desktop
+  :config
+  (desktop-save-mode 1))
+
 (use-package savehist
   :config
   (setq savehist-file (locate-user-emacs-file "savehist"))
-  (setq history-length 10000)
+  (setq history-length 50)
   (setq history-delete-duplicates t)
   (setq savehist-save-minibuffer-history t)
   (setq savehist-additional-variables '(search ring regexp-search-ring))
@@ -572,17 +578,13 @@
 ;;; Shell settings
 ;;; ------------------------------
 
-(use-package exec-path-from-shell
-  :ensure t
-  :if (memq window-system '(mac ns x))
+(use-package man
   :config
-  (exec-path-from-shell-initialize)
-  (when (eq system-type 'berkeley-unix)
-    (setq exec-path-from-shell-arguments '("-l")))
-  (setq exec-path-from-shell-variables
-        '("PATH" "MANPATH"
-          "JAVA_HOME" "GOPATH"
-          "GERBIL_HOME" "CVSROOT")))
+  (let ((home-man (expand-file-name "~/share/man"))
+        (man-path (split-string (getenv "MANPATH") ":")))
+    (when (file-exists-p home-man)
+      (add-to-list 'man-path home-man)
+      (setenv "MANPATH" (string-join man-path ":")))))
 
 (use-package sh-script
   :config (defun my/sh-mode-hook ()
@@ -608,6 +610,23 @@
                                           'comint-kill-whole-line))))
 
 (use-package eshell
+  :init
+  (defun eshell-here ()
+    "Opens up a new shell in the directory associated with the
+    current buffer's file. The eshell is renamed to match that
+    directory to make multiple eshell windows easier."
+    (interactive)
+    (let* ((parent (if (buffer-file-name)
+                       (file-name-directory (buffer-file-name))
+                     default-directory))
+           (height (/ (window-total-height) 3))
+           (name   (car (last (split-string parent "/" t)))))
+      (split-window-vertically (- height))
+      (other-window 1)
+      (eshell "new")
+      (rename-buffer (concat "*eshell: " name "*"))
+      (insert (concat "ls"))
+      (eshell-send-input)))
   :config
   (setq eshell-cmpl-dir-ignore "\\`\\(\\.\\.?\\|CVS\\|\\.svn\\|\\.git\\)/\\'")
   (setq eshell-save-history-on-exit t)
@@ -626,7 +645,8 @@
   (setq eshell-save-history-on-exit t)
   (setq eshell-scroll-show-maximum-output nil)
   (setq eshell-visual-subcommands '(("git" "log" "diff" "show")))
-  (setq eshell-visual-options '(("git" "--help" "--paginate"))))
+  (setq eshell-visual-options '(("git" "--help" "--paginate")))
+  :bind ("C-!" . eshell-here))
 
 ;;; ------------------------------
 ;;; Org-mode
@@ -640,6 +660,7 @@
   (setq org-directory "/ssh:tmy@mars.bittivirhe.fi:Org")
   (setq org-default-notes-file (concat org-directory "/notes.org"))
   (setq org-agenda-files (list org-directory))
+  (setq org-agenda-file-regexp "\\(school\\|todo\\|work\\)\\.org")
   (setq org-outline-path-complete-in-steps nil)
   (setq org-insert-mode-line-in-empty-file t)
   (setq org-enforce-todo-checkbox-dependencies t)
@@ -784,6 +805,18 @@
                  ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
                t))
 
+(use-package ox-publish
+  :config
+  (setq org-publish-project-alist
+        '(("blog"
+           :base-directory "/ssh:tmy@mars.bittivirhe.fi:Org/blog/posts/"
+           :base-extension "org"
+           :publishing-directory "/ssh:tmy@mars.bittivirhe.fi:public/"
+           :recursive t
+           :publishing-function org-html-publish-to-html
+           :auto-sitemap t)
+          ("all" :components ("blog")))))
+
 ;;; ------------------------------
 ;;; Buffer management
 ;;; ------------------------------
@@ -796,7 +829,7 @@
   (setq uniquify-ignore-buffers-re "^\\*"))
 
 (use-package ibuffer
-  :init (defalias 'list-buffers 'ibuffer)
+  :bind ("C-x C-b" . ibuffer)
   :config
   (setq ibuffer-default-sorting-mode 'major-mode)
   (setq ibuffer-expert t)
@@ -899,7 +932,6 @@
   (setq message-confirm-send nil)
   (setq message-kill-buffer-on-exit t)
   (setq message-wide-reply-confirm-recipients t)
-  (setq message-default-charset 'utf-8)
   (add-to-list 'mm-body-charset-encoding-alist '(utf-8 . base64))
   :hook ((message-setup-hook . message-sort-headers)))
 
@@ -1048,12 +1080,6 @@
   :bind (:map restclient-mode-map
               ("C-c C-f" . json-mode-beautify)))
 
-;; (use-package company-restclient
-;;   :ensure t
-;;   :after (restclient)
-;;   :config
-;;   (add-to-list 'company-backends 'company-restclient))
-
 ;;; ------------------------------
 ;;; Completion
 ;;; ------------------------------
@@ -1090,7 +1116,6 @@
   (setq mct-completions-format 'one-column)
   (mct-minibuffer-mode 1)
   (mct-region-mode 1))
-;; mct-backward-updir.
 
 (use-package minibuffer
   :after (orderless)
@@ -1163,6 +1188,7 @@
   (setq dired-ls-F-marks-symlinks t)
   ;; Don't pass --dired flag to ls on BSD
   (when (eq system-type 'berkeley-unix)
+    ;; (setq find-ls-option-default-ls '("-gils")) ;; OpenBSD does not have -b option
     (setq dired-use-ls-dired nil))
 
   (setq dired-omit-files "^#\\|\\.$\\|~$\\|^RCS$\\|,v$")
@@ -1244,6 +1270,10 @@
   (global-eldoc-mode 1))
 
 (use-package vc
+  :init
+  (when (eq system-type 'berkeley-unix)
+    (setenv "CVSROOT" "anoncvs.eu.openbsd.org:/cvs")
+    (setenv "CVS_RSH" "ssh"))
   :config
   (setq vc-suppress-confirm t)
   (setq vc-command-messages t)
@@ -1296,8 +1326,8 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
   (add-to-list 'vc-directory-exclusion-list ".got"))
 
 (use-package bug-reference
-  :hook ((prog-mode . bug-reference-prog-mode)
-         (text-mode . bug-reference-mode)))
+  :hook ((prog-mode-hook . bug-reference-prog-mode)
+         (text-mode-hook . bug-reference-mode)))
 
 (use-package compile
   :config
@@ -1397,6 +1427,7 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
 (use-package go-mode
   :ensure t
   :after eglot
+  :init (setenv "GOPATH" "~/workspace")
   :hook ((before-save-hook . gofmt-before-save)
          (go-mode-hook . eglot-ensure))
   :bind (:map go-mode-map
@@ -1425,7 +1456,6 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
 
 (use-package sly
   :ensure t
-  ;;:hook (sly-mode-hook . lisp-mode)
   :config
   (let ((sbcl-bin-path (expand-file-name "lib/sbcl" "~")))
     (when (file-exists-p sbcl-bin-path)
@@ -1476,15 +1506,17 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
               :map gerbil-mode-map
               (("C-S-l" . clear-comint-buffer)))
   :init
-  (setf gambit (getenv "GAMBIT_HOME"))
-  (setf gerbil (getenv "GERBIL_HOME"))
+  (defvar gerbil-home (getenv "GERBIL_HOME"))
   (autoload 'gerbil-mode
-    (concat gerbil "/etc/gerbil-mode.el") "Gerbil editing mode." t)
+    (concat gerbil-home "/etc/gerbil-mode.el") "Gerbil editing mode." t)
   :hook
-  ((inferior-scheme-mode-hook . gambit-inferior-mode))
+  ((gerbil-mode-hook . linum-mode)
+   (inferior-scheme-mode-hook . gambit-inferior-mode))
   :config
-  (require 'gambit (concat gambit "/misc/gambit.el"))
-  (setf scheme-program-name (concat gerbil "/bin/gxi"))
+  (require 'gambit
+           (concat (getenv "GAMBIT_HOME") "/misc/gambit.el"))
+  (setf scheme-program-name (concat gerbil-home "/bin/gxi"))
+
   (let ((tags (locate-dominating-file default-directory "TAGS")))
     (when tags (visit-tags-table tags)))
   (visit-tags-table (concat gerbil "/src/TAGS"))
@@ -1559,7 +1591,7 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
   :config
   (defun my/cperl-mode-hook ()
     "Default CPerl settings."
-    (setq cperl-fontlock t)
+    (setq cperl-font-lock t)
     (setq cperl-info-on-command-no-prompt t)
     (setq cperl-clobber-lisp-bindings t)
     (setq cperl-lazy-help-time 5)
@@ -1653,6 +1685,20 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
   (when (and (fboundp 'server-running-p)
              (server-running-p))
     (server-start)))
+
+(defun local/export-config ()
+  "Export this configuration as HTML to personal WWW directory."
+  (interactive)
+  (require 'htmlfontify)
+  (let ((hfy-default-face-def '((t :family "monospace")))
+        (hfy-display-class '((background . light)
+                             (class . color)))
+        (hfy-optimizations nil))
+    (with-current-buffer (find-file-noselect (locate-user-emacs-file "init.el"))
+      (with-current-buffer (htmlfontify-buffer user-emacs-directory "init.el")
+        (write-region (point-min) (point-max)
+                      "~/tmp/init.el.html")
+        (kill-buffer (current-buffer))))))
 
 (provide 'init)
 
