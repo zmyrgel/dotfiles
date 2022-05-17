@@ -3,7 +3,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2022-03-07 07:23:03 (tmy)>
+;;; Time-stamp: <2022-05-17 22:00:08 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -131,8 +131,7 @@
            (syntax . my-finnish-syntax-table)
            (action-program . "/usr/bin/enchant")
            (action-args "-a" "-d" "fi")
-           (action-parser . wcheck-parser-ispell-suggestions))
-          )))
+           (action-parser . wcheck-parser-ispell-suggestions)))))
 
 (add-hook 'before-save-hook 'time-stamp)
 (add-hook 'comint-output-filter-functions 'comint-watch-for-password-prompt)
@@ -199,14 +198,14 @@
           (output-html "xdg-open")))
   (setq TeX-view-program-list '(("pdf-tools" "TeX-pdf-tools-sync-view")))
   :config
-  (add-hook 'TeX-after-compilation-finished-functions 'TeX-revert-document-buffer)
   (setq TeX-auto-save t)
   (setq TeX-parse-self t)
   (setq TeX-insert-braces nil)
   (setq TeX-electric-escape t)
   (setq TeX-electric-macro t)
   (setq TeX-auto-untabify t)
-  (setq TeX-newline-function 'reindent-then-newline-and-indent))
+  (setq TeX-newline-function 'reindent-then-newline-and-indent)
+  (add-hook 'TeX-after-compilation-finished-functions 'TeX-revert-document-buffer))
 
 ;; doc-view / doc-view-presentation
 (use-package pdf-tools
@@ -225,7 +224,7 @@
 (use-package nov
   :ensure t
   :mode ("\\.epub\\'" . nov-mode)
-  :init
+  :config
   (defun my-nov-setup-hook ()
     (face-remap-add-relative 'variable-pitch :family "ETBembo Roman"
                              :height 1.0)
@@ -324,9 +323,7 @@
 ;; | C-M-f/b   | Move by sexp                 |
 ;; | C-M-d/u   | Move into/out of lists       |
 (use-package emacs
-  :hook ((after-init-hook . auto-compression-mode)
-         ;;(focus-out-hook . garbage-collect)
-         )
+  :hook ((after-init-hook . auto-compression-mode))
   :bind (("M-u" . upcase-dwim)
          ("M-l" . downcase-dwim)
          ("M-c" . capitalize-dwim)
@@ -417,8 +414,8 @@
   (add-hook 'help-mode-hook (lambda () (setq truncate-lines t)))
 
   ;; ;; Set Default font if present
-  (when (find-font (font-spec :name "Input Mono Narrow"))
-    (set-face-attribute 'default nil :family "Input Mono Narrow" :height 100)
+  (when (find-font (font-spec :name "Input Mono"))
+    (set-face-attribute 'default nil :family "Input Mono" :height 110)
     (set-face-attribute 'variable-pitch nil :family "Input Serif")
     (set-face-attribute 'fixed-pitch nil :family "Input Mono Narrow")
     (set-face-attribute 'tooltip nil :family "Input Mono Narrow"))
@@ -462,9 +459,37 @@
   :ensure t
   :after use-package)
 
- (use-package emacs
-   :init
-   (load-theme 'modus-vivendi t nil))
+;; theme settings
+(use-package emacs
+  :config
+  (setq modus-themes-italic-constructs t)
+  (setq modus-themes-bold-constructs t)
+  (setq modus-themes-variable-pitch-ui t)
+  (setq modus-themes-mixed-fonts t)
+  (setq moduls-themes-headings
+        '((1 . (background overline variable-pitch 1.5))
+          (2 . (overline rainbow 1.3))
+          (3 . (overline 1.1))
+          (t . (monochrome))))
+  (setq moduls-themes-headings nil)
+  (setq modus-themes-fringes 'intense)
+  (setq modus-themes-org-blocks nil)
+  (setq modus-themes-mode-line '(borderless accented))
+  (setq modus-themes-diffs nil)
+  (setq modus-themes-completions '((matches . (extrabold background))
+                                   (selection . (semibold accented))
+                                   (popup . (accented))))
+  (setq modus-themes-completions nil)
+  (setq modus-themes-prompts nil)
+  (setq modus-themes-hl-line '(accented intense))
+  (setq modus-themes-subtle-line-numbers nil)
+  (setq modus-themes-markup nil)
+  (setq modus-themes-paren-match '(bold))
+  (setq modus-themes-syntax '(yellow-comments green-strings))
+  (setq modus-themes-links '(bold italic))
+  (setq modus-themes-region '(accented))
+  (setq modus-themes-mail-citations '(intense))
+  (load-theme 'modus-vivendi t))
 
 ;;; ------------------------------
 ;;; Calendar and diary settings
@@ -541,10 +566,6 @@
   (setq bookmark-default-file (locate-user-emacs-file "bookmarks"))
   (setq bookmark-save-flag 1))
 
-(use-package desktop
-  :config
-  (desktop-save-mode 1))
-
 (use-package savehist
   :config
   (setq savehist-file (locate-user-emacs-file "savehist"))
@@ -580,11 +601,8 @@
 
 (use-package man
   :config
-  (let ((home-man (expand-file-name "~/share/man"))
-        (man-path (split-string (getenv "MANPATH") ":")))
-    (when (file-exists-p home-man)
-      (add-to-list 'man-path home-man)
-      (setenv "MANPATH" (string-join man-path ":")))))
+  (when (file-exists-p "~/share/man")
+    (setenv "MANPATH" "~/share/man:/usr/share/man:/usr/local/share/man")))
 
 (use-package sh-script
   :config (defun my/sh-mode-hook ()
@@ -627,6 +645,7 @@
       (rename-buffer (concat "*eshell: " name "*"))
       (insert (concat "ls"))
       (eshell-send-input)))
+  :bind ("C-!" . eshell-here)
   :config
   (setq eshell-cmpl-dir-ignore "\\`\\(\\.\\.?\\|CVS\\|\\.svn\\|\\.git\\)/\\'")
   (setq eshell-save-history-on-exit t)
@@ -645,8 +664,11 @@
   (setq eshell-save-history-on-exit t)
   (setq eshell-scroll-show-maximum-output nil)
   (setq eshell-visual-subcommands '(("git" "log" "diff" "show")))
-  (setq eshell-visual-options '(("git" "--help" "--paginate")))
-  :bind ("C-!" . eshell-here))
+  (setq eshell-visual-options '(("git" "--help" "--paginate"))))
+
+
+
+(global-set-key (kbd "C-!") 'eshell-here)
 
 ;;; ------------------------------
 ;;; Org-mode
@@ -706,12 +728,12 @@
          (message-mode-hook . turn-on-orgtbl)))
 
 (use-package ol
-:config
-(setq org-link-keep-stored-after-insertion t)
-:bind (("C-c l" . org-store-link)
-       :map org-mode-map
-       ("C-c L" . org-toggle-link-display)
-       ("C-c C-y" . org-insert-last-stored-link)))
+  :config
+  (setq org-link-keep-stored-after-insertion t)
+  :bind (("C-c l" . org-store-link)
+         :map org-mode-map
+         ("C-c L" . org-toggle-link-display)
+         ("C-c C-y" . org-insert-last-stored-link)))
 
 (use-package org-capture
   :after org
@@ -874,7 +896,6 @@
          (erc-insert-post-hook . erc-save-buffer-in-logs)
          (erc-insert-post-hook . erc-truncate-buffer))
   :config
-
   (setq erc-modules (append erc-modules '(services notify spelling log)))
   (erc-update-modules)
 
@@ -1107,15 +1128,13 @@
                  nil
                  (window-parameters (mode-line-format . none)))))
 
-(use-package mct
+(use-package corfu
   :ensure t
-  :config
-  (setq mct-hide-completion-mode-line t)
-  (setq mct-remove-shadowed-file-name t)
-  (setq mct-show-completion-line-numbers nil)
-  (setq mct-completions-format 'one-column)
-  (mct-minibuffer-mode 1)
-  (mct-region-mode 1))
+  :config (global-corfu-mode))
+
+(use-package vertico
+  :ensure t
+  :config (vertico-mode))
 
 (use-package minibuffer
   :after (orderless)
@@ -1158,16 +1177,9 @@
   (setq imenu-space-replacement ".")
   (setq imenu-level-separator ":"))
 
-(use-package dabbrev
+(use-package hippie-exp
   :config
-  (setq dabbrev-abbrev-skip-leading-regexp "[$*/=']")
-  (setq dabbrev-backward-only nil)
-  (setq dabbrev-case-distinction 'case-replace)
-  (setq dabbrev-case-fold-search 'case-fold-search)
-  (setq dabbrev-case-replace 'case-replace)
-  (setq dabbrev-check-other-buffers t)
-  (setq dabbrev-eliminate-newlines nil)
-  (setq dabbrev-upcase-means-case-search t))
+  (global-set-key [remap dabbrev-expand] 'hippie-expand))
 
 ;;; ------------------------------
 ;;; File and directory management
@@ -1179,7 +1191,6 @@
   :hook ((dired-mode-hook . hl-line-mode)
          (dired-mode-hook . dired-hide-details-mode))
   :config
-  (require 'dired-x)
   (setq dired-dwim-target t)
   (setq dired-recursive-copies 'always)
   (setq dired-recursive-deletes 'always)
@@ -1188,9 +1199,7 @@
   (setq dired-ls-F-marks-symlinks t)
   ;; Don't pass --dired flag to ls on BSD
   (when (eq system-type 'berkeley-unix)
-    ;; (setq find-ls-option-default-ls '("-gils")) ;; OpenBSD does not have -b option
     (setq dired-use-ls-dired nil))
-
   (setq dired-omit-files "^#\\|\\.$\\|~$\\|^RCS$\\|,v$")
   (setq dired-guess-shell-alist-user
         '(("\\.avi$\\|\\.mkv$\\|\\.mov$\\|\\.mpeg$\\|\\.mp4$" "cvlc"
@@ -1258,12 +1267,6 @@
 ;;; Programming settings
 ;;; ------------------------------
 
-(use-package yasnippet
-  :ensure t
-  :if (not noninteractive)
-  :diminish yas-minor-mode
-  :commands (yas-global-mode yas-minor-mode))
-
 (use-package eldoc
   :diminish
   :config
@@ -1272,8 +1275,7 @@
 (use-package vc
   :init
   (when (eq system-type 'berkeley-unix)
-    (setenv "CVSROOT" "anoncvs.eu.openbsd.org:/cvs")
-    (setenv "CVS_RSH" "ssh"))
+    (setenv "CVSROOT" "anoncvs.eu.openbsd.org:/cvs"))
   :config
   (setq vc-suppress-confirm t)
   (setq vc-command-messages t)
@@ -1457,9 +1459,9 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
 (use-package sly
   :ensure t
   :config
-  (let ((sbcl-bin-path (expand-file-name "lib/sbcl" "~")))
-    (when (file-exists-p sbcl-bin-path)
-      (setenv "SBCL_HOME" sbcl-bin-path)))
+  ;; (let ((sbcl-bin-path (expand-file-name "lib/sbcl" "~")))
+  ;;   (when (file-exists-p sbcl-bin-path)
+  ;;     (setenv "SBCL_HOME" sbcl-bin-path)))
   (setq sly-lisp-implementations '((sbcl ("sbcl" "--dynamic-space-size" "2048"))
                                    (ecl ("ecl"))
                                    (clisp ("clisp" "-ansi"))
@@ -1494,7 +1496,6 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
   (setq quack-switch-to-scheme-method 'other-window))
 
 (use-package gerbil-mode
-  :when (getenv "GERBIL_HOME")
   :ensure nil
   :defer t
   :mode (("\\.ss\\'"  . gerbil-mode)
@@ -1506,6 +1507,11 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
               :map gerbil-mode-map
               (("C-S-l" . clear-comint-buffer)))
   :init
+  (when (and (not (getenv "GERBIL_HOME"))
+         (file-exists-p "/usr/local/gerbil"))
+    (setenv "GERBIL_HOME" "/usr/local/gerbil")
+    (prepend-to-exec-path "/usr/local/gerbil/bin"))
+
   (defvar gerbil-home (getenv "GERBIL_HOME"))
   (autoload 'gerbil-mode
     (concat gerbil-home "/etc/gerbil-mode.el") "Gerbil editing mode." t)
