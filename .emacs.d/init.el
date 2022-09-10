@@ -3,7 +3,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2022-09-10 09:34:04 (tmy)>
+;;; Time-stamp: <2022-09-10 13:19:15 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -33,13 +33,12 @@
 
 ;; avoid re-initializing packages
 (unless package--initialized (package-initialize))
+(package-refresh-contents 'async)
 
-;; load of use-package to handle rest of package initialization.
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-
-(setq use-package-hook-name-suffix nil)
+(defun zmg/package-install (package-name)
+  "Install given package with NAME unless it is already installed."
+  (unless (package-installed-p package-name)
+    (package-install package-name)))
 
 (add-hook 'package-menu-mode-hook 'hl-line-mode)
 
