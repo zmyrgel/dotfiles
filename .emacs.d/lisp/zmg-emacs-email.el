@@ -24,7 +24,7 @@
 (setq message-confirm-send nil)
 (setq message-kill-buffer-on-exit t)
 (setq message-wide-reply-confirm-recipients t)
-(add-to-list 'mm-body-charset-encoding-alist '(utf-8 . base64))
+;;(add-to-list 'mm-body-charset-encoding-alist '(utf-8 . base64)) ;; FIXME: undefined
 (add-hook 'message-setup-hook 'message-sort-headers)
 
 ;; gnus
@@ -46,7 +46,7 @@
                 (nnimap-address "imap.fastmail.com")
                 (nnir-search-engine imap)
                 (nnimap-stream tls))))
-(define-key global-map "C-z m" 'gnus)
+(global-set-key (kbd "C-z m") 'gnus)
 
 (setq gnus-article-mode-line-format "%G %S %m")
 (setq gnus-visible-headers
@@ -67,6 +67,7 @@
 
 ;; gnus-dired
 ;;  :after (gnus dired)
-(add-hook 'dired-mode-hook 'gnus-dired-mode)
+;; FIXME: gnus-dired-mode undefined
+;;(add-hook 'dired-mode-hook 'gnus-dired-mode)
 
 (provide 'zmg-emacs-email)

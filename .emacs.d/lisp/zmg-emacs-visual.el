@@ -23,8 +23,8 @@
 ;; | C-x 4 p   | Run project cmd in window    |
 
 ;;  :commands winner-undo
-(define-key global-map "C-c w" 'winner-undo)
-(define-key global-map "C-c W" 'winner-redo)
+(global-set-key (kbd "C-c w") 'winner-undo)
+(global-set-key (kbd "C-c W") 'winner-redo)
 (winner-mode)
 
 ;; default emacs configurations
@@ -35,20 +35,19 @@
 ;; | C-M-f/b   | Move by sexp                 |
 ;; | C-M-d/u   | Move into/out of lists       |
 (add-hook 'after-init-hook 'auto-compression-mode)
-(let ((m global-map))
-  (define-key m "M-u" 'upcase-dwim)
-  (define-key m "M-l" 'downcase-dwim)
-  (define-key m "M-c" 'capitalize-dwim)
-  (define-key m "C-h h" nil)
-  (define-key m "M-SPC" 'cycle-spacing)
-  (define-key m "C-w" 'my/backward-kill-word-or-region)
-  (define-key m "C-c C-j" 'join-line)
-  (define-key m "M-z" 'zap-up-to-char)
-  (define-key m "C-x k" 'kill-this-buffer)
-  (define-key m "C-x C-z" nil)
-  (define-key m "C-z" nil)
-  (define-key m "C-z s" 'eshell)
-  (define-key m "C-z r" rgrep))
+(global-set-key (kbd "M-u") 'upcase-dwim)
+(global-set-key (kbd "M-l") 'downcase-dwim)
+(global-set-key (kbd "M-c") 'capitalize-dwim)
+(global-set-key (kbd "C-h h") nil)
+(global-set-key (kbd "M-SPC") 'cycle-spacing)
+(global-set-key (kbd "C-w") 'my/backward-kill-word-or-region)
+(global-set-key (kbd "C-c C-j") 'join-line)
+(global-set-key (kbd "M-z") 'zap-up-to-char)
+(global-set-key (kbd "C-x k") 'kill-this-buffer)
+(global-set-key (kbd "C-x C-z") nil)
+(global-set-key (kbd "C-z") nil)
+(global-set-key (kbd "C-z s") 'eshell)
+(global-set-key (kbd "C-z r") 'rgrep)
 
 (defun my/backward-kill-word-or-region ()
   "Kill region or word based on selection."

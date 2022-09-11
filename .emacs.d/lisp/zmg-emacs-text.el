@@ -28,7 +28,7 @@
 ;; | C-c [          | add cite        |
 ;; | C-c =          | show toc        |
 (zmg/package-install 'auctex)
-(add-to-alist 'magic-mode-alist '("\\.[tT]e[xX]\\'" . latex-mode))
+(add-to-list 'magic-mode-alist '("\\.[tT]e[xX]\\'" . latex-mode))
 (add-hook 'latex-mode-hook 'auto-fill-mode)
 (add-hook 'latex-mode-hook 'reftex-mode)
 (add-hook 'tex-mode-hook (lambda () (setq ispell-parser 'tex)))
@@ -79,9 +79,10 @@
 (zmg/package-install 'markdown-mode)
 ;; :commands (markdown-mode gfm-mode)
 
-(add-to-list 'auto-mode-alist '(("README\\.md\\'" . gfm-mode)
-                                ("\\.md\\'" . markdown-mode)
-                                ("\\.markdown\\'" . markdown-mode)))
+(add-to-list 'auto-mode-alist '("README\\.md\\'" . gfm-mode))
+(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+
 ;; init
 (setq markdown-command "multimarkdown")
 
@@ -91,13 +92,14 @@
 
 ;; Any file start with xml will be treat as nxml-mode
 (add-to-list 'magic-mode-alist '("<\\?xml" . nxml-mode))
-(add-to-list 'auto-mode-alist '(("\\.plist\\'" . nxml-mode)
-                                ("\\.rss\\'"   . nxml-mode)
-                                ("\\.svg\\'"   . nxml-mode)
-                                ("\\.xml\\'"   . nxml-mode)
-                                ("\\.xsd\\'"   . nxml-mode)
-                                ("\\.xslt\\'"  . nxml-mode)
-                                ("\\.pom$"     . nxml-mode))
+(dolist (p '("\\.plist\\'"
+             "\\.rss\\'"
+             "\\.svg\\'"
+             "\\.xml\\'"
+             "\\.xsd\\'"
+             "\\.xslt\\'"
+             "\\.pom\\'"))
+  (add-to-list 'auto-mode-alist `(,p . nxml-mode)))
 
 (defun bf-pretty-print-xml-region (begin end)
   "Function formats XML elements in region between BEGIN and END."
@@ -117,6 +119,6 @@
            (eq (cdr pair) 'sgml-mode))
        (setcdr pair 'nxml-mode)))
  auto-mode-alist)
-(define-key nxml-mode-map (kbd "C-c C-f") 'bf-pretty-print-xml-region))
+(define-key global-map (kbd "C-c C-f") 'bf-pretty-print-xml-region)
 
 (provide 'zmg-emacs-text)

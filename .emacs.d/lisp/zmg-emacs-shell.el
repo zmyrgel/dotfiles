@@ -44,7 +44,7 @@
   (rename-buffer (concat "*eshell: " name "*"))
   (insert (concat "ls"))
   (eshell-send-input)))
-(define-key global-map "C-!" 'eshell-here)
+(global-set-key (kbd "C-!") 'eshell-here)
 
 (setq eshell-cmpl-dir-ignore "\\`\\(\\.\\.?\\|CVS\\|\\.svn\\|\\.git\\)/\\'")
 (setq eshell-save-history-on-exit t)

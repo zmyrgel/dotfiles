@@ -2,10 +2,9 @@
 ;;; File and directory management
 ;;; ------------------------------
 
-;; dired
-(let ((m global-map))
-  (define-key m "C-x C-j" 'dired-jump)
-  (define-key m "C-x 4 C-j" 'dired-jump-other-window))
+;; dired, not needed anymore?
+;;(define-key ctl-x-map "C-j" 'dired-jump)
+;;(define-key ctl-x-4-map "C-j" 'dired-jump-other-window)
 
 (add-hook 'dired-mode-hook 'hl-line-mode)
 (add-hook 'dired-mode-hook 'dired-hide-details-mode)
@@ -37,19 +36,21 @@
 (zmg/package-install 'bongo)
 ;;  :defer t
 (add-hook 'bongo-player-started-hook 'bongo-no-autoplay-video)
-(let ((g-map global-map)
-      (play-map bongo-playlist-mode-map))
-  (define-key g-map "<C-XF86AudioPlay>" 'bongo-pause/resume)
-  (define-key g-map "<C-XF86AudioNext>" 'bongo-next)
-  (define-key g-map "<C-XF86AudioPrev>" 'bongo-previous)
-  (define-key g-map "<M-XF86AudioPlay>" 'bongo-show)
-  (define-key g-map "C-z B" 'bongo)
-  (define-key play-map "n" 'bongo-next-object)
-  (define-key play-map "p" 'bongo-previous-object)
-  (define-key play-map "R" 'bongo-rename-line)
-  (define-key play-map "j" 'bongo-dired-line)
-  (define-key play-map "J" 'dired-jump)
-  (define-key play-map "I" 'bongo-insert-special))
+(global-set-key (kbd "<C-XF86AudioPlay>") 'bongo-pause/resume)
+(global-set-key (kbd "<C-XF86AudioNext>") 'bongo-next)
+(global-set-key (kbd "<C-XF86AudioPrev>") 'bongo-previous)
+(global-set-key (kbd "<M-XF86AudioPlay>") 'bongo-show)
+(global-set-key (kbd "C-z B") 'bongo)
+
+;; FIXME: bongo-playlist-mode-map is void
+(with-eval-after-load "bongo"
+  (let ((play-map bongo-playlist-mode-map))
+    (define-key play-map "n" 'bongo-next-object)
+    (define-key play-map "p" 'bongo-previous-object)
+    (define-key play-map "R" 'bongo-rename-line)
+    (define-key play-map "j" 'bongo-dired-line)
+    (define-key play-map "J" 'dired-jump)
+    (define-key play-map "I" 'bongo-insert-special)))
 
 (setq bongo-default-directory (expand-file-name "Music" "~"))
 (setq bongo-prefer-library-buffers nil)

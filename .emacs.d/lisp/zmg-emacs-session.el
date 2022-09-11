@@ -7,7 +7,9 @@
 
 (setq recentf-save-file (locate-user-emacs-file "recentf"))
 (setq recentf-max-saved-items 50)
-(add-to-list 'recentf-exclude "\\elpa")
+;; FIXME: this
+(with-eval-after-load "recentf"
+  (add-to-list 'recentf-exclude "\\elpa"))
 (add-hook 'after-init-hook 'recentf-mode)
 
 (setq bookmark-default-file (locate-user-emacs-file "bookmarks"))

@@ -10,10 +10,11 @@
 (setq rcirc-default-user-name "zmyrgel")
 (setq rcirc-default-full-name "Curious Minds Want To Know")
 
-(let ((nickserv-pass (secrets-get-secret "default" "libera-pass")))
-  (when nickserv-pass
-    (setq rcirc-authinfo
-          `(("libera" nickserv "zmyrgel" ,nickserv-pass)))))
+;; FIXME: dbus error
+;; (let ((nickserv-pass (secrets-get-secret "default" "libera-pass")))
+;;   (when nickserv-pass
+;;     (setq rcirc-authinfo
+;;           `(("libera" nickserv "zmyrgel" ,nickserv-pass)))))
 
 (setq rcirc-omit-responses '("JOIN" "PART" "QUIT" "NICK" "AWAY"))
 (setq rcirc-time-format "%Y-%m-%d %H:%M ")
@@ -35,8 +36,9 @@
 (add-hook 'erc-insert-post-hook 'erc-save-buffer-in-logs)
 (add-hook 'erc-insert-post-hook 'erc-truncate-buffer)
 
-(setq erc-modules (append erc-modules '(services notify spelling log)))
-(erc-update-modules)
+;; FIXME: undefined
+;; (setq erc-modules (append erc-modules '(services notify spelling log)))
+;; (erc-update-modules)
 
 (setq erc-prompt-for-password nil)
 (setq erc-kill-buffer-on-part t)
@@ -53,7 +55,8 @@
 (setq erc-timestamp-format "[%R-%m/%d]")
 (setq erc-hide-timestamps nil)
 
-(pcomplete-erc-setup)
+;; FIXME: undefined
+;; (pcomplete-erc-setup)
 
 (setq erc-pcomplete-order-nickname-completions t)
 (setq erc-log-channels-directory (locate-user-emacs-file "erc-logs"))
@@ -125,14 +128,15 @@
 (setq eww-browse-url-new-window-is-tab nil)
 (setq eww-form-checkbox-selected-symbol "[X]")
 (setq eww-form-checkbox-symbol "[ ]")
-(let ((m eww-mode-map))
-  (define-key m "n" 'next-line)
-  (define-key m "p" 'previous-line)
-  (define-key m "f" 'forward-char)
-  (define-key m "b" 'backward-char)
-  (define-key m "B" 'eww-back-url)
-  (define-key m "N" 'eww-next-url)
-  (define-key m "P" 'eww-previous-url))
+;; FIXME: undefined eww-mode-map
+;; (let ((m eww-mode-map))
+;;   (define-key m "n" 'next-line)
+;;   (define-key m "p" 'previous-line)
+;;   (define-key m "f" 'forward-char)
+;;   (define-key m "b" 'backward-char)
+;;   (define-key m "B" 'eww-back-url)
+;;   (define-key m "N" 'eww-next-url)
+;;   (define-key m "P" 'eww-previous-url))
 
 (setq browse-url-new-window-flag nil)
 (setq browse-url-firefox-new-window-is-tab t)
@@ -143,6 +147,8 @@
 
 ;;TODO: change to only apply json formatting when the content-type is
 ;;application/json
-(define-key restclient-mode-map "C-c C-f" 'json-mode-beautify)
+;; FIXME: undefined map
+(with-eval-after-load "restclient"
+  (define-key restclient-mode-map "C-c C-f" 'json-mode-beautify))
 
 (provide 'zmg-emacs-web)

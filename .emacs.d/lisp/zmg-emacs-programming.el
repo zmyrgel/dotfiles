@@ -126,7 +126,7 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
 (add-hook 'prog-mode-hook 'my/prog-mode-hook)
 
 (zmg/package-install 'magit)
-(define-key global-map "C-c g" 'magit-status)
+(global-set-key (kbd "C-c g") 'magit-status)
 (setq magit-repository-directories
       '(("~/git" . 1)
         ("~/quicklisp/local-projects" . 1)))
@@ -137,13 +137,16 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
   (add-hook 'magit-mode-hook 'turn-on-magit-gitflow))
 
 (zmg/package-install 'eglot)
-(define-key eglot-mode-map "C-c h" 'eglot-help-at-point)
+;; FIXME: eglot-mode-map set
+;;(define-key eglot-mode-map "C-c h" 'eglot-help-at-point)
 
 ;; flymake
-(define-key flymake-mode-map "M-n" 'flymake-goto-next-error)
-(define-key flymake-mode-map "M-p" 'flymake-goto-prev-error)
+;; FIXME: void map
+(with-eval-after-load "flymake"
+  (define-key flymake-mode-map "M-n" 'flymake-goto-next-error)
+  (define-key flymake-mode-map "M-p" 'flymake-goto-prev-error)
 
-(zmg/package-install 'flymake-eslint)
+(zmg/package-install 'flymake-eslint))
 (setq flymake-eslint-executable-name "eslint")
 (setq flymake-eslint-executable-args nil)
 (setq flymake-eslint-show-rule-name t)
@@ -155,11 +158,13 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
 (setenv "GOPATH" (expand-file-name "workspace" "~"))
 (add-hook 'before-save-hook 'gofmt-before-save)
 (add-hook 'go-mode-hook 'eglot-ensure)
-(let ((m go-mode-map))
-  (define-key m "M-." 'godef-jump)
-  (define-key m "C-c C-r" 'go-remove-unused-imports)
-  (define-key m "C-c g i" 'go-goto-imports)
-  (define-key m "C-c C-k" 'godoc))
+;; FIXME: go-mode-map void
+(with-eval-after-load "go-mode"
+  (let ((m go-mode-map))
+    (define-key m "M-." 'godef-jump)
+    (define-key m "C-c C-r" 'go-remove-unused-imports)
+    (define-key m "C-c g i" 'go-goto-imports)
+    (define-key m "C-c C-k" 'godoc)))
 
 (zmg/package-install 'go-eldoc)
 (add-hook 'go-mode-hook 'go-eldoc-setup)
@@ -276,11 +281,13 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
 
 ;;;; C programming
 
-(let ((m c-mode-map))
-  (define-key m "C-h M" 'man-follow)
-  (define-key m "C-c C-d" 'gdb)
-  (define-key m "C-m" 'c-context-line-break)
-  (define-key m "C-c o" 'ff-find-other-file))
+;; FIXME: c-mode-map void
+(with-eval-after-load "c-mode"
+  (let ((m c-mode-map))
+    (define-key m "C-h M" 'man-follow)
+    (define-key m "C-c C-d" 'gdb)
+    (define-key m "C-m" 'c-context-line-break)
+    (define-key m "C-c o" 'ff-find-other-file)))
 
 (add-hook 'c-mode-common-hook 'which-function-mode)
 (add-hook 'c-mode-common-hook 'cwarn-mode)

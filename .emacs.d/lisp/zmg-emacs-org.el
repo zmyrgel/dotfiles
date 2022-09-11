@@ -55,7 +55,7 @@
 
 ;;  ol
 (setq org-link-keep-stored-after-insertion t)
-(define-key global-map "C-c l" 'org-store-link)
+(global-set-key (kbd "C-c l") 'org-store-link)
 (define-key org-mode-map "C-c L" 'org-toggle-link-display)
 (define-key org-mode-map "C-c C-y" 'org-insert-last-stored-link)
 
@@ -83,7 +83,7 @@
 (setq org-capture-templates-contexts
       '(("r" ((in-mode . "gnus-article-mode")
               (in-mode . "gnus-summary-mode")))))
-(define-key global-map "C-c c" 'org-capture)
+(global-set-key (kbd "C-c c") 'org-capture)
 
 ;; org-agenda
 (setq org-agenda-span 'week)
@@ -107,7 +107,7 @@
 (setq org-agenda-skip-deadline-prewarning-if-scheduled 1)
 (setq org-agenda-time-leading-zero t)
 (setq org-agenda-timegrid-use-ampm nil)
-(define-key global-map "C-c a" 'org-agenda)
+(global-set-key (kbd "C-c a") 'org-agenda)
 
 ;; org-src
 (setq org-src-tab-acts-natively t)
@@ -124,7 +124,9 @@
 ;; ox-latex
 (setq org-latex-pdf-process
       '("latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
-(add-to-list 'org-latex-classes
+
+(with-eval-after-load "ox-latex"
+  (add-to-list 'org-latex-classes
              '("IEEEtran" "\\documentclass[11pt]{IEEEtran}"
                ("\\section{%s}" . "\\section*{%s}")
                ("\\subsection{%s}" . "\\subsection*{%s}")
@@ -139,7 +141,7 @@
                ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
                ("\\paragraph{%s}" . "\\paragraph*{%s}")
                ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
-             t)
+             t))
 
 ;; ox-publish
 (setq org-publish-project-alist

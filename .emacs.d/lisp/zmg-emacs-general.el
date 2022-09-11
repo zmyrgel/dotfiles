@@ -69,7 +69,7 @@
   (define-key map "a" 'wcheck-actions)
   (define-key map "f" 'wcheck-jump-forward)
   (define-key map "b" 'wcheck-jump-backward)
-  (define-key global-map "C-c s" map))
+  (define-key ctl-x-x-map "w" map))
 
 (setq wcheck-language-data
       `(("British English"
@@ -109,7 +109,7 @@
 (setq uniquify-ignore-buffers-re "^\\*")
 
 ;; ibuffer
-(define-key global-map "C-x C-b" 'ibuffer)
+(global-set-key (kbd "C-x C-b") 'ibuffer)
 (setq ibuffer-default-sorting-mode 'major-mode)
 (setq ibuffer-expert t)
 (setq ibuffer-shrink-to-minimum-size t)

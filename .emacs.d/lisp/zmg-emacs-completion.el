@@ -9,10 +9,9 @@
 (marginalia-mode)
 
 (zmg/package-install 'embark)
-(let ((m global-map))
-  (define-key m "C-." 'embark-act)
-  (define-key m "M-." 'embark-dwim)
-  (define-key m "C-h B" 'embark-bindings))
+(global-set-key (kbd "C-.") 'embark-act)
+(global-set-key (kbd "M-.") 'embark-dwim)
+(global-set-key (kbd "C-h B") 'embark-bindings)
 
 ;; init
 (setq prefix-help-command #'embark-prefix-help-command)
