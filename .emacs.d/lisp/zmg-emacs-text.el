@@ -12,6 +12,12 @@
 ;; grep
 (when (version<= "27" emacs-version)
   (setq grep-find-use-xargs 'exec-plus))
+;; https://stegosaurusdormant.com/emacs-ripgrep/
+;; https://stackoverflow.com/questions/45526670/rgrep-in-emacs-to-use-ripgrep
+(when (executable-find "rg")
+  (grep-apply-setting
+   'grep-find-command
+   '("rg -n -H --no-heading -e '' $(git rev-parse --show-toplevel || pwd)" . 27)))
 
 ;; electric
 (setq electric-pair-preserve-balance t)
@@ -20,7 +26,7 @@
                             (8220 . 8221)
                             (123 . 125)))
 (setq electric-pair-skip-self t)
-(setq electric-pair-skip-whitespace 'chomp)
+(setq electric-pair-skip-whitespace 'nil)
 (add-hook 'after-init-hook 'electric-indent-mode)
 
 ;; | Key chord      | Description     |
@@ -71,10 +77,10 @@
 
 (zmg/with-package 'nov
   (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
-
   (defun my-nov-setup-hook ()
-    (face-remap-add-relative 'variable-pitch :family "ETBembo Roman"
-                             :height 1.0)
+    (when-let ((font (font-spec :name "ETBembo Roman")))
+      (face-remap-add-relative 'variable-pitch :family "ETBembo Roman"
+                               :height 1.0))
     (set (make-local-variable 'show-trailing-whitespace) nil))
   (add-hook 'nov-mode-hook 'my-nov-setup-hook))
 

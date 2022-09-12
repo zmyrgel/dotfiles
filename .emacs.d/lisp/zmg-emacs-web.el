@@ -6,20 +6,21 @@
 (zmg/with-package 'rcirc
   (setq rcirc-server-alist
 	'(("irc.libera.chat"
-           :channels ("#openbsd" "#lisp"))))
+           :channels ("#openbsd" "#lisp")
+           :port 6697
+           :encryption tls)))
   (setq rcirc-default-nick "zmyrgel")
   (setq rcirc-default-user-name "zmyrgel")
   (setq rcirc-default-full-name "Curious Minds Want To Know")
 
-  ;; FIXME: dbus error
-  ;; (let ((nickserv-pass (secrets-get-secret "default" "libera-pass")))
-  ;;   (when nickserv-pass
-  ;;     (setq rcirc-authinfo
-  ;;           `(("libera" nickserv "zmyrgel" ,nickserv-pass)))))
+  (rcirc-track-minor-mode 1)
+
+  (when-let ((nickserv-pass (password-lookup :host "irc.libera.chat")))
+    (setq rcirc-authinfo
+          `(("libera" nickserv "zmyrgel" ,nickserv-pass))))
 
   (setq rcirc-omit-responses '("JOIN" "PART" "QUIT" "NICK" "AWAY"))
-  (setq rcirc-time-format "%Y-%m-%d %H:%M ")
-  (add-hook 'rcirc-mode-hook 'rcirc-track-minor-mode))
+  (setq rcirc-time-format "%Y-%m-%d %H:%M "))
 
 ;;  erc
 (zmg/with-package 'erc
@@ -76,7 +77,7 @@
   (setq elfeed-curl-max-connections 10)
   (setq elfeed-db-directory "~/.emacs.d/elfeed/")
   (setq elfeed-enclosure-default-dir "~/Downloads/")
-  (setq elfeed-search-filter "@4-months-ago +unread")
+  (setq elfeed-search-filter "@1-months-ago +unread")
   (setq elfeed-sort-order 'descending)
   (setq elfeed-search-clipboard-type 'CLIPBOARD)
   (setq elfeed-search-title-max-width 100)
@@ -128,7 +129,7 @@
   (setq eww-browse-url-new-window-is-tab nil)
   (setq eww-form-checkbox-selected-symbol "[X]")
   (setq eww-form-checkbox-symbol "[ ]")
-  ;; FIXME: undefined eww-mode-map
+
   (let ((m eww-mode-map))
     (define-key m "n" 'next-line)
     (define-key m "p" 'previous-line)

@@ -16,7 +16,6 @@
   (setq org-enforce-todo-dependencies t)
   (setq org-log-done 'note)
   (setq org-startup-indented t)
-  (setq org-special-ctrl-a/e t)
   (setq org-todo-keywords '((sequence "TODO(t)" "WIP(w!)" "|" "DONE(d@!)")
                             (sequence "|" "CANCELED(c@/!)")
                             (sequence "STALLED(s@/!)" "|")
@@ -29,8 +28,7 @@
   (setq org-tag-alist ;; use these or set file tags?
 	'(("work" . ?w)
           ("emacs" . ?e)
-          ("school" . ?s)
-          ("thesis" . ?t)
+          ("study" . ?s)
           ("mail" . ?m)))
   (setq org-confirm-babel-evaluate t)
   (setq org-log-done 'note)
@@ -54,6 +52,20 @@
   (add-hook 'org-mode-hook 'visual-line-mode)
   (add-hook 'message-mode-hook 'turn-on-orgtbl)
 
+  ;; Use fixed-pitch font to keep tables aligned
+  (defun set-buffer-variable-pitch ()
+    (interactive)
+    (variable-pitch-mode t)
+    (setq line-spacing 3)
+    (set-face-attribute 'org-table nil :inherit 'fixed-pitch)
+    (set-face-attribute 'org-code nil :inherit 'fixed-pitch)
+    (set-face-attribute 'org-block nil :inherit 'fixed-pitch))
+
+  (add-hook 'org-mode-hook 'set-buffer-variable-pitch)
+  (add-hook 'eww-mode-hook 'set-buffer-variable-pitch)
+  (add-hook 'markdown-mode-hook 'set-buffer-variable-pitch)
+  (add-hook 'Info-mode-hook 'set-buffer-variable-pitch)
+
   ;;  ol
   (setq org-link-keep-stored-after-insertion t)
   (global-set-key (kbd "C-c l") 'org-store-link)
@@ -70,9 +82,7 @@
     (setq org-capture-templates
 	  `(("t" "Todo" entry (file+headline "todo.org" "Tasks")
              ,todo-template)
-            ("s" "School work" entry (file+headline "school.org" "School work")
-             ,todo-template)
-            ("m" "Master's thesis" entry (file+headline "school.org" "Thesis")
+            ("s" "Study" entry (file+headline "study.org" "Study stuff")
              ,todo-template)
             ("w" "Work tasks" entry (file+headline "work.org" "Work tasks")
              ,todo-template)

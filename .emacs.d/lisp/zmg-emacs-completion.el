@@ -8,8 +8,8 @@
   (setq marginalia-max-relative-age 0)
   (marginalia-mode))
 
-(setq prefix-help-command #'embark-prefix-help-command)
 (zmg/with-package 'embark
+  (setq prefix-help-command #'embark-prefix-help-command)
   (add-to-list 'display-buffer-alist
                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
 		 nil
@@ -64,5 +64,15 @@
 
 ;; hippie-exp
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
+
+(zmg/with-package 'dabbrev
+  (setq dabbrev-abbrev-skip-leading-regexp "[$*/=']")
+  (setq dabbrev-backward-only nil)
+  (setq dabbrev-case-distinction 'case-replace)
+  (setq dabbrev-case-fold-search 'case-fold-search)
+  (setq dabbrev-case-replace 'case-replace)
+  (setq dabbrev-check-other-buffers t)
+  (setq dabbrev-eliminate-newlines nil)
+  (setq dabbrev-upcase-means-case-search t))
 
 (provide 'zmg-emacs-completion)

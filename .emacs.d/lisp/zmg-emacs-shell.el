@@ -2,12 +2,17 @@
 ;;; Shell settings
 ;;; ------------------------------
 
-;; FIXME: rely on system config
-(when (file-exists-p "~/share/man")
-  (setenv "MANPATH" "~/share/man:/usr/share/man:/usr/local/share/man"))
+;; FIXME: rely on system config, use man command flags instead of env?
+(let ((home-man (expand-file-name "~/share/man"))
+      (man-path (split-string (or (getenv "MANPATH") "") ":")))
+  (when (file-exists-p home-man)
+    (add-to-list 'man-path home-man)
+    (setenv "MANPATH" (string-join man-path ":"))))
 
 (defun my/sh-mode-hook ()
-  (set (make-local-variable 'indent-tabs-mode) t))
+  (set (make-local-variable 'indent-tabs-mode) t)
+  ;; ensure this matches tab-width
+  (set (make-local-variable 'sh-basic-offset) 8))
 (add-hook 'sh-mode-hook 'my/sh-mode-hook)
 
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
@@ -26,7 +31,7 @@
                                   'comint-kill-whole-line)))
 
 (zmg/with-package 'eshell
-  
+
   (defun eshell-here ()
     "Opens up a new shell in the directory associated with the
     current buffer's file. The eshell is renamed to match that
@@ -62,6 +67,7 @@
   (setq eshell-save-history-on-exit t)
   (setq eshell-scroll-show-maximum-output nil)
   (setq eshell-visual-subcommands '(("git" "log" "diff" "show")))
-  (setq eshell-visual-options '(("git" "--help" "--paginate"))))
+  (setq eshell-visual-options '(("git" "--help" "--paginate")))
+  (setq eshell-hist-ignoredups t))
 
 (provide 'zmg-emacs-shell)

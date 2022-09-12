@@ -3,7 +3,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2022-09-11 09:09:37 (tmy)>
+;;; Time-stamp: <2022-09-12 19:01:03 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -33,6 +33,8 @@
 
 ;; TODO: sync refresh?
 (package-refresh-contents 'async)
+
+;;(package-refresh-contents)
 
 (defmacro zmg/with-package (package &rest body)
   "Evaluate BODY after loading the given PACKAGE, installing it if needed."

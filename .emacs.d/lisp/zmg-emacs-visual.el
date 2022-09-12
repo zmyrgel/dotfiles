@@ -44,8 +44,11 @@
 (global-set-key (kbd "C-c C-j") 'join-line)
 (global-set-key (kbd "M-z") 'zap-up-to-char)
 (global-set-key (kbd "C-x k") 'kill-this-buffer)
+(global-set-key (kbd "C-x M-k") 'kill-buffer-other-window)
 (global-set-key (kbd "C-x C-z") nil)
 (global-set-key (kbd "C-z") nil)
+(global-set-key (kbd "C-x (") 'kmacro-start-macro-or-insert-counter)
+(global-set-key (kbd "C-x )") 'kmacro-end-or-call-macro)
 (global-set-key (kbd "C-z s") 'eshell)
 (global-set-key (kbd "C-z r") 'rgrep)
 
@@ -61,8 +64,14 @@
   (interactive)
   (load-file (locate-user-emacs-file "init.el")))
 
+(defun kill-buffer-other-window ()
+  "Kill buffer in the other window."
+  (interactive)
+  (other-window 1)
+  (kill-buffer (current-buffer))
+  (other-window 1))
+
 ;; FIXME: remote tramp uses multihop
-;;/ssh:homer@powerplant|sudo:powerplant:/root/stuff.txt
 ;; /ssh:user@foo.example.fi|sudo:root@foo.example.fi:/path/to/file
 ;; FIXME: make this work for dired buffers too for remote admin tasks
 (defun become ()
@@ -104,8 +113,7 @@
 (setq colon-double-space nil)
 (setq use-hard-newlines nil)
 
-;; keep a little more history to see whats going on
-(setq message-log-max 16384)
+(setq message-log-max 5000)
 
 (setq initial-scratch-message "")
 (setq inhibit-startup-screen t)
@@ -125,13 +133,15 @@
 (add-hook 'help-mode-hook (lambda () (setq truncate-lines t)))
 
 ;; ;; Set Default font if present
-(when (find-font (font-spec :name "Input Mono Narrow"))
+(when (find-font (font-spec :name "Input Mono"))
   (set-face-attribute 'default nil :family "Input Mono" :height 120)
   (set-face-attribute 'variable-pitch nil :family "Input Serif")
-  (set-face-attribute 'fixed-pitch nil :family "Input Mono Narrow")
-  (set-face-attribute 'tooltip nil :family "Input Mono Narrow"))
+  (set-face-attribute 'fixed-pitch nil :family "Input Mono")
+  (set-face-attribute 'tooltip nil :family "Input Mono"))
 
-(defalias 'yes-or-no-p 'y-or-n-p)
+(if (boundp 'use-short-answers)
+    (setq use-short-answers t)
+  (defalias 'yes-or-no-p 'y-or-n-p))
 
 ;; Don't prompt if killing buffer with process attached
 (setq kill-buffer-query-functions

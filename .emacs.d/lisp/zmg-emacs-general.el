@@ -8,6 +8,11 @@
     (when (file-exists-p full-path)
       (add-to-list 'exec-path full-path))))
 
+(defun password-lookup (&rest keys)
+  "Lookup password from auth-sources filtered by given KEYS."
+  (when-let ((result (apply #'auth-source-search keys)))
+    (funcall (plist-get (car result) :secret))))
+
 (dolist (p '("~/bin" "~/.local/bin" "~/workspace/bin"))
   (prepend-to-exec-path p))
 
@@ -73,9 +78,9 @@
 
   (setq wcheck-language-data
 	`(("British English"
-           (program . ,(or (executable-find "ispell") "ispell"))
+           (program . ,(or (executable-find "aspell") "ispell"))
            (args "-l" "-d" "british")
-           (action-program . ,(or (executable-find "ispell") "ispell"))
+           (action-program . ,(or (executable-find "aspell") "ispell"))
            (action-args "-a" "-d" "british")
            (action-parser . wcheck-parser-ispell-suggestions))
           ("Finnish"

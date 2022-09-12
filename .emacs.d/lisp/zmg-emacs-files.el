@@ -2,9 +2,9 @@
 ;;; File and directory management
 ;;; ------------------------------
 
-;; dired, not needed anymore?
-;;(define-key ctl-x-map "C-j" 'dired-jump)
-;;(define-key ctl-x-4-map "C-j" 'dired-jump-other-window)
+(when (version< "28.2" emacs-version)
+  (define-key ctl-x-map "C-j" 'dired-jump)
+  (define-key ctl-x-4-map "C-j" 'dired-jump-other-window))
 
 (add-hook 'dired-mode-hook 'hl-line-mode)
 (add-hook 'dired-mode-hook 'dired-hide-details-mode)
@@ -48,7 +48,7 @@
     (define-key map "j" 'bongo-dired-line)
     (define-key map "J" 'dired-jump)
     (define-key map "I" 'bongo-insert-special))
-  
+
   (setq bongo-default-directory (expand-file-name "Music" "~"))
   (setq bongo-prefer-library-buffers nil)
   (setq bongo-insert-whole-directory-trees t)

@@ -128,7 +128,7 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
 (zmg/with-package 'magit
   (setq magit-repository-directories
 	'(("~/git" . 1)
-          ("~/quicklisp/local-projects" . 1)))  
+          ("~/quicklisp/local-projects" . 1)))
   (global-set-key (kbd "C-c g") 'magit-status))
 
 ;; magit-gitflow
@@ -158,7 +158,6 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
 (add-hook 'before-save-hook 'gofmt-before-save)
 (add-hook 'go-mode-hook 'eglot-ensure)
 (zmg/with-package 'go-mode
-  ;; FIXME: go-mode-map void
   (let ((m go-mode-map))
     (define-key m "M-." 'godef-jump)
     (define-key m "C-c C-r" 'go-remove-unused-imports)
@@ -173,7 +172,7 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
   (dolist (m '(("\\.\\(?:gemspec\\|irbrc\\|gemrc\\|rake\\|rb\\|ru\\|thor\\)\\'" . ruby-mode)
                ("\\(Capfile\\|Gemfile\\(?:\\.[a-zA-Z0-9._-]+\\)?\\|[rR]akefile\\)\\'"  . ruby-mode)))
     (add-to-list 'magic-mode-alist m))
-  
+
   (defun my/ruby-mode-hook ()
     (setq ruby-deep-arglist t)
     (setq ruby-deep-indent-paren nil)
@@ -183,9 +182,9 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
 ;;; Lisp programming
 
 (zmg/with-package 'sly
-  (let ((sbcl-bin-path (expand-file-name "lib/sbcl" "~")))
-    (when (file-exists-p sbcl-bin-path)
-      (setenv "SBCL_HOME" sbcl-bin-path)))
+  (when-let ((sbcl-bin-path (car (file-expand-wildcards "~/sbcl-*-linux" t))))
+    (setenv "SBCL_HOME" sbcl-bin-path)
+    (add-to-list 'exec-path (expand-file-name "bin" sbcl-bin-path)))
   (setq sly-lisp-implementations '((sbcl ("sbcl" "--dynamic-space-size" "2048"))
                                    (ecl ("ecl"))
                                    (clisp ("clisp" "-ansi"))
@@ -196,7 +195,11 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
               (home-path "~/lisp/docs/HyperSpec/Data/Map_Sym.txt"))
           (cond ((file-exists-p pkg-path) pkg-path)
 		((file-exists-p home-path) home-path)
-		(t "http://www.lispworks.com/documentation/HyperSpec/Data/Map_Sym.txt")))))
+		(t "http://www.lispworks.com/documentation/HyperSpec/Data/Map_Sym.txt"))))
+
+  (when (file-exists-p "~/quicklisp/log4sly-setup.el")
+    (load "~/quicklisp/log4sly-setup.el")
+    (global-log4sly-mode 1)))
 
 ;; (zmg/package-install 'sly-repl-ansi-color)
 ;; (sly-enable-contrib 'sly-repl-ansi-color)
@@ -267,7 +270,7 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
 
 (zmg/with-package 'php-mode
   (add-to-list 'magic-mode-alist '("\\.php[345]?\\'\\|\\.phtml\\'" . php-mode))
-  
+
   (defun my/php-mode-hook ()
     (setq php-site-url "http://fi2.php.net/")
     (php-enable-symfony2-coding-style)
@@ -285,7 +288,7 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
     (define-key m "C-c C-d" 'gdb)
     (define-key m "C-m" 'c-context-line-break)
     (define-key m "C-c o" 'ff-find-other-file))
-  
+
   (add-hook 'c-mode-common-hook 'which-function-mode)
   (add-hook 'c-mode-common-hook 'cwarn-mode)
   (add-hook 'c-mode-hook 'my/c-mode)
@@ -295,7 +298,7 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
     "My C programming options."
     (c-set-style "bsd")
     (setq indent-tabs-mode t))
-  
+
   (defun my/c++-mode ()
     "My C++ programming options."
     (setq fill-column 100)
