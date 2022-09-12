@@ -5,12 +5,11 @@
 (setq save-place-file (locate-user-emacs-file "places"))
 (save-place-mode 1)
 
-(setq recentf-save-file (locate-user-emacs-file "recentf"))
-(setq recentf-max-saved-items 50)
-;; FIXME: this
-(with-eval-after-load "recentf"
-  (add-to-list 'recentf-exclude "\\elpa"))
-(add-hook 'after-init-hook 'recentf-mode)
+(zmg/with-package 'recentf
+  (add-to-list 'recentf-exclude "\\elpa")
+  (setq recentf-save-file (locate-user-emacs-file "recentf"))
+  (setq recentf-max-saved-items 50)
+  (add-hook 'after-init-hook 'recentf-mode))
 
 (setq bookmark-default-file (locate-user-emacs-file "bookmarks"))
 (setq bookmark-save-flag 1)

@@ -27,7 +27,11 @@
 ;; |----------------+-----------------|
 ;; | C-c [          | add cite        |
 ;; | C-c =          | show toc        |
-(zmg/package-install 'auctex)
+
+(unless (package-installed-p 'auctex)
+  (package-install 'auctex))
+(load "auctex.el" nil t t)
+(load "preview.el" nil t t)
 (add-to-list 'magic-mode-alist '("\\.[tT]e[xX]\\'" . latex-mode))
 (add-hook 'latex-mode-hook 'auto-fill-mode)
 (add-hook 'latex-mode-hook 'reftex-mode)
@@ -54,41 +58,39 @@
 (add-hook 'TeX-after-compilation-finished-functions 'TeX-revert-document-buffer)
 
 ;; doc-view / doc-view-presentation
-(zmg/package-install 'pdf-tools)
-(add-to-list 'magic-mode-alist '("%PDF" . pdf-view-mode))
-(add-to-list 'auto-mode-alist '("\\.pdf\\'" . pdf-view-mode))
-(add-hook 'pdf-view-mode 'pdf-links-minor-mode)
-(add-hook 'pdf-view-mode 'pdf-isearch-minor-mode)
-(add-hook 'pdf-view-mode 'pdf-outline-minor-mode)
-(add-hook 'pdf-view-mode 'pdf-history-minor-mode)
+(zmg/with-package 'pdf-tools
+  (add-to-list 'magic-mode-alist '("%PDF" . pdf-view-mode))
+  (add-to-list 'auto-mode-alist '("\\.pdf\\'" . pdf-view-mode))
+  (add-hook 'pdf-view-mode 'pdf-links-minor-mode)
+  (add-hook 'pdf-view-mode 'pdf-isearch-minor-mode)
+  (add-hook 'pdf-view-mode 'pdf-outline-minor-mode)
+  (add-hook 'pdf-view-mode 'pdf-history-minor-mode)
 
-(setq pdf-view-display-size 'fit-page)
-(pdf-tools-install :no-query)
+  (setq pdf-view-display-size 'fit-page)
+  (pdf-tools-install :no-query))
 
-(zmg/package-install 'nov)
-(add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
+(zmg/with-package 'nov
+  (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
 
-(defun my-nov-setup-hook ()
-(face-remap-add-relative 'variable-pitch :family "ETBembo Roman"
-                         :height 1.0)
-(set (make-local-variable 'show-trailing-whitespace) nil))
-(add-hook 'nov-mode-hook 'my-nov-setup-hook)
+  (defun my-nov-setup-hook ()
+    (face-remap-add-relative 'variable-pitch :family "ETBembo Roman"
+                             :height 1.0)
+    (set (make-local-variable 'show-trailing-whitespace) nil))
+  (add-hook 'nov-mode-hook 'my-nov-setup-hook))
 
-(zmg/package-install 'x509-mode)
+(zmg/with-package 'x509-mode)
 
-(zmg/package-install 'markdown-mode)
-;; :commands (markdown-mode gfm-mode)
 
-(add-to-list 'auto-mode-alist '("README\\.md\\'" . gfm-mode))
-(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
-(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+(zmg/with-package 'markdown-mode
+  ;; :commands (markdown-mode gfm-mode)
+  (setq markdown-command "multimarkdown") ;; init
+  (add-to-list 'auto-mode-alist '("README\\.md\\'" . gfm-mode))
+  (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+  (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode)))
 
-;; init
-(setq markdown-command "multimarkdown")
-
-(zmg/package-install 'yaml-mode)
-(add-to-list 'auto-mode-alist '("\\.yml$\\|\\.yaml$"))
-(add-to-list 'magic-mode-alist '("---" . yaml-mode))
+(zmg/with-package 'yaml-mode
+  (add-to-list 'auto-mode-alist '("\\.yml$\\|\\.yaml$"))
+  (add-to-list 'magic-mode-alist '("---" . yaml-mode)))
 
 ;; Any file start with xml will be treat as nxml-mode
 (add-to-list 'magic-mode-alist '("<\\?xml" . nxml-mode))

@@ -160,11 +160,11 @@
 (add-hook 'text-mode-hook 'auto-fill-mode)
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
-(zmg/package-install 'easy-kill)
-(global-set-key [remap kill-ring-save] #'easy-kill)
-(global-set-key [remap mark-sexp] #'easy-mark)
+(zmg/with-package 'easy-kill
+  (global-set-key [remap kill-ring-save] #'easy-kill)
+  (global-set-key [remap mark-sexp] #'easy-mark))
 
-(zmg/package-install 'diminish) ;; XXX: move earlier
+(zmg/with-package 'diminish) ;; XXX: move earlier
 
 ;; theme settings
 (setq modus-themes-italic-constructs t)

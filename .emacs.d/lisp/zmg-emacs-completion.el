@@ -2,30 +2,27 @@
 ;;; Completion
 ;;; ------------------------------
 
-(zmg/package-install 'orderless)
+(zmg/with-package 'orderless)
 
-(zmg/package-install 'marginalia)
-(setq marginalia-max-relative-age 0)
-(marginalia-mode)
+(zmg/with-package 'marginalia
+  (setq marginalia-max-relative-age 0)
+  (marginalia-mode))
 
-(zmg/package-install 'embark)
-(global-set-key (kbd "C-.") 'embark-act)
-(global-set-key (kbd "M-.") 'embark-dwim)
-(global-set-key (kbd "C-h B") 'embark-bindings)
-
-;; init
 (setq prefix-help-command #'embark-prefix-help-command)
-;; config
-(add-to-list 'display-buffer-alist
-             '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-               nil
-               (window-parameters (mode-line-format . none))))
+(zmg/with-package 'embark
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+		 nil
+		 (window-parameters (mode-line-format . none))))
+  (global-set-key (kbd "C-.") 'embark-act)
+  (global-set-key (kbd "M-.") 'embark-dwim)
+  (global-set-key (kbd "C-h B") 'embark-bindings))
 
-(zmg/package-install 'corfu)
-(global-corfu-mode)
+(zmg/with-package 'corfu
+  (global-corfu-mode))
 
-(zmg/package-install 'vertico)
-(vertico-mode)
+(zmg/with-package 'vertico
+  (vertico-mode))
 
 ;; minibuffer
 (setq completion-styles '(orderless))

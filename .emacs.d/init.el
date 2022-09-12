@@ -3,13 +3,15 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2022-09-10 13:19:15 (tmy)>
+;;; Time-stamp: <2022-09-11 09:09:37 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Commentary:
-;;; - fix warnings on this file
-;;;
+;;; - fix warnings on this init:
+;;; -- flymake--handle-report: Can’t find state for flymake-eslint--checker in ‘flymake--state’
+;;; - improve init speed, currently 7s.
+
 ;;; Code:
 
 ;; Make startup faster by reducing the frequency of gc
@@ -22,23 +24,27 @@
 
 (require 'package)
 
-(setq package-archives
-      '(("gnu" . "https://elpa.gnu.org/packages/")
-        ("nongnu" . "https://elpa.nongnu.org/nongnu/")
-        ("melpa" . "https://melpa.org/packages/")))
-
+(add-to-list 'package-archives (cons "melpa"
+                                    (format "http%s://melpa.org/packages/"
+                                            (if (gnutls-available-p) "s" ""))))
 (setq package-archive-priorities
       '(("gnu" . 2)
         ("nongnu" . 1)))
 
-;; avoid re-initializing packages
-(unless package--initialized (package-initialize))
+;; TODO: sync refresh?
 (package-refresh-contents 'async)
 
-(defun zmg/package-install (package-name)
-  "Install given package with NAME unless it is already installed."
-  (unless (package-installed-p package-name)
-    (package-install package-name)))
+(defmacro zmg/with-package (package &rest body)
+  "Evaluate BODY after loading the given PACKAGE, installing it if needed."
+  (declare (indent 1))
+  `(progn
+       (when (and (not (package-built-in-p ,package))
+                  (not (package-installed-p ,package)))
+         (package-install ,package))
+       (if (not (require ,package nil 'noerror))
+           (display-warning 'zmg/with-package
+                            (format "Loading of package `%s' failed" ,package) :error)
+         ,@body)))
 
 (add-hook 'package-menu-mode-hook 'hl-line-mode)
 

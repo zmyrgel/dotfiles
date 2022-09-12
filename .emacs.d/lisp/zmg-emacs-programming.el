@@ -58,11 +58,11 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
   (interactive)
   (shell-command-on-region (point-min) (point-max) "git am"))
 
-(zmg/package-install 'vc-got)
-(if (file-directory-p "~/git/vc-got")
-    (add-to-list 'load-path "~/git/vc-got"))
-(add-to-list 'vc-handled-backends 'Got)
-(add-to-list 'vc-directory-exclusion-list ".got")
+(zmg/with-package 'vc-got
+  (if (file-directory-p "~/git/vc-got")
+      (add-to-list 'load-path "~/git/vc-got"))
+  (add-to-list 'vc-handled-backends 'Got)
+  (add-to-list 'vc-directory-exclusion-list ".got"))
 
 ;; bug-reference
 (add-hook 'prog-mode-hook 'bug-reference-prog-mode)
@@ -125,81 +125,78 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
 (add-hook 'prog-mode-hook 'which-function-mode)
 (add-hook 'prog-mode-hook 'my/prog-mode-hook)
 
-(zmg/package-install 'magit)
-(global-set-key (kbd "C-c g") 'magit-status)
-(setq magit-repository-directories
-      '(("~/git" . 1)
-        ("~/quicklisp/local-projects" . 1)))
+(zmg/with-package 'magit
+  (setq magit-repository-directories
+	'(("~/git" . 1)
+          ("~/quicklisp/local-projects" . 1)))  
+  (global-set-key (kbd "C-c g") 'magit-status))
 
 ;; magit-gitflow
 (when (string= (system-name) "ws-946")
-  (zmg/package-install 'magit-gitflow)
-  (add-hook 'magit-mode-hook 'turn-on-magit-gitflow))
+  (zmg/with-package 'magit-gitflow
+    (add-hook 'magit-mode-hook 'turn-on-magit-gitflow)))
 
-(zmg/package-install 'eglot)
-;; FIXME: eglot-mode-map set
-;;(define-key eglot-mode-map "C-c h" 'eglot-help-at-point)
+(zmg/with-package 'eglot
+  ;; FIXME: eglot-mode-map set
+  (define-key eglot-mode-map "C-c h" 'eglot-help-at-point))
 
 ;; flymake
 ;; FIXME: void map
-(with-eval-after-load "flymake"
+(zmg/with-package 'flymake
   (define-key flymake-mode-map "M-n" 'flymake-goto-next-error)
-  (define-key flymake-mode-map "M-p" 'flymake-goto-prev-error)
+  (define-key flymake-mode-map "M-p" 'flymake-goto-prev-error))
 
-(zmg/package-install 'flymake-eslint))
-(setq flymake-eslint-executable-name "eslint")
-(setq flymake-eslint-executable-args nil)
-(setq flymake-eslint-show-rule-name t)
-(setq flymake-eslint-defer-binary-check t)
+(zmg/with-package 'flymake-eslint
+  (setq flymake-eslint-executable-name "eslint")
+  (setq flymake-eslint-executable-args nil)
+  (setq flymake-eslint-show-rule-name t)
+  (setq flymake-eslint-defer-binary-check t))
 
 ;;; Go programming
-(zmg/package-install 'go-mode)
 ;; init
 (setenv "GOPATH" (expand-file-name "workspace" "~"))
 (add-hook 'before-save-hook 'gofmt-before-save)
 (add-hook 'go-mode-hook 'eglot-ensure)
-;; FIXME: go-mode-map void
-(with-eval-after-load "go-mode"
+(zmg/with-package 'go-mode
+  ;; FIXME: go-mode-map void
   (let ((m go-mode-map))
     (define-key m "M-." 'godef-jump)
     (define-key m "C-c C-r" 'go-remove-unused-imports)
     (define-key m "C-c g i" 'go-goto-imports)
     (define-key m "C-c C-k" 'godoc)))
 
-(zmg/package-install 'go-eldoc)
-(add-hook 'go-mode-hook 'go-eldoc-setup)
+(zmg/with-package 'go-eldoc
+  (add-hook 'go-mode-hook 'go-eldoc-setup))
 
 ;;; Ruby
-
-(zmg/package-install 'ruby-mode)
-(dolist (m '(("\\.\\(?:gemspec\\|irbrc\\|gemrc\\|rake\\|rb\\|ru\\|thor\\)\\'" . ruby-mode)
-             ("\\(Capfile\\|Gemfile\\(?:\\.[a-zA-Z0-9._-]+\\)?\\|[rR]akefile\\)\\'"  . ruby-mode)))
-  (add-to-list 'magic-mode-alist m))
-
-;; init
-(defun my/ruby-mode-hook ()
-  (setq ruby-deep-arglist t)
-  (setq ruby-deep-indent-paren nil)
-  (setq c-tab-always-indent nil))
-(add-hook 'ruby-mode-hook 'my/ruby-mode-hook)
+(zmg/with-package 'ruby-mode
+  (dolist (m '(("\\.\\(?:gemspec\\|irbrc\\|gemrc\\|rake\\|rb\\|ru\\|thor\\)\\'" . ruby-mode)
+               ("\\(Capfile\\|Gemfile\\(?:\\.[a-zA-Z0-9._-]+\\)?\\|[rR]akefile\\)\\'"  . ruby-mode)))
+    (add-to-list 'magic-mode-alist m))
+  
+  (defun my/ruby-mode-hook ()
+    (setq ruby-deep-arglist t)
+    (setq ruby-deep-indent-paren nil)
+    (setq c-tab-always-indent nil))
+  (add-hook 'ruby-mode-hook 'my/ruby-mode-hook))
 
 ;;; Lisp programming
 
-(zmg/package-install 'sly)
-(let ((sbcl-bin-path (expand-file-name "lib/sbcl" "~")))
-  (when (file-exists-p sbcl-bin-path)
-    (setenv "SBCL_HOME" sbcl-bin-path)))
-(setq sly-lisp-implementations '((sbcl ("sbcl" "--dynamic-space-size" "2048"))
-                                 (ecl ("ecl"))
-                                 (clisp ("clisp" "-ansi"))
-                                 (chicken ("csi"))
-                                 (abcl ("abcl"))))
-(setq common-lisp-hyperspec-symbol-table
-      (let ((pkg-path "/usr/local/share/doc/clisp-hyperspec/Data/Map_Sym.txt")
-            (home-path "~/lisp/docs/HyperSpec/Data/Map_Sym.txt"))
-        (cond ((file-exists-p pkg-path) pkg-path)
-              ((file-exists-p home-path) home-path)
-              (t "http://www.lispworks.com/documentation/HyperSpec/Data/Map_Sym.txt"))))
+(zmg/with-package 'sly
+  (let ((sbcl-bin-path (expand-file-name "lib/sbcl" "~")))
+    (when (file-exists-p sbcl-bin-path)
+      (setenv "SBCL_HOME" sbcl-bin-path)))
+  (setq sly-lisp-implementations '((sbcl ("sbcl" "--dynamic-space-size" "2048"))
+                                   (ecl ("ecl"))
+                                   (clisp ("clisp" "-ansi"))
+                                   (chicken ("csi"))
+                                   (abcl ("abcl"))))
+  (setq common-lisp-hyperspec-symbol-table
+	(let ((pkg-path "/usr/local/share/doc/clisp-hyperspec/Data/Map_Sym.txt")
+              (home-path "~/lisp/docs/HyperSpec/Data/Map_Sym.txt"))
+          (cond ((file-exists-p pkg-path) pkg-path)
+		((file-exists-p home-path) home-path)
+		(t "http://www.lispworks.com/documentation/HyperSpec/Data/Map_Sym.txt")))))
 
 ;; (zmg/package-install 'sly-repl-ansi-color)
 ;; (sly-enable-contrib 'sly-repl-ansi-color)
@@ -254,57 +251,57 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
 ;;       (let ((comint-buffer-maximum-size 0))
 ;;         (comint-truncate-buffer)))))
 
-(zmg/package-install 'clojure-mode)
-(add-to-list 'magic-mode-alist '("\\.clj$" . clojure-mode))
+(zmg/with-package 'clojure-mode
+  (add-to-list 'magic-mode-alist '("\\.clj$" . clojure-mode)))
 
-(zmg/package-install 'cider)
-(setq cider-lein-parameters "repl :headless :host localhost")
-(setq nrepl-hide-special-buffers t)
+(zmg/with-package 'cider
+  (setq cider-lein-parameters "repl :headless :host localhost")
+  (setq nrepl-hide-special-buffers t))
 
-(zmg/package-install 'geiser)
-(when (eq system-type 'berkeley-unix)
-  (setq geiser-chicken-binary "chicken-csi")
-  (setq geiser-guile-binary "guile2"))
+(zmg/with-package 'geiser
+  (when (eq system-type 'berkeley-unix)
+    (setq geiser-chicken-binary "chicken-csi")
+    (setq geiser-guile-binary "guile2")))
 
 ;;;; PHP programming
 
-(zmg/package-install 'php-mode)
-(add-to-list 'magic-mode-alist '("\\.php[345]?\\'\\|\\.phtml\\'" . php-mode))
-(defun my/php-mode-hook ()
-  (setq php-site-url "http://fi2.php.net/")
-  (php-enable-symfony2-coding-style)
-  (define-abbrev php-mode-abbrev-table "ex" "extends")
-  (setq indent-tabs-mode nil)
-  (setq tab-width 4)
-  (setq c-basic-offset 4))
-(add-hook 'php-mode-hook 'my/php-mode-hook)
+(zmg/with-package 'php-mode
+  (add-to-list 'magic-mode-alist '("\\.php[345]?\\'\\|\\.phtml\\'" . php-mode))
+  
+  (defun my/php-mode-hook ()
+    (setq php-site-url "http://fi2.php.net/")
+    (php-enable-symfony2-coding-style)
+    (define-abbrev php-mode-abbrev-table "ex" "extends")
+    (setq indent-tabs-mode nil)
+    (setq tab-width 4)
+    (setq c-basic-offset 4))
+  (add-hook 'php-mode-hook 'my/php-mode-hook))
 
 ;;;; C programming
 
-;; FIXME: c-mode-map void
-(with-eval-after-load "c-mode"
+(zmg/with-package 'cc-mode
   (let ((m c-mode-map))
     (define-key m "C-h M" 'man-follow)
     (define-key m "C-c C-d" 'gdb)
     (define-key m "C-m" 'c-context-line-break)
-    (define-key m "C-c o" 'ff-find-other-file)))
+    (define-key m "C-c o" 'ff-find-other-file))
+  
+  (add-hook 'c-mode-common-hook 'which-function-mode)
+  (add-hook 'c-mode-common-hook 'cwarn-mode)
+  (add-hook 'c-mode-hook 'my/c-mode)
+  (add-hook 'c++-mode-hook 'my/c-mode)
 
-(add-hook 'c-mode-common-hook 'which-function-mode)
-(add-hook 'c-mode-common-hook 'cwarn-mode)
-(add-hook 'c-mode-hook 'my/c-mode)
-(add-hook 'c++-mode-hook 'my/c-mode)
-
-(defun my/c-mode ()
-  "My C programming options."
-  (c-set-style "bsd")
-  (setq indent-tabs-mode t))
-
-(defun my/c++-mode ()
-  "My C++ programming options."
-  (setq fill-column 100)
-  (c-set-style "stroustrup")
-  (setq whitespace-line-column 100
-        whitespace-style '(face lines-tail)))
+  (defun my/c-mode ()
+    "My C programming options."
+    (c-set-style "bsd")
+    (setq indent-tabs-mode t))
+  
+  (defun my/c++-mode ()
+    "My C++ programming options."
+    (setq fill-column 100)
+    (c-set-style "stroustrup")
+    (setq whitespace-line-column 100
+          whitespace-style '(face lines-tail))))
 
 ;;  :init
 (defalias 'perl-mode 'cperl-mode)
@@ -340,35 +337,35 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
 ;; (setq ein:jupyter-server-command "jupyter-notebook")
 ;; (setq ein:jupyter-server-use-subcommand nil)
 
-(zmg/package-install 'web-mode)
-(dolist (m '(("\\.jsp\\'" . web-mode)
-             ("\\.ap[cp]x\\'" . web-mode)
-             ("\\.erb\\'" . web-mode)
-             ("\\.rhtml\\'" . web-mode)
-             ("\\.mustache\\'" . web-mode)
-             ("\\.djhtml\\'" . web-mode)
-             ("\\.tsx\\'" . web-mode)
-             ("\\.jsx\\'" . web-mode)))
-  (add-to-list 'magic-mode-alist m))
+(zmg/with-package 'web-mode
+  (dolist (m '(("\\.jsp\\'" . web-mode)
+               ("\\.ap[cp]x\\'" . web-mode)
+               ("\\.erb\\'" . web-mode)
+               ("\\.rhtml\\'" . web-mode)
+               ("\\.mustache\\'" . web-mode)
+               ("\\.djhtml\\'" . web-mode)
+               ("\\.tsx\\'" . web-mode)
+               ("\\.jsx\\'" . web-mode)))
+    (add-to-list 'magic-mode-alist m))
 
-(defun my/web-mode-hook ()
-  "Hooks for Web mode."
-  (setq web-mode-markup-indent-offset 2)
-  (setq web-mode-css-indent-offset 2)
-  (setq web-mode-code-indent-offset 4)
-  (when (and (member (file-name-extension buffer-file-name) '("tsx" "jsx"))
-             (require 'eglot nil 'noerror))
-    (eglot-ensure)))
+  (defun my/web-mode-hook ()
+    "Hooks for Web mode."
+    (setq web-mode-markup-indent-offset 2)
+    (setq web-mode-css-indent-offset 2)
+    (setq web-mode-code-indent-offset 4)
+    (when (and (member (file-name-extension buffer-file-name) '("tsx" "jsx"))
+               (require 'eglot nil 'noerror))
+      (eglot-ensure)))
 
-(add-hook 'web-mode-hook 'my/web-mode-hook)
-(add-hook 'web-mode-hook 'flymake-eslint-enable)
+  (add-hook 'web-mode-hook 'my/web-mode-hook)
+  (add-hook 'web-mode-hook 'flymake-eslint-enable))
 
-(zmg/package-install 'typescript-mode)
-;;:after flymake-eslint
-(add-hook 'typescript-mode-hook 'eglot-ensure)
-(add-hook 'typescript-mode-hook 'flymake-eslint-enable)
-(setq whitespace-line-column 120)
+(zmg/with-package 'typescript-mode
+  ;;:after flymake-eslint
+  (add-hook 'typescript-mode-hook 'eglot-ensure)
+  (add-hook 'typescript-mode-hook 'flymake-eslint-enable)
+  (setq whitespace-line-column 120))
 
-(zmg/package-install 'keepass-mode)
+(zmg/with-package 'keepass-mode)
 
 (provide 'zmg-emacs-programming)
