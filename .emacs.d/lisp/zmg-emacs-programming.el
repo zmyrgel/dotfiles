@@ -137,14 +137,12 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
     (add-hook 'magit-mode-hook 'turn-on-magit-gitflow)))
 
 (zmg/with-package 'eglot
-  ;; FIXME: eglot-mode-map set
-  (define-key eglot-mode-map "C-c h" 'eglot-help-at-point))
+  (define-key eglot-mode-map (kbd "C-c h") 'eglot-help-at-point))
 
 ;; flymake
-;; FIXME: void map
 (zmg/with-package 'flymake
-  (define-key flymake-mode-map "M-n" 'flymake-goto-next-error)
-  (define-key flymake-mode-map "M-p" 'flymake-goto-prev-error))
+  (define-key flymake-mode-map (kbd "M-n") 'flymake-goto-next-error)
+  (define-key flymake-mode-map (kbd "M-p") 'flymake-goto-prev-error))
 
 (zmg/with-package 'flymake-eslint
   (setq flymake-eslint-executable-name "eslint")
@@ -159,10 +157,10 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
 (add-hook 'go-mode-hook 'eglot-ensure)
 (zmg/with-package 'go-mode
   (let ((m go-mode-map))
-    (define-key m "M-." 'godef-jump)
-    (define-key m "C-c C-r" 'go-remove-unused-imports)
-    (define-key m "C-c g i" 'go-goto-imports)
-    (define-key m "C-c C-k" 'godoc)))
+    (define-key m (kbd "M-.") 'godef-jump)
+    (define-key m (kbd "C-c C-r") 'go-remove-unused-imports)
+    (define-key m (kbd "C-c g i") 'go-goto-imports)
+    (define-key m (kbd "C-c C-k") 'godoc)))
 
 (zmg/with-package 'go-eldoc
   (add-hook 'go-mode-hook 'go-eldoc-setup))
@@ -284,10 +282,10 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
 
 (zmg/with-package 'cc-mode
   (let ((m c-mode-map))
-    (define-key m "C-h M" 'man-follow)
-    (define-key m "C-c C-d" 'gdb)
-    (define-key m "C-m" 'c-context-line-break)
-    (define-key m "C-c o" 'ff-find-other-file))
+    (define-key m (kbd "C-h M") 'man-follow)
+    (define-key m (kbd "C-c C-d") 'gdb)
+    (define-key m (kbd "C-m") 'c-context-line-break)
+    (define-key m (kbd "C-c o") 'ff-find-other-file))
 
   (add-hook 'c-mode-common-hook 'which-function-mode)
   (add-hook 'c-mode-common-hook 'cwarn-mode)

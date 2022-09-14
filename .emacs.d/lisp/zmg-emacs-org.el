@@ -69,8 +69,8 @@
   ;;  ol
   (setq org-link-keep-stored-after-insertion t)
   (global-set-key (kbd "C-c l") 'org-store-link)
-  (define-key org-mode-map "C-c L" 'org-toggle-link-display)
-  (define-key org-mode-map "C-c C-y" 'org-insert-last-stored-link)
+  (define-key org-mode-map (kbd "C-c L") 'org-toggle-link-display)
+  (define-key org-mode-map (kbd "C-c C-y") 'org-insert-last-stored-link)
 
   ;;  org-capture
   (let ((todo-template (concat "* TODO %^{Title}\n"

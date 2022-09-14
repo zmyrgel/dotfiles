@@ -3,8 +3,8 @@
 ;;; ------------------------------
 
 (when (version< "28.2" emacs-version)
-  (define-key ctl-x-map "C-j" 'dired-jump)
-  (define-key ctl-x-4-map "C-j" 'dired-jump-other-window))
+  (define-key ctl-x-map (kbd "C-j") 'dired-jump)
+  (define-key ctl-x-4-map (kbd "C-j") 'dired-jump-other-window))
 
 (add-hook 'dired-mode-hook 'hl-line-mode)
 (add-hook 'dired-mode-hook 'dired-hide-details-mode)

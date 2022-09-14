@@ -127,6 +127,6 @@
            (eq (cdr pair) 'sgml-mode))
        (setcdr pair 'nxml-mode)))
  auto-mode-alist)
-(define-key global-map (kbd "C-c C-f") 'bf-pretty-print-xml-region)
+;;(define-key global-map (kbd "C-c C-f") 'bf-pretty-print-xml-region)
 
 (provide 'zmg-emacs-text)

@@ -147,6 +147,6 @@
   (add-to-list 'auto-mode-alist '("\\.http\\'" . restclient-mode))
   ;;TODO: change to only apply json formatting when the content-type is
   ;;application/json
-  (define-key restclient-mode-map "C-c C-f" 'json-mode-beautify))
+  (define-key restclient-mode-map (kbd "C-c C-f") 'json-mode-beautify))
 
 (provide 'zmg-emacs-web)
