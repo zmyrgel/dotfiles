@@ -3,7 +3,7 @@
 ;;; ------------------------------
 
 ;; rcirc
-(zmg/with-package 'rcirc
+(with-eval-after-load 'rcirc
   (setq rcirc-server-alist
 	'(("irc.libera.chat"
            :channels ("#openbsd" "#lisp")
@@ -23,7 +23,7 @@
   (setq rcirc-time-format "%Y-%m-%d %H:%M "))
 
 ;;  erc
-(zmg/with-package 'erc
+(with-eval-after-load 'erc
   (add-hook 'erc-mode-hook 'erc-services-mode)
   (add-hook 'erc-mode-hook 'erc-autojoin-mode)
   (add-hook 'erc-mode-hook 'erc-match-mode)
@@ -72,7 +72,8 @@
 ;;; Web Browsing settings
 ;;; ------------------------------
 
-(zmg/with-package 'elfeed
+(ensure-packages-present 'elfeed)
+(with-eval-after-load 'elfeed
   (setq elfeed-use-curl t)
   (setq elfeed-curl-max-connections 10)
   (setq elfeed-db-directory "~/.emacs.d/elfeed/")
@@ -114,7 +115,8 @@
 ;;            eww-search-words
 ;;            eww-open-in-new-buffer
 ;;            eww-open-file)
-(zmg/with-package 'eww
+
+(with-eval-after-load 'eww
   (setq eww-restore-desktop nil)
   (setq eww-desktop-remove-duplicates t)
   (setq eww-header-line-format "%u")
@@ -143,10 +145,11 @@
   (setq browse-url-firefox-new-window-is-tab t)
   (setq browse-url-browser-function 'eww-browse-url))
 
-(zmg/with-package 'restclient
+(ensure-packages-present 'restclient)
   (add-to-list 'auto-mode-alist '("\\.http\\'" . restclient-mode))
-  ;;TODO: change to only apply json formatting when the content-type is
-  ;;application/json
+;;TODO: change to only apply json formatting when the content-type is
+;;application/json
+(with-eval-after-load 'restclient
   (define-key restclient-mode-map (kbd "C-c C-f") 'json-mode-beautify))
 
 (provide 'zmg-emacs-web)

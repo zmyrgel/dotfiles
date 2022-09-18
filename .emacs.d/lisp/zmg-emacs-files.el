@@ -33,14 +33,8 @@
   (setq dired-vc-rename-file t))
 
 ;; bongo
-(zmg/with-package 'bongo
+(with-eval-after-load 'bongo
   (add-hook 'bongo-player-started-hook 'bongo-no-autoplay-video)
-  (global-set-key (kbd "<C-XF86AudioPlay>") 'bongo-pause/resume)
-  (global-set-key (kbd "<C-XF86AudioNext>") 'bongo-next)
-  (global-set-key (kbd "<C-XF86AudioPrev>") 'bongo-previous)
-  (global-set-key (kbd "<M-XF86AudioPlay>") 'bongo-show)
-  (global-set-key (kbd "C-z B") 'bongo)
-
   (let ((map bongo-playlist-mode-map))
     (define-key map "n" 'bongo-next-object)
     (define-key map "p" 'bongo-previous-object)
@@ -79,5 +73,11 @@
            "ogg" "flac" "mp3" "m4a" "mka" "wav" "wma"
            "mpg" "mpeg" "vob" "avi" "ogm" "mp4" "m4v"
            "mkv" "flv" "mov" "asf" "wmv" "rm" "rmvb" "ts"))))
+
+(global-set-key (kbd "<C-XF86AudioPlay>") 'bongo-pause/resume)
+(global-set-key (kbd "<C-XF86AudioNext>") 'bongo-next)
+(global-set-key (kbd "<C-XF86AudioPrev>") 'bongo-previous)
+(global-set-key (kbd "<M-XF86AudioPlay>") 'bongo-show)
+(global-set-key (kbd "C-z B") 'bongo)
 
 (provide 'zmg-emacs-files)

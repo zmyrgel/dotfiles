@@ -16,7 +16,7 @@
 (setq send-mail-function 'smtpmail-send-it)
 
 ;; message
-(zmg/with-package 'gnus
+(with-eval-after-load 'gnus
   (setq mail-user-agent 'message-user-agent)
   (setq message-mail-user-agent nil)    ; default is `gnus'
   (setq compose-mail-user-agent-warnings nil)

@@ -5,7 +5,7 @@
 ;; init
 (setq org-list-allow-alphabetical t)
 
-(zmg/with-package 'org
+(with-eval-after-load 'org
   (setq org-directory "/ssh:tmy@mars.bittivirhe.fi:Org")
   (setq org-default-notes-file (concat org-directory "/notes.org"))
   (setq org-agenda-files (list org-directory))
@@ -68,7 +68,6 @@
 
   ;;  ol
   (setq org-link-keep-stored-after-insertion t)
-  (global-set-key (kbd "C-c l") 'org-store-link)
   (define-key org-mode-map (kbd "C-c L") 'org-toggle-link-display)
   (define-key org-mode-map (kbd "C-c C-y") 'org-insert-last-stored-link)
 
@@ -94,7 +93,6 @@
   (setq org-capture-templates-contexts
 	'(("r" ((in-mode . "gnus-article-mode")
 		(in-mode . "gnus-summary-mode")))))
-  (global-set-key (kbd "C-c c") 'org-capture)
 
   ;; org-agenda
   (setq org-agenda-span 'week)
@@ -118,7 +116,6 @@
   (setq org-agenda-skip-deadline-prewarning-if-scheduled 1)
   (setq org-agenda-time-leading-zero t)
   (setq org-agenda-timegrid-use-ampm nil)
-  (global-set-key (kbd "C-c a") 'org-agenda)
 
   ;; org-src
   (setq org-src-tab-acts-natively t)
@@ -164,5 +161,9 @@
            :publishing-function org-html-publish-to-html
            :auto-sitemap t)
           ("all" :components ("blog")))))
+
+(global-set-key (kbd "C-c a") 'org-agenda)
+(global-set-key (kbd "C-c l") 'org-store-link)
+(global-set-key (kbd "C-c c") 'org-capture)
 
 (provide 'zmg-emacs-org)

@@ -41,6 +41,6 @@
 (setq display-time-format nil)
 (setq display-time-use-mail-icon t)
 
-(zmg/with-package 'suomalainen-kalenteri)
+(ensure-packages-present 'suomalainen-kalenteri)
 
 (provide 'zmg-emacs-calendar)

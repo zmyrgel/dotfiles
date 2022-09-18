@@ -2,27 +2,26 @@
 ;;; Completion
 ;;; ------------------------------
 
-(zmg/with-package 'orderless)
+(ensure-packages-present '(orderless marginalia embark corfu vertico))
 
-(zmg/with-package 'marginalia
-  (setq marginalia-max-relative-age 0)
-  (marginalia-mode))
+(setq marginalia-max-relative-age 0)
+(marginalia-mode)
 
-(zmg/with-package 'embark
-  (setq prefix-help-command #'embark-prefix-help-command)
-  (add-to-list 'display-buffer-alist
-               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-		 nil
-		 (window-parameters (mode-line-format . none))))
-  (global-set-key (kbd "C-.") 'embark-act)
-  (global-set-key (kbd "M-.") 'embark-dwim)
-  (global-set-key (kbd "C-h B") 'embark-bindings))
+;;(zmg/with-package 'embark
+(setq prefix-help-command #'embark-prefix-help-command)
+(add-to-list 'display-buffer-alist
+             '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+	       nil
+	       (window-parameters (mode-line-format . none))))
+(global-set-key (kbd "C-.") 'embark-act)
+(global-set-key (kbd "M-.") 'embark-dwim)
+(global-set-key (kbd "C-h B") 'embark-bindings)
 
-(zmg/with-package 'corfu
-  (global-corfu-mode))
+(require 'corfu nil t)
+(global-corfu-mode)
 
-(zmg/with-package 'vertico
-  (vertico-mode))
+(require 'vertico nil t)
+(vertico-mode)
 
 ;; minibuffer
 (setq completion-styles '(orderless))
@@ -65,14 +64,14 @@
 ;; hippie-exp
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
 
-(zmg/with-package 'dabbrev
-  (setq dabbrev-abbrev-skip-leading-regexp "[$*/=']")
-  (setq dabbrev-backward-only nil)
-  (setq dabbrev-case-distinction 'case-replace)
-  (setq dabbrev-case-fold-search 'case-fold-search)
-  (setq dabbrev-case-replace 'case-replace)
-  (setq dabbrev-check-other-buffers t)
-  (setq dabbrev-eliminate-newlines nil)
-  (setq dabbrev-upcase-means-case-search t))
+;;(zmg/with-package 'dabbrev
+(setq dabbrev-abbrev-skip-leading-regexp "[$*/=']")
+(setq dabbrev-backward-only nil)
+(setq dabbrev-case-distinction 'case-replace)
+(setq dabbrev-case-fold-search 'case-fold-search)
+(setq dabbrev-case-replace 'case-replace)
+(setq dabbrev-check-other-buffers t)
+(setq dabbrev-eliminate-newlines nil)
+(setq dabbrev-upcase-means-case-search t)
 
 (provide 'zmg-emacs-completion)

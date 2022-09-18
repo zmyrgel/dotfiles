@@ -3,7 +3,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2022-09-12 19:01:03 (tmy)>
+;;; Time-stamp: <2022-09-18 21:38:55 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -35,6 +35,15 @@
 (package-refresh-contents 'async)
 
 ;;(package-refresh-contents)
+
+(defun ensure-packages-present (maybe-packages)
+  "Ensures given PACKAGES are installed."
+  (dolist (package (if (atom maybe-packages)
+                       (list maybe-packages)
+                     maybe-packages))
+    (unless (or (package-built-in-p package)
+                (package-installed-p package))
+      (package-install package))))
 
 (defmacro zmg/with-package (package &rest body)
   "Evaluate BODY after loading the given PACKAGE, installing it if needed."

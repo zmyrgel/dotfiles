@@ -67,15 +67,8 @@
 (setq ispell-program-name "aspell")
 (setq ispell-dictionary "en_US")
 
-(zmg/with-package 'wcheck-mode
-  (let ((map (make-sparse-keymap)))
-    (define-key map "w" 'wcheck-mode)
-    (define-key map "l" 'wcheck-change-language)
-    (define-key map "a" 'wcheck-actions)
-    (define-key map "f" 'wcheck-jump-forward)
-    (define-key map "b" 'wcheck-jump-backward)
-    (define-key ctl-x-x-map "w" map))
-
+(ensure-packages-present '(wcheck-mode))
+(with-eval-after-load 'wcheck-mode
   (setq wcheck-language-data
 	`(("British English"
            (program . ,(or (executable-find "aspell") "ispell"))
@@ -91,6 +84,14 @@
            (action-program . "/usr/bin/enchant")
            (action-args "-a" "-d" "fi")
            (action-parser . wcheck-parser-ispell-suggestions)))))
+
+(let ((map (make-sparse-keymap)))
+  (define-key map "w" 'wcheck-mode)
+  (define-key map "l" 'wcheck-change-language)
+  (define-key map "a" 'wcheck-actions)
+  (define-key map "f" 'wcheck-jump-forward)
+  (define-key map "b" 'wcheck-jump-backward)
+  (define-key ctl-x-x-map "w" map))
 
 (add-hook 'before-save-hook 'time-stamp)
 (add-hook 'comint-output-filter-functions 'comint-watch-for-password-prompt)
