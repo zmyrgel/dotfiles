@@ -7,7 +7,8 @@
 (setq save-place-file (locate-user-emacs-file "places"))
 (save-place-mode 1)
 
-(add-to-list 'recentf-exclude "\\elpa")
+(with-eval-after-load 'recentf-mode
+  (add-to-list 'recentf-exclude "\\elpa"))
 (setq recentf-save-file (locate-user-emacs-file "recentf"))
 (setq recentf-max-saved-items 50)
 (add-hook 'after-init-hook 'recentf-mode)

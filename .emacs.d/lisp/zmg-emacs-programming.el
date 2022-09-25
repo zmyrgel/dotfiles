@@ -35,7 +35,8 @@
          (4 'change-log-date))))
 
 ;; allow reverting changes in vc-dir
-(define-key vc-dir-mode-map (kbd "R") 'vc-revert)
+(with-eval-after-load 'vc-dir
+  (define-key vc-dir-mode-map (kbd "R") 'vc-revert))
 
 (defun vc-git-checkout-remote ()
   "Checkout Git remote and set local branch to track it."
