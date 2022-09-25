@@ -1,6 +1,11 @@
-;;; ------------------------------
-;;; General
-;;; ------------------------------
+;;; zmg-emacs-general.el --- General Emacs settings  -*- lexical-binding: t; -*-
+;;;
+;;; Commentary:
+;;; - fix warnings on this init:
+;;; -- flymake--handle-report: Can’t find state for flymake-eslint--checker in ‘flymake--state’
+;;; - improve init speed, currently 7s.
+
+;;; Code:
 
 (defun prepend-to-exec-path (path)
   "Add given PATH to beginning of exec-path if it exists."
@@ -17,6 +22,11 @@
   (prepend-to-exec-path p))
 
 (add-hook 'after-init-hook 'delete-selection-mode)
+
+(ensure-packages-present 'diminish)
+(diminish 'eldoc-mode)
+(diminish 'whitespace-mode)
+(diminish 'subword-mode)
 
 ;; | Key chord | Description                  |
 ;; |-----------+------------------------------|
@@ -122,3 +132,5 @@
 (add-hook 'ibuffer-mode-hook 'ibuffer-auto-mode)
 
 (provide 'zmg-emacs-general)
+
+;; zmg-emacs-general.el ends here

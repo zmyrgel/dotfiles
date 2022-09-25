@@ -1,15 +1,16 @@
-;;; ------------------------------
-;;; Session
-;;; ------------------------------
+;;; zmg-emacs-session.el --- Session Emacs settings  -*- lexical-binding: t; -*-
+;;;
+;;; Commentary:
+
+;;; Code:
 
 (setq save-place-file (locate-user-emacs-file "places"))
 (save-place-mode 1)
 
-(zmg/with-package 'recentf
-  (add-to-list 'recentf-exclude "\\elpa")
-  (setq recentf-save-file (locate-user-emacs-file "recentf"))
-  (setq recentf-max-saved-items 50)
-  (add-hook 'after-init-hook 'recentf-mode))
+(add-to-list 'recentf-exclude "\\elpa")
+(setq recentf-save-file (locate-user-emacs-file "recentf"))
+(setq recentf-max-saved-items 50)
+(add-hook 'after-init-hook 'recentf-mode)
 
 (setq bookmark-default-file (locate-user-emacs-file "bookmarks"))
 (setq bookmark-save-flag 1)
@@ -38,3 +39,5 @@
 (setq require-final-newline t)
 
 (provide 'zmg-emacs-session)
+
+;; zmg-emacs-session.el ends here

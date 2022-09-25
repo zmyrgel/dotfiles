@@ -1,6 +1,9 @@
-;;; ------------------------------
-;;; Shell settings
-;;; ------------------------------
+;;; zmg-emacs-shell.el --- Shell Emacs settings  -*- lexical-binding: t; -*-
+;;;
+;;; Commentary:
+;;; -
+
+;;; Code:
 
 ;; FIXME: rely on system config, use man command flags instead of env?
 (let ((home-man (expand-file-name "~/share/man"))
@@ -69,3 +72,5 @@
 (setq eshell-hist-ignoredups t)
 
 (provide 'zmg-emacs-shell)
+
+;; zmg-emacs-shell.el ends here

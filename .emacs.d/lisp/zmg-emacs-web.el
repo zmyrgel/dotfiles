@@ -1,6 +1,9 @@
-;;; -----------------------------
-;;; IRC
-;;; ------------------------------
+;;; zmg-emacs-web.el --- Web settings  -*- lexical-binding: t; -*-
+;;;
+;;; Commentary:
+;;; - Need for ERC config at all?
+
+;;; Code:
 
 ;; rcirc
 (with-eval-after-load 'rcirc
@@ -14,12 +17,13 @@
   (setq rcirc-default-full-name "Curious Minds Want To Know")
 
   (rcirc-track-minor-mode 1)
+  (rcirc-omit-mode 1)
 
   (when-let ((nickserv-pass (password-lookup :host "irc.libera.chat")))
     (setq rcirc-authinfo
           `(("libera" nickserv "zmyrgel" ,nickserv-pass))))
 
-  (setq rcirc-omit-responses '("JOIN" "PART" "QUIT" "NICK" "AWAY"))
+  ;;(setq rcirc-omit-responses '("JOIN" "PART" "QUIT" "NICK" "AWAY"))
   (setq rcirc-time-format "%Y-%m-%d %H:%M "))
 
 ;;  erc
@@ -153,3 +157,5 @@
   (define-key restclient-mode-map (kbd "C-c C-f") 'json-mode-beautify))
 
 (provide 'zmg-emacs-web)
+
+;; zmg-emacs-web.el ends here

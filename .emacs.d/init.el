@@ -1,12 +1,11 @@
-;;; init.el --- Emacs lisp initialization file
-;;; -*- mode: emacs-lisp; coding: utf-8-unix; indent-tabs-mode: nil -*-
+;;; init.el --- Emacs initialization file  -*- lexical-binding: t; -*-
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2022-09-18 21:38:55 (tmy)>
+;;; Time-stamp: <2022-09-25 09:48:54 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Commentary:
 ;;; - fix warnings on this init:
 ;;; -- flymake--handle-report: Can’t find state for flymake-eslint--checker in ‘flymake--state’
@@ -25,8 +24,8 @@
 (require 'package)
 
 (add-to-list 'package-archives (cons "melpa"
-                                    (format "http%s://melpa.org/packages/"
-                                            (if (gnutls-available-p) "s" ""))))
+                                     (format "http%s://melpa.org/packages/"
+                                             (if (gnutls-available-p) "s" ""))))
 (setq package-archive-priorities
       '(("gnu" . 2)
         ("nongnu" . 1)))
@@ -34,6 +33,7 @@
 ;; TODO: sync refresh?
 (package-refresh-contents 'async)
 
+(defvar *packages-refreshed* nil)
 ;;(package-refresh-contents)
 
 (defun ensure-packages-present (maybe-packages)

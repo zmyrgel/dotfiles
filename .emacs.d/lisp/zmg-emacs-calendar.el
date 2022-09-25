@@ -1,6 +1,9 @@
-;;; ------------------------------
-;;; Calendar and diary settings
-;;; ------------------------------
+;;; zmg-emacs-calendar.el --- Calendar settings  -*- lexical-binding: t; -*-
+;;;
+;;; Commentary:
+;;; - check calendar settings
+
+;;; Code:
 
 (add-hook 'diary-list-entries-hook 'diary-include-other-diary-files)
 (add-hook 'diary-list-entries-hook 'diary-sort-entries)
@@ -44,3 +47,5 @@
 (ensure-packages-present 'suomalainen-kalenteri)
 
 (provide 'zmg-emacs-calendar)
+
+;; zmg-emacs-calendar.el ends here

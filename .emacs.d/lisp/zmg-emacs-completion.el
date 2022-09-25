@@ -1,13 +1,16 @@
-;;; ------------------------------
-;;; Completion
-;;; ------------------------------
+;;; zmg-emacs-completion.el --- Completion settings  -*- lexical-binding: t; -*-
+;;;
+;;; Commentary:
+;;; - finish corfu, consult?
+;;; - hippie-expand use?
+
+;;; Code:
 
 (ensure-packages-present '(orderless marginalia embark corfu vertico))
 
 (setq marginalia-max-relative-age 0)
 (marginalia-mode)
 
-;;(zmg/with-package 'embark
 (setq prefix-help-command #'embark-prefix-help-command)
 (add-to-list 'display-buffer-alist
              '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
@@ -19,6 +22,29 @@
 
 (require 'corfu nil t)
 (global-corfu-mode)
+;; Optional customizations
+
+;; (setq corfu-cycle nil)                ;; Enable cycling for `corfu-next/previous'
+;; (setq corfu-auto nil)                 ;; Enable auto completion
+;; (setq corfu-separator ?\s)          ;; Orderless field separator
+;; (setq corfu-quit-at-boundary 'separator)   ;; Never quit at completion boundary
+;; (setq corfu-quit-no-match 'separator)      ;; Never quit, even if there is no match
+;; (setq corfu-preview-current 'insert)    ;; Disable current candidate preview
+;; (setq corfu-preselect-first t)    ;; Disable candidate preselection
+;; (setq corfu-on-exact-match 'insert)     ;; Configure handling of exact matches
+;; (setq corfu-echo-documentation '(1.0 . 0.2) ;; Disable documentation in the echo area
+;; (setq corfu-scroll-margin 2)        ;; Use scroll margin
+
+;; TAB cycle if there are only few candidates
+(setq completion-cycle-threshold 3)
+
+;; Emacs 28: Hide commands in M-x which do not apply to the current mode.
+;; Corfu commands are hidden, since they are not supposed to be used via M-x.
+(setq read-extended-command-predicate #'command-completion-default-include-p)
+
+;; Enable indentation+completion using the TAB key.
+;; `completion-at-point' is often bound to M-TAB.
+(setq tab-always-indent 'complete)
 
 (require 'vertico nil t)
 (vertico-mode)
@@ -64,7 +90,6 @@
 ;; hippie-exp
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
 
-;;(zmg/with-package 'dabbrev
 (setq dabbrev-abbrev-skip-leading-regexp "[$*/=']")
 (setq dabbrev-backward-only nil)
 (setq dabbrev-case-distinction 'case-replace)
@@ -75,3 +100,5 @@
 (setq dabbrev-upcase-means-case-search t)
 
 (provide 'zmg-emacs-completion)
+
+;;; zmg-emacs-completion.el ends here

@@ -1,10 +1,9 @@
-;;; ------------------------------
-;;; Programming settings
-;;; ------------------------------
+;;; zmg-emacs-programming.el --- Programming settings  -*- lexical-binding: t; -*-
+;;;
+;;; Commentary:
+;;; -
 
-;; eldoc
-;; :diminish
-(global-eldoc-mode 1)
+;;; Code:
 
 ;; TODO: keybindings:
 ;; C-x v t - prefix for tag commands
@@ -35,6 +34,9 @@
          (3 'change-log-name)
          (4 'change-log-date))))
 
+;; allow reverting changes in vc-dir
+(define-key vc-dir-mode-map (kbd "R") 'vc-revert)
+
 (defun vc-git-checkout-remote ()
   "Checkout Git remote and set local branch to track it."
   )
@@ -49,7 +51,7 @@
       (unless (bolp)
         (beginning-of-line))
       (or (looking-at commit-re)
-          (re-search-backward commit-er))
+          (re-search-backward commit-re))
       (forward-word)
       (forward-char)
       (kill-line))))
@@ -58,7 +60,8 @@
 (defun vc-git-send-patch ()
   "Prepare git commits to be sent via email using Git CLI tools.
 
-Perhaps useful to set global option: `git config --global sendemail.annotate yes'."
+Perhaps useful to set global option: `git config --global
+sendemail.annotate yes'."
   (interactive)
   (with-editor-async-shell-command "git send-email -1"))
 
@@ -119,7 +122,6 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
 (add-hook 'ediff-after-quit-hook-internal-hook 'winner-undo)
 
 ;; subword
-;; :diminish
 (add-hook 'prog-mode-hook 'subword-mode)
 
 ;; prog-mode
@@ -180,7 +182,6 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
   (add-hook 'go-mode-hook 'go-eldoc-setup))
 
 ;;; Ruby
-;; (zmg/with-package 'ruby-mode
 (dolist (m '(("\\.\\(?:gemspec\\|irbrc\\|gemrc\\|rake\\|rb\\|ru\\|thor\\)\\'" . ruby-mode)
              ("\\(Capfile\\|Gemfile\\(?:\\.[a-zA-Z0-9._-]+\\)?\\|[rR]akefile\\)\\'"  . ruby-mode)))
   (add-to-list 'magic-mode-alist m))
@@ -192,6 +193,9 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
 (add-hook 'ruby-mode-hook 'my/ruby-mode-hook)
 
 ;;; Lisp programming
+
+(global-eldoc-mode 1)
+
 (ensure-packages-present 'sly)
 (when-let ((sbcl-bin-path (car (file-expand-wildcards "~/sbcl-*-linux" t))))
   (setenv "SBCL_HOME" sbcl-bin-path)
@@ -208,11 +212,15 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
 	      ((file-exists-p home-path) home-path)
 	      (t "http://www.lispworks.com/documentation/HyperSpec/Data/Map_Sym.txt"))))
 
-(when (file-exists-p "~/quicklisp/log4sly-setup.el")
-  (load "~/quicklisp/log4sly-setup.el")
-  (global-log4sly-mode 1))
+;; if we have log4cl dist use it to set global logging
+(let ((default-directory (expand-file-name "~/quicklisp/dists/quicklisp/software/")))
+  (when-let (log4cl-dirs (file-expand-wildcards "log4cl-*-git"))
+    (display-warning 'warning "log4cl dirs: %s" log4cl-dirs)
+    (add-to-list 'load-path (concat default-directory (car (last log4cl-dirs)) "/elisp"))
+    (require 'log4sly nil t)
+    (global-log4sly-mode 1)))
 
-;; (zmg/package-install 'sly-repl-ansi-color)
+;; (ensure-packages-present 'sly-repl-ansi-color)
 ;; (sly-enable-contrib 'sly-repl-ansi-color)
 
 ;; (zmg/package-instal 'quack)
@@ -227,43 +235,53 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
 ;; (setq quack-smart-open-paren-p t)
 ;; (setq quack-switch-to-scheme-method 'other-window)
 
-;; (load ""use-package gerbil-mode
-;;   :ensure nil
-;;   :defer t
-;;   :mode (("\\.ss\\'"  . gerbil-mode)
-;;          ("\\.pkg\\'" . gerbil-mode))
-;;   :bind (:map comint-mode-map
-;;               (("C-S-n" . comint-next-input)
-;;                ("C-S-p" . comint-previous-input)
-;;                ("C-S-l" . clear-comint-buffer))
-;;               :map gerbil-mode-map
-;;               (("C-S-l" . clear-comint-buffer)))
-;;   :init
-;;   (when (and (not (getenv "GERBIL_HOME"))
-;;              (file-exists-p "/usr/local/gerbil"))
-;;     (setenv "GERBIL_HOME" "/usr/local/gerbil")
-;;     (prepend-to-exec-path "/usr/local/gerbil/bin"))
+(when (and (not (getenv "GERBIL_HOME"))
+           (file-exists-p "/usr/local/gerbil"))
+  (setenv "GERBIL_HOME" "/usr/local/gerbil")
+  (defvar gerbil-home (getenv "GERBIL_HOME"))
+  (prepend-to-exec-path "/usr/local/gerbil/bin")
 
-;;   (defvar gerbil-home (getenv "GERBIL_HOME"))
-;;   (autoload 'gerbil-mode
-;;     (concat gerbil-home "/etc/gerbil-mode.el") "Gerbil editing mode." t)
-;;   :hook
-;;   ((gerbil-mode-hook . linum-mode)
-;;    (inferior-scheme-mode-hook . gambit-inferior-mode))
-;;   :config
-;;   (require 'gambit
-;;            (concat (getenv "GAMBIT_HOME") "/misc/gambit.el"))
-;;   (setf scheme-program-name (concat gerbil-home "/bin/gxi"))
+  (autoload 'gerbil-mode
+    (concat gerbil-home "/etc/gerbil-mode.el") "Gerbil editing mode." t)
 
-;;   (let ((tags (locate-dominating-file default-directory "TAGS")))
-;;     (when tags (visit-tags-table tags)))
-;;   (visit-tags-table (concat gerbil "/src/TAGS"))
+  (add-to-list auto-mode-alist '(("\\.ss\\'"  . gerbil-mode)
+                                 ("\\.pkg\\'" . gerbil-mode)))
+  (let ((m comint-mode-map))
+    (define-key m (kbd "C-S-n") 'comint-next-input)
+    (define-key m (kbd "C-S-p") 'comint-previous-input)
+    (define-key m (kbd "C-S-l") 'clear-comint-buffer))
 
-;;   (defun clear-comint-buffer ()
-;;     (interactive)
-;;     (with-current-buffer "*scheme*"
-;;       (let ((comint-buffer-maximum-size 0))
-;;         (comint-truncate-buffer)))))
+  (with-eval-after-load 'gerbil-mode
+    (setf scheme-program-name (concat gerbil "/bin/gxi"))
+    (when (require 'gambit nil t)
+      (setf scheme-program-name (concat gerbil-home "/bin/gxi"))
+      (add-hook 'inferior-scheme-mode-hook 'gambit-inferior-mode))
+
+    (define-key m (kbd "C-S-l") 'clear-comint-buffer)
+
+    (defun gerbil-setup-buffers ()
+      "Change current buffer mode to gerbil-mode and start a REPL"
+      (interactive)
+      (gerbil-mode)
+      (split-window-right)
+      (shrink-window-horizontally 2)
+      (let ((buf (buffer-name)))
+        (other-window 1)
+        (run-scheme "gxi")
+        (switch-to-buffer-other-window "*scheme*" nil)
+        (switch-to-buffer buf))))
+
+  (global-set-key (kbd "C-c C-g") 'gerbil-setup-buffers)
+
+  (let ((tags (locate-dominating-file default-directory "TAGS")))
+    (when tags (visit-tags-table tags)))
+  (visit-tags-table (concat gerbil "/src/TAGS"))
+
+  (defun clear-comint-buffer ()
+    (interactive)
+    (with-current-buffer "*scheme*"
+      (let ((comint-buffer-maximum-size 0))
+        (comint-truncate-buffer)))))
 
 (ensure-packages-present '(clojure-mode cider))
 (add-to-list 'magic-mode-alist '("\\.clj$" . clojure-mode))
@@ -319,15 +337,22 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
 ;;  :init
 (defalias 'perl-mode 'cperl-mode)
 
-(defun my/cperl-mode-hook ()
-  "Default CPerl settings."
-  (setq cperl-font-lock t)
-  (setq cperl-info-on-command-no-prompt t)
-  (setq cperl-clobber-lisp-bindings t)
-  (setq cperl-lazy-help-time 5)
-  (setq cperl-indent-level 4)
-  (setq cperl-invalid-face 'default))
-(add-hook 'cperl-mode-hook 'my/cperl-mode-hook)
+(defvar cperl-font-lock)
+(defvar cperl-info-on-command-no-prompt)
+(defvar cperl-clobber-lisp-bindings)
+(defvar cperl-lazy-help-time)
+(defvar cperl-indent-level)
+(defvar cperl-invalid-face)
+(with-eval-after-load 'cperl-mode
+  (defun my/cperl-mode-hook ()
+    "Default CPerl settings."
+    (setq cperl-font-lock t)
+    (setq cperl-info-on-command-no-prompt t)
+    (setq cperl-clobber-lisp-bindings t)
+    (setq cperl-lazy-help-time 5)
+    (setq cperl-indent-level 4)
+    (setq cperl-invalid-face 'default))
+  (add-hook 'cperl-mode-hook 'my/cperl-mode-hook))
 
 ;; (zmg/package-install 'elpy)
 ;; ;; init
@@ -380,3 +405,5 @@ Perhaps useful to set global option: `git config --global sendemail.annotate yes
   (setq whitespace-line-column 120))
 
 (provide 'zmg-emacs-programming)
+
+;; zmg-emacs-programming.el ends here

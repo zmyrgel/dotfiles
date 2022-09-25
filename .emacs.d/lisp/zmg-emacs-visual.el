@@ -1,6 +1,9 @@
-;;; ------------------------------
-;;; Visual settings
-;;; ------------------------------
+;;; zmg-emacs-visual.el --- Visual settings  -*- lexical-binding: t; -*-
+;;;
+;;; Commentary:
+;;; -
+
+;;; Code:
 
 (global-font-lock-mode t)
 
@@ -170,11 +173,9 @@
 (add-hook 'text-mode-hook 'auto-fill-mode)
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
-(zmg/with-package 'easy-kill
-  (global-set-key [remap kill-ring-save] #'easy-kill)
-  (global-set-key [remap mark-sexp] #'easy-mark))
-
-(zmg/with-package 'diminish) ;; XXX: move earlier
+(ensure-packages-present 'easy-kill)
+(global-set-key [remap kill-ring-save] #'easy-kill)
+(global-set-key [remap mark-sexp] #'easy-mark)
 
 ;; theme settings
 (setq modus-themes-italic-constructs t)
@@ -207,3 +208,5 @@
 (load-theme 'modus-vivendi t)
 
 (provide 'zmg-emacs-visual)
+
+;; zmg-emacs-visual.el ends here

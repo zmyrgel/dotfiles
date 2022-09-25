@@ -1,6 +1,9 @@
-;;; ------------------------------
-;;; Email settings
-;;; ------------------------------
+;;; zmg-emacs-email.el --- Email settings  -*- lexical-binding: t; -*-
+;;;
+;;; Commentary:
+;;; - check gnus configuration
+
+;;; Code:
 
 (setq user-mail-address "timo.myyra@bittivirhe.fi")
 (setq user-full-name "Timo Myyrä")
@@ -26,7 +29,7 @@
   (setq message-confirm-send nil)
   (setq message-kill-buffer-on-exit t)
   (setq message-wide-reply-confirm-recipients t)
-  ;;(add-to-list 'mm-body-charset-encoding-alist '(utf-8 . base64)) ;; FIXME: undefined
+  (add-to-list 'mm-body-charset-encoding-alist '(utf-8 . base64)) ;; FIXME: undefined
   (add-hook 'message-setup-hook 'message-sort-headers)
 
   ;; gnus
@@ -72,3 +75,5 @@
 (global-set-key (kbd "C-z m") 'gnus)
 
 (provide 'zmg-emacs-email)
+
+;; zmg-emacs-email.el ends here

@@ -1,8 +1,10 @@
-;;; ------------------------------
-;;; Org-mode
-;;; ------------------------------
+;;; zmg-emacs-org.el --- Org-mode settings  -*- lexical-binding: t; -*-
+;;;
+;;; Commentary:
+;;; -
 
-;; init
+;;; Code:
+
 (setq org-list-allow-alphabetical t)
 
 (with-eval-after-load 'org
@@ -133,24 +135,6 @@
   (setq org-latex-pdf-process
 	'("latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
 
-  (with-eval-after-load "ox-latex"
-    (add-to-list 'org-latex-classes
-		 '("IEEEtran" "\\documentclass[11pt]{IEEEtran}"
-		   ("\\section{%s}" . "\\section*{%s}")
-		   ("\\subsection{%s}" . "\\subsection*{%s}")
-		   ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-		   ("\\paragraph{%s}" . "\\paragraph*{%s}")
-		   ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
-		 t)
-    (add-to-list 'org-latex-classes
-		 '("koma-article" "\\documentclass{scrartcl}"
-		   ("\\section{%s}" . "\\section*{%s}")
-		   ("\\subsection{%s}" . "\\subsection*{%s}")
-		   ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-		   ("\\paragraph{%s}" . "\\paragraph*{%s}")
-		   ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
-		 t))
-
   ;; ox-publish
   (setq org-publish-project-alist
 	'(("blog"
@@ -162,8 +146,28 @@
            :auto-sitemap t)
           ("all" :components ("blog")))))
 
+(with-eval-after-load 'ox-latex
+  (add-to-list 'org-latex-classes
+	       '("IEEEtran" "\\documentclass[11pt]{IEEEtran}"
+		 ("\\section{%s}" . "\\section*{%s}")
+		 ("\\subsection{%s}" . "\\subsection*{%s}")
+		 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+		 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		 ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
+	       t)
+  (add-to-list 'org-latex-classes
+	       '("koma-article" "\\documentclass{scrartcl}"
+		 ("\\section{%s}" . "\\section*{%s}")
+		 ("\\subsection{%s}" . "\\subsection*{%s}")
+		 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+		 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		 ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
+	       t))
+
 (global-set-key (kbd "C-c a") 'org-agenda)
 (global-set-key (kbd "C-c l") 'org-store-link)
 (global-set-key (kbd "C-c c") 'org-capture)
 
 (provide 'zmg-emacs-org)
+
+;; zmg-emacs-org.el ends here

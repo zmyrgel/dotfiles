@@ -1,6 +1,9 @@
-;;; ------------------------------
-;;; Text editing
-;;; ------------------------------
+;;; zmg-emacs-text.el --- Text settings  -*- lexical-binding: t; -*-
+;;;
+;;; Commentary:
+;;; -
+
+;;; Code:
 
 ;; | Key chord           | Description       |
 ;; |---------------------+-------------------|
@@ -21,10 +24,7 @@
 
 ;; electric
 (setq electric-pair-preserve-balance t)
-(setq electric-pair-pairs '((34 . 34)
-                            (8216 . 8217)
-                            (8220 . 8221)
-                            (123 . 125)))
+(add-to-list 'electric-pair-pairs '(?\{ . ?\}) t)
 (setq electric-pair-skip-self t)
 (setq electric-pair-skip-whitespace 'nil)
 (add-hook 'after-init-hook 'electric-indent-mode)
@@ -129,3 +129,5 @@
 ;;(define-key global-map (kbd "C-c C-f") 'bf-pretty-print-xml-region)
 
 (provide 'zmg-emacs-text)
+
+;; zmg-emacs-text.el ends here

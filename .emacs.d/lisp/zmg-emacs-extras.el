@@ -1,3 +1,10 @@
+;;; zmg-emacs-extras.el --- Extra settings  -*- lexical-binding: t; -*-
+;;;
+;;; Commentary:
+;;; - check terraform setup
 
-(ensure-packages-present '(terraform-doc terraform-mode))
-(ensure-packages-present 'keepass-mode)
+;;; Code:
+
+(ensure-packages-present '(terraform-doc terraform-mode keepass-mode))
+
+;; zmg-emacs-extras.el ends here

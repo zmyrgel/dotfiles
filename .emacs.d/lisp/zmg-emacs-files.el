@@ -1,6 +1,9 @@
-;;; ------------------------------
-;;; File and directory management
-;;; ------------------------------
+;;; zmg-emacs-files.el --- Files settings  -*- lexical-binding: t; -*-
+;;;
+;;; Commentary:
+;;; - check calendar settings
+
+;;; Code:
 
 (when (version< "28.2" emacs-version)
   (define-key ctl-x-map (kbd "C-j") 'dired-jump)
@@ -31,6 +34,8 @@
 (unless (version<= emacs-version "27")
   (setq dired-create-destination-dirs 'ask)
   (setq dired-vc-rename-file t))
+
+;; TRAMP stuff
 
 ;; bongo
 (with-eval-after-load 'bongo
@@ -81,3 +86,5 @@
 (global-set-key (kbd "C-z B") 'bongo)
 
 (provide 'zmg-emacs-files)
+
+;; zmg-emacs-files.el ends here
