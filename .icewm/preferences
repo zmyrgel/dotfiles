@@ -5,7 +5,7 @@
 # Be sure to uncomment them if you change them!
 
 #  Use a 32-bit visual for alpha blending
-# Alpha=0 # 0/1
+Alpha=1 # 0/1
 
 #  Synchronize X11 for debugging (slow)
 # Synchronize=0 # 0/1
@@ -146,7 +146,7 @@
 # CenterTransientsOnOwner=1 # 0/1
 
 #  Menus track mouse even with no mouse buttons held
-# MenuMouseTracking=0 # 0/1
+MenuMouseTracking=1 # 0/1
 
 #  Auto raise windows after delay
 # AutoRaise=0 # 0/1
@@ -604,10 +604,10 @@ LockCommand="xlock -name icewm -mode blank"
 #  Command to select and run a program
 # RunCommand=""
 
-# OpenCommand=""
+OpenCommand="pcmanfm"
 
 #  Terminal emulator must accept -e option.
-# TerminalCommand="xterm -hold"
+TerminalCommand="xterm -hold"
 
 #  Command to start logout
 # LogoutCommand=""
@@ -741,12 +741,12 @@ KeyTaskBarSwitchPrev=""
 KeySysWinMenu="Shift+Esc"
 KeySysDialog="Super+Del"
 KeySysMenu="Super"
-KeySysWindowList="Super+Esc"
+KeySysWindowList="Super+w"
 KeySysWinListMenu=""
 KeySysAddressBar="Super+Space"
-KeySysWorkspacePrev="Super+Left"
-KeySysWorkspaceNext="Super+Right"
-KeySysWorkspaceLast="Super+Down"
+KeySysWorkspacePrev="Super+comma"
+KeySysWorkspaceNext="Super+period"
+KeySysWorkspaceLast="Super+apostrophe"
 KeySysWorkspacePrevTakeWin="Super+Shift+Left"
 
 # KeySysWorkspaceNextTakeWin="Alt+Ctrl+Shift+Right"
