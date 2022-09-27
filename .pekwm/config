@@ -1,11 +1,16 @@
 INCLUDE = "$_PEKWM_ETC_PATH/config_system"
 
 Files {
-    Theme = "~/.pekwm/themes/Zukitwo_Dark_PekWM"
+    Theme = "~/.pekwm/themes/mavon-t"
+    ThemeVariant = ""
 }
 
 Screen {
-    Workspaces = "6"
-    WorkspacesPerRow = "0"
-    WorkspaceNames = "Main;Web;Email;Music;Graph;Admin"
+    Workspaces = "4"
+    WorkspacesPerRow = "1"
+    WorkspaceNames = "01;02;03;04"
+
+    Placement {
+        Model = "CenteredOnParent Smart MouseNotUnder"
+    }
 }

@@ -1,3 +1,25 @@
+;; -*- mode: lisp; coding: utf-8-unix; indent-tabs-mode: nil -*-
+;;(load "~/src/lisp/asdf.lisp")
+;;(require :asdf)
+
+;; ;; Load JNA for CFFI
+;; (handler-case
+;;     (progn
+;;       (require :abcl-contrib)
+;;       (require :jna))
+;;   (condition (c)
+;;     (progn
+;;       (warn "~&For Lisp implementation version: ~S~&Failed to load JNA via ABCL-CONTRIB on because: ~S~%Attempting to monkey patch via ABCL-ASDF."
+;;             (lisp-implementation-version)
+;;             c)
+;;       (require :abcl-contrib)
+;;       (require :abcl-asdf)
+;;       (java:add-to-classpath
+;;        (funcall (intern #.(string :resolve-dependencies) :abcl-asdf)
+;;                 "com.sun.jna" "jna" :version "3.0.9"))
+;;       (provide :jna))))
+
+;;; The following lines added by ql:add-to-init-file:
 #-quicklisp
 (let ((quicklisp-init (merge-pathnames "quicklisp/setup.lisp"
                                        (user-homedir-pathname))))

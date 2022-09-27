@@ -1,11 +1,12 @@
 # Autogroup definitions
 autogroup 3 "aterm,XTerm"
 autogroup 3 "xterm,XTerm"
-autogroup 1 "firefox,We"
+autogroup 2 "firefox,We"
+autogroup 1 "emacs"
 
 # Set default Xft(3) font
 #borderwidth 1
-#color activeborder 
+#color activeborder
 #color font
 #color selfont
 #color groupborder
@@ -14,17 +15,19 @@ autogroup 1 "firefox,We"
 #color urgencyborder
 #color ungroupborder
 
-fontname "terminus:pixelsize=14:bold"
+Fontname "Input Mono:pixelsize=14:bold"
 #gap top bottom left right
 
 # Turn on sticky-group mode
-#sticky yes
+sticky yes
 
 # Any entry here is shown in the application menu
 command firefox		firefox
-command emacs		"xterm -e emacs -nw"
+command chrome		chrome
+command emacs		"emacs"
 command deadbeef	deadbeef
 command top		"xterm -e top"
+command term		"xterm"
 
 # Ignore programs by that name by not drawing borders around them.
 ignore XMMS
@@ -34,101 +37,95 @@ ignore xclock
 
 ### Keybindings ###
 
-bind CM-Return unbind
-bind 4-Return terminal
-bind CM-Delete unbind	# Lock the screen.
-bind 4-l lock
-#bind M-Return unbind	# Hide current window.
-#bind M-Down unbind	# Lower current window.
-bind M-Up unbind	# Raise current window.
-bind M-slash unbind	# Search for windows.
-bind 4-w search
-bind C-slash unbind	# Search for applications.
-bind 4-a menusearch
-bind 4S-g groupsearch	# Search for groups. 
-bind CM-n unbind	# Label current window.
-bind 4-n label
-#M-Tab           Cycle through currently visible windows.
-#MS-Tab          Reverse cycle through currently visible windows.
-bind CM-x unbind
-bind 4-x delete
-bind CM-1 unbind	# Select group n, where n is 1-9.
-bind CM-2 unbind
-bind CM-3 unbind
-bind CM-4 unbind
-bind CM-5 unbind
-bind CM-6 unbind
-bind CM-7 unbind
-bind CM-8 unbind
-bind CM-9 unbind
-bind 4-1 group1
-bind 4-2 group2
-bind 4-3 group3
-bind 4-4 group4
-bind 4-5 group5
-bind 4-6 group6
-bind 4-7 group7
-bind 4-8 group8
-bind 4-9 group9
-bind 4S-1 movetogroup1
-bind 4S-2 movetogroup2
-bind 4S-3 movetogroup3
-bind 4S-4 movetogroup4
-bind 4S-5 movetogroup5
-bind 4S-6 movetogroup6
-bind 4S-7 movetogroup7
-bind 4S-8 movetogroup8
-bind 4S-9 movetogroup9
-bind 4C-1 grouponly1
-bind 4C-2 grouponly2
-bind 4C-3 grouponly3
-bind 4C-4 grouponly4
-bind 4C-5 grouponly5
-bind 4C-6 grouponly6
-bind 4C-7 grouponly7
-bind 4C-8 grouponly8
-bind 4C-9 grouponly9
-bind CM-0 unbind	# Select all groups.
-bind 4S-a nogroup
-bind CM-g unbind	# Toggle group membership of current window.
-bind 4-g grouptoggle
-# bind M-Right cyclegroup	# Cycle through active groups.
-# bind M-Left rcyclegroup	# Reverse cycle through active groups.
-bind CMS-f unbind	# Toggle freezing geometry of current window.
-bind 4M-f freeze
-bind CM-s unbind	# Toggle stickiness of current window.
-#bind 4-o sticky
-bind CM-f unbind	# Toggle full-screen mode of current window.
-bind 4-f fullscreen
-bind CM-m unbind	# Toggle maximization of current window.
-bind 4-m maximize
-#bind CM-equal unbind	# Toggle vertical maximization of current window.
-#bind CMS-equal unbind	# Toggle horizontal maximization of current window.
-bind C-Up unbind
-bind C-Down unbind
-bind C-Left unbind
-bind C-Right unbind
-bind CS-Up unbind
-bind CS-Down unbind
-bind CS-Left unbind
-bind CS-Right unbind
-bind M-h unbind		# Move window by a small amount.
-bind M-j unbind
-bind M-k unbind
-bind M-l unbind
-bind MS-h unbind		# Move window by a large amount; see cwmrc(5).
-bind MS-j unbind
-bind MS-k unbind
-bind MS-l unbind
-bind CM-h unbind		# Resize window by a small amount.
-bind CM-j unbind
-bind CM-k unbind
-bind CM-l unbind
-bind CMS-h unbind	# Resize window by a large amount; see cwmrc(5).
-bind CMS-j unbind
-bind CMS-k unbind
-bind CMS-l unbind
-bind M-question unbind	# Spawn ``exec program'' dialog.
-bind 4-d exec
-bind M-period unbind	# Spawn ``ssh to'' dialog.  This parses
-bind 4-period ssh
+unbind-key all
+
+bind-key 4S-r restart              # Restart the running cwm(1).
+bind-key 4S-q quit                 # Quit cwm(1).
+bind-key 4-Return terminal         # Spawn a new terminal.
+bind-key 4-Delete lock             # Lock the screen.
+bind-key 4-l menu-window           # Launch window search menu.
+bind-key 4S-slash menu-window-hidden   # Launch hidden window search menu.
+bind-key 4-a menu-cmd              # Launch application search menu.
+bind-key 4-slash menu-group            # Launch group search menu.
+bind-key 4-d menu-exec             # Launch "exec program" menu.
+bind-key 4S-d menu-exec-wm         #             Launch "exec WindowManager" menu.
+bind-key 4-period menu-ssh              # Launch "ssh" menu.
+
+bind-key 4S-1 group-toggle-1       # Toggle visibility of group n, where n is 1-9.
+bind-key 4S-2 group-toggle-2
+bind-key 4S-3 group-toggle-3
+bind-key 4S-4 group-toggle-4
+bind-key 4S-5 group-toggle-5
+bind-key 4S-6 group-toggle-6
+bind-key 4S-7 group-toggle-7
+bind-key 4S-8 group-toggle-8
+bind-key 4S-9 group-toggle-9
+
+bind-key 4-1 group-only-1          # Show only group n, hiding other groups.
+bind-key 4-2 group-only-2
+bind-key 4-3 group-only-3
+bind-key 4-4 group-only-4
+bind-key 4-5 group-only-5
+bind-key 4-6 group-only-6
+bind-key 4-7 group-only-7
+bind-key 4-8 group-only-8
+bind-key 4-9 group-only-9
+
+bind-key 4-equal group-toggle-all      # Toggle visibility of all groups.
+bind-key 4-g window-group          # Toggle group membership of current window.
+bind-key 4M-1 window-movetogroup-1 #  Hide current window from display and move to group
+bind-key 4M-2 window-movetogroup-2
+bind-key 4M-3 window-movetogroup-3
+bind-key 4M-4 window-movetogroup-4
+bind-key 4M-5 window-movetogroup-5
+bind-key 4M-6 window-movetogroup-6
+bind-key 4M-7 window-movetogroup-7
+bind-key 4M-8 window-movetogroup-8
+bind-key 4M-9 window-movetogroup-9
+
+bind-key 4-n group-cycle		# Forward cycle through groups.
+bind-key 4-p group-rcycle		# Reverse cycle through groups.
+bind-key 4-Tab window-cycle		# Forward cycle through windows.
+bind-key 4S-Tab window-rcycle		# Reverse cycle through windows.
+bind-key M-Tab window-cycle-ingroup	# Forward cycle through windows in current group.
+bind-key MS-Tab window-rcycle-ingroup	# Reverse cycle through windows in current group.
+bind-key 4-w window-delete		# Delete current window.
+                                   #     window-hide              Hide current window.
+                                   #     window-lower             Lower current window.
+                                   #     window-raise             Raise current window.
+bind-key 4S-l window-menu-label    #        Label current window.
+                                   #     window-freeze            Freeze current window geometry.
+                                   #     window-stick             Stick current window to all groups (same as assigning to nogroup).
+bind-key 4-f window-fullscreen     # Full-screen current window (no border)
+bind-key 4-m window-maximize       # Maximize current window ( honored).
+bind-key 4-comma window-vmaximize      # Vertically maximize current window (gap + border honored).
+bind-key 4-period window-hmaximize      # Horizontally maximize current window (gap +
+bind-key 4S-comma window-htile
+bind-key 4S-period window-vtile
+
+#window-move              Move current window.
+#window-resize            Resize current window.
+#window-move-up           Move window moveamount pixels up.
+#window-move-down         Move window moveamount pixels down.
+#window-move-right        Move window moveamount pixels right.
+#window-move-left         Move window moveamount pixels left.
+#window-move-up-big       Move window 10 times moveamount pixels up.
+#window-move-down-big     Move window 10 times moveamount pixels down.
+#window-move-right-big    Move window 10 times moveamount pixels right.
+#window-move-left-big     Move window 10 times moveamount pixels left.
+#window-resize-up         Resize window moveamount pixels up.
+#window-resize-down       Resize window moveamount pixels down.
+#window-resize-right      Resize window moveamount pixels right.
+#window-resize-left       Resize window moveamount pixels left.
+#window-resize-up-big     Resize window 10 times moveamount pixels up.
+#window-resize-down-big   Resize window 10 times moveamount pixels down.
+#window-resize-right-big  Resize window 10 times moveamount pixels right.
+#window-resize-left-big   Resize window 10 times moveamount pixels left.
+#pointer-move-up          Move pointer moveamount pixels up.
+#pointer-move-down        Move pointer moveamount pixels down.
+#pointer-move-right       Move pointer moveamount pixels right.
+#pointer-move-left        Move pointer moveamount pixels left.
+#pointer-move-up-big      Move pointer 10 times moveamount pixels up.
+#pointer-move-down-big    Move pointer 10 times moveamount pixels down.
+#pointer-move-right-big   Move pointer 10 times moveamount pixels right.
+#pointer-move-left-big    Move pointer 10 times moveamount pixels left.

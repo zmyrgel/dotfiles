@@ -1,4 +1,6 @@
-cvs -q -d anoncvs@anoncvs.eu.openbsd.org:/cvs
-diff -up
+# $OpenBSD: dot.cvsrc,v 1.3 2016/10/31 20:50:11 tb Exp $
+#
+diff -uNp
 update -Pd
 checkout -P
+rdiff -u

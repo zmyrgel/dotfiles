@@ -1,3 +1,4 @@
+;;; -*- mode: lisp; coding: utf-8-unix; indent-tabs-mode: nil -*-
 #-quicklisp
 (let ((quicklisp-init (merge-pathnames "quicklisp/setup.lisp"
                                        (user-homedir-pathname))))

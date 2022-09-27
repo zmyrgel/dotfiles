@@ -5,11 +5,11 @@
 
 # is $1 missing from $2 (or PATH) ?
 no_path() {
-	eval _v="\$${2:-PATH}"
-	case :$_v: in
-	*:$1:*) return 1;;		# no we have it
-	esac
-	return 0
+        eval _v="\$${2:-PATH}"
+        case :$_v: in
+        *:$1:*) return 1;;              # no we have it
+        esac
+        return 0
 }
 
 # if $1 exists and is not in path, append it
@@ -32,8 +32,8 @@ base64() {
 }
 
 rndpw() {
-	random="$(dd if=/dev/random bs=10 count=1)" 2>/dev/null
-	echo $random | base64
+    random="$(dd if=/dev/random bs=10 count=1)" 2>/dev/null
+    echo $random | base64
 }
 
 clamscan() {
@@ -57,3 +57,31 @@ f() {
 	echo "find . -iname \"*$1*\""
 	find . -iname "*$1*"
 }
+
+alias portsql='sqlite3 /usr/local/share/sqlports'
+alias portslol='make 2>&1 | /usr/ports/infrastructure/bin/portslogger .'
+alias port-pldc='make port-lib-depends-check'
+alias port-ldc='make lib-depends-check'
+alias port-pdiff='diff -up pkg/PLIST.orig pkg/PLIST'
+alias portsrc='cd `make show=WRKSRC`'
+alias port-fast='MAKE_JOBS=4 make'
+
+# To cleanup both flavors of a python port
+alias cleanup='make clean=all && env FLAVOR=python3 make clean=all'
+
+# My most frequently used alias
+alias py3='env FLAVOR=python3'
+
+# Generates a patch for the whole port into /usr/ports/mystuff
+port-diff() { cvs diff > /usr/ports/mystuff/${PWD##*/}.diff  ; less /usr/ports/mystuff/${PWD##*/}.diff ;}
+
+port-lessdiff() { less /usr/ports/mystuff/${PWD##*/}.diff  ; }
+
+# greps all Makefiles in ports tree for the supplied term
+port-grep() { (cd /usr/ports; grep "$1" */*/Makefile */*/*/Makefile ) ;}
+
+# Only greps Makefiles in ports directories that start with py-
+port-pygrep() { (cd /usr/ports; grep "$1" */*/py-*/Makefile */py-*/Makefile ) ;}
+
+portsfind() { find /usr/ports -iname "${1}" -exec grep -iH ${2} {} \; ;}
+

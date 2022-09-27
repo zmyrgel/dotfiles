@@ -1,5 +1,3 @@
-# This is an example for icewm 1.8.3 hotkey definition file.
-#
 # A list of all valid keyboard symbols can be found in
 # /usr/include/X11/keysym.h, keysymdefs.h, XF86keysym.h, ...
 # You'll have to omit XK_ prefixs and to replace XF86XK_ prefixes by

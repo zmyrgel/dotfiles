@@ -3,11 +3,10 @@
 alias flav='make show=FLAVORS'
 alias top='top -1C'
 alias show_beacons='doas tcpdump -n -i iwn0 -s 1500 -vvv -y IEEE802_11_RADIO subtype beacon'
+alias porters='irc -icb -c porters tmy slackers.openbsd.org'
 
 # Add Latest JDK dir to PATH
 add_path /usr/local/jdk-1.8.0/bin
-add_path /usr/local/jdk-1.7.0/bin
-add_path /usr/local/jdk-1.6.0/bin
 
 if [ -d /usr/local/share/doc/posix/man ]
 then
@@ -23,3 +22,9 @@ then
 	add_path $GOROOT/bin
 	add_path $GOROOT/pkg/tool/openbsd_amd64
 fi
+
+CVSROOT=anoncvs@anoncvs.eu.openbsd.org:/cvs
+export CVSROOT
+
+# Shell expand got commands
+set -A complete_got_1 -- $(got -h 2>&1 | sed -n s/commands://p)

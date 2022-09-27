@@ -26,14 +26,14 @@ Require {
 /*
  Group terminal applications
  */
-#Property = "(term|rxvt),(erm|xvt)" {
-#	ApplyOn = "New"
-#	Group = "term" {
-#		Size = "5"
-#		FocusedFirst = "True"
-#		Raise = "True"
-#	}
-#}
+# Property = "(term|rxvt),(erm|xvt)" {
+# 	ApplyOn = "New"
+# 	Group = "term" {
+# 		Size = "5"
+# 		FocusedFirst = "True"
+# 		Raise = "True"
+# 	}
+# }
 
 /*
  Remove decor of customize toolbar window of mozilla firefox.
@@ -63,25 +63,11 @@ Property = "^(gecko|Gecko|firefox-bin),^Firefox-bin,,^Customize Toolbar\$" {
  Group together up to two windows that have a WM_CLASS that matches the
  property. Start these windows on workspace two.
 */
-Property = "emacs,Emacs" {
-         ApplyOn = "Start New"
-         Workspace = "1"
-}
+# Property = "^Mozilla,^navigator:browser" {
+# 	ApplyOn = "Start New Workspace"
+# 	Workspace = "2"
+# }
 
-Property = "Navigator,Firefox" {
-	ApplyOn = "Start New"
-        Workspace = "2"
-}
-
-Property = "Mail,Thunderbird" {
-         ApplyOn = "Start New"
-         Workspace "3"
-}
-
-Property = "audacious,Audacious" {
-	ApplyOn = "Start New"
-        Workspace = "4"
-}
 
 /*
  Group together an infinite number of windows that match the property.
@@ -89,10 +75,10 @@ Property = "audacious,Audacious" {
  window of the group, but open them in the background. Make these
  autoproperties apply on every pekwm start or when a new window is opened.
 */
-Property = "^dillo,^Dillo" {
-	ApplyOn = "Start New"
-	Group = "dillo" { Size = "0"; Behind = "True" }
-}
+# Property = "^dillo,^Dillo" {
+# 	ApplyOn = "Start New"
+# 	Group = "dillo" { Size = "0"; Behind = "True" }
+# }
 
 
 /*
@@ -114,7 +100,7 @@ Property = "^dillo,^Dillo" {
 /*
  Remove Gimp windows from the menus, only show the main toolbox window.
  Use the WM_WINDOW_ROLE to tell the difference between gimp windows.
-
+ 
  First make sure the toolbox window doesn't get confused with the rest
  of the windows. This just tells pekwm to ignore any matches for the
  toolbox later on. Without this, the toolbox would match with "the rest
@@ -168,7 +154,7 @@ Property = "^dillo,^Dillo" {
 # 	Layer = "Desktop"
 # 	Skip = "Menus FocusToggle Snap"
 # }
-#
+# 
 # Property = "^xload,^XLoad" {
 # 	ApplyOn = "Start New"
 # 	ClientGeometry = "560x137+120-137"
@@ -177,7 +163,7 @@ Property = "^dillo,^Dillo" {
 # 	Layer = "Desktop"
 # 	Skip = "Menus FocusToggle Snap"
 # }
-#
+# 
 # Property = "^xbiff,^XBiff" {
 # 	ApplyOn = "Start New"
 # 	ClientGeometry = "120x137-120-137"
@@ -191,7 +177,7 @@ Property = "^dillo,^Dillo" {
 // End of autoproperties. -------------------------
 
 TypeRules {
-	INCLUDE = "~/.pekwm/autoproperties_typerules"
+	INCLUDE = "$_PEKWM_ETC_PATH/autoproperties_typerules"
 }
 
 /*
@@ -208,14 +194,14 @@ TypeRules {
  I shorten it in the second titlerule. And I'll place the shortened text
  in the beginning of the title just as a show how.
 */
-TitleRules {
-	Property = "^dillo,^Dillo" {
-		Rule = "/Dillo: (.*)/\\1 - dillo/"
-	}
-	Property = "^firefox-bin,^Firefox-bin" {
-		Rule = "/(.*) - Mozilla Firefox/MF: \\1/"
-	}
-}
+# TitleRules {
+# 	Property = "^dillo,^Dillo" {
+# 		Rule = "/Dillo: (.*)/\\1 - dillo/"
+# 	}
+# 	Property = "^firefox-bin,^Firefox-bin" {
+# 		Rule = "/(.*) - Mozilla Firefox/MF: \\1/"
+# 	}
+# }
 
 
 // End of titlerules. -----------------------------
@@ -259,3 +245,4 @@ TitleRules {
 # 		Decor = "TERM"
 # 	}
 # }
+
