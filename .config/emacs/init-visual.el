@@ -1,7 +1,7 @@
-;;; zmg-emacs-visual.el --- Visual settings  -*- lexical-binding: t; -*-
+;;; init-visual.el -*- lexical-binding: t; -*-
 ;;;
 ;;; Commentary:
-;;; -
+;;; - Init visual settings
 
 ;;; Code:
 
@@ -207,6 +207,6 @@
 (setq modus-themes-mail-citations '(intense))
 (load-theme 'modus-vivendi t)
 
-(provide 'zmg-emacs-visual)
+(provide 'init-visual)
 
-;; zmg-emacs-visual.el ends here
+;; init-visual.el ends here

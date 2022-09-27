@@ -1,6 +1,7 @@
-;;; zmg-emacs-completion.el --- Completion settings  -*- lexical-binding: t; -*-
+;;; init-completion.el -*- lexical-binding: t; -*-
 ;;;
 ;;; Commentary:
+;;; - Completion related configuration
 ;;; - finish corfu, consult?
 ;;; - hippie-expand use?
 
@@ -99,6 +100,6 @@
 (setq dabbrev-eliminate-newlines nil)
 (setq dabbrev-upcase-means-case-search t)
 
-(provide 'zmg-emacs-completion)
+(provide 'init-completion)
 
-;;; zmg-emacs-completion.el ends here
+;;; init-completion.el ends here

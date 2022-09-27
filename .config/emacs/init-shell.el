@@ -1,7 +1,7 @@
-;;; zmg-emacs-shell.el --- Shell Emacs settings  -*- lexical-binding: t; -*-
+;;; init-shell.el -*- lexical-binding: t; -*-
 ;;;
 ;;; Commentary:
-;;; -
+;;; - Shell related settings
 
 ;;; Code:
 
@@ -71,6 +71,6 @@
 (setq eshell-visual-options '(("git" "--help" "--paginate")))
 (setq eshell-hist-ignoredups t)
 
-(provide 'zmg-emacs-shell)
+(provide 'init-shell)
 
-;; zmg-emacs-shell.el ends here
+;; init-shell.el ends here

@@ -1,7 +1,7 @@
-;;; zmg-emacs-files.el --- Files settings  -*- lexical-binding: t; -*-
+;;; init-files.el -*- lexical-binding: t; -*-
 ;;;
 ;;; Commentary:
-;;; - check calendar settings
+;;; - init file-related settings
 
 ;;; Code:
 
@@ -85,6 +85,6 @@
 (global-set-key (kbd "<M-XF86AudioPlay>") 'bongo-show)
 (global-set-key (kbd "C-z B") 'bongo)
 
-(provide 'zmg-emacs-files)
+(provide 'init-files)
 
-;; zmg-emacs-files.el ends here
+;; init-files.el ends here

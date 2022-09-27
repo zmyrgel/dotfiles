@@ -1,7 +1,7 @@
-;;; zmg-emacs-org.el --- Org-mode settings  -*- lexical-binding: t; -*-
+;;; init-org.el -*- lexical-binding: t; -*-
 ;;;
 ;;; Commentary:
-;;; -
+;;; - Org-mode related options
 
 ;;; Code:
 
@@ -168,6 +168,6 @@
 (global-set-key (kbd "C-c l") 'org-store-link)
 (global-set-key (kbd "C-c c") 'org-capture)
 
-(provide 'zmg-emacs-org)
+(provide 'init-org)
 
-;; zmg-emacs-org.el ends here
+;; init-org.el ends here

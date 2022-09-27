@@ -1,6 +1,7 @@
-;;; zmg-emacs-web.el --- Web settings  -*- lexical-binding: t; -*-
+;;; init-web.el -*- lexical-binding: t; -*-
 ;;;
 ;;; Commentary:
+;;; - Init web-related things
 ;;; - Need for ERC config at all?
 
 ;;; Code:
@@ -156,6 +157,6 @@
 (with-eval-after-load 'restclient
   (define-key restclient-mode-map (kbd "C-c C-f") 'json-mode-beautify))
 
-(provide 'zmg-emacs-web)
+(provide 'init-web)
 
-;; zmg-emacs-web.el ends here
+;; init-web.el ends here

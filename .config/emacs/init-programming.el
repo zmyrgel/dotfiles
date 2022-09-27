@@ -1,7 +1,7 @@
-;;; zmg-emacs-programming.el --- Programming settings  -*- lexical-binding: t; -*-
+;;; init-programming.el -*- lexical-binding: t; -*-
 ;;;
 ;;; Commentary:
-;;; -
+;;; - Programming related settings
 
 ;;; Code:
 
@@ -35,7 +35,7 @@
          (4 'change-log-date))))
 
 ;; allow reverting changes in vc-dir
-(with-eval-after-load 'vc-dir
+(with-eval-after-load 'vc-dir-mode
   (define-key vc-dir-mode-map (kbd "R") 'vc-revert))
 
 (defun vc-git-checkout-remote ()
@@ -405,6 +405,6 @@ sendemail.annotate yes'."
   (add-hook 'typescript-mode-hook 'flymake-eslint-enable)
   (setq whitespace-line-column 120))
 
-(provide 'zmg-emacs-programming)
+(provide 'init-programming)
 
-;; zmg-emacs-programming.el ends here
+;; init-programming.el ends here

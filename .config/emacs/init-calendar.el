@@ -1,7 +1,7 @@
-;;; zmg-emacs-calendar.el --- Calendar settings  -*- lexical-binding: t; -*-
+;;; init-calendar.el -*- lexical-binding: t; -*-
 ;;;
 ;;; Commentary:
-;;; - check calendar settings
+;;; - Time keeping related configuration
 
 ;;; Code:
 
@@ -28,7 +28,7 @@
 (setq calendar-view-diary-initially-flag t)
 (setq calendar-mark-diary-entries-flag t)
 (setq diary-show-holidays-flag t)
-(setq diary-file "/ssh:tmy@mars.bittivirhe.fi:diary")
+(setq diary-file "/ssh:mars.bittivirhe.fi:diary")
 
 (setq calendar-latitude 60.29414
       calendar-longitude 25.04099)
@@ -46,6 +46,6 @@
 
 (ensure-packages-present 'suomalainen-kalenteri)
 
-(provide 'zmg-emacs-calendar)
+(provide 'init-calendar)
 
-;; zmg-emacs-calendar.el ends here
+;; init-calendar.el ends here

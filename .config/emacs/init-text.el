@@ -1,7 +1,7 @@
-;;; zmg-emacs-text.el --- Text settings  -*- lexical-binding: t; -*-
+;;; init-text.el -*- lexical-binding: t; -*-
 ;;;
 ;;; Commentary:
-;;; -
+;;; - Text-related settings
 
 ;;; Code:
 
@@ -128,6 +128,6 @@
  auto-mode-alist)
 ;;(define-key global-map (kbd "C-c C-f") 'bf-pretty-print-xml-region)
 
-(provide 'zmg-emacs-text)
+(provide 'init-text)
 
-;; zmg-emacs-text.el ends here
+;; init-text.el ends here

@@ -1,6 +1,7 @@
-;;; zmg-emacs-session.el --- Session Emacs settings  -*- lexical-binding: t; -*-
+;;; init-session.el -*- lexical-binding: t; -*-
 ;;;
 ;;; Commentary:
+;;; - Emacs initializations related to sessions
 
 ;;; Code:
 
@@ -39,6 +40,6 @@
 (setq mode-require-final-newline t)
 (setq require-final-newline t)
 
-(provide 'zmg-emacs-session)
+(provide 'init-session)
 
-;; zmg-emacs-session.el ends here
+;; init-session.el ends here

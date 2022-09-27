@@ -1,7 +1,7 @@
-;;; zmg-emacs-email.el --- Email settings  -*- lexical-binding: t; -*-
+;;; init-email.el -*- lexical-binding: t; -*-
 ;;;
 ;;; Commentary:
-;;; - check gnus configuration
+;;; - setup email related settings
 
 ;;; Code:
 
@@ -74,6 +74,6 @@
 
 (global-set-key (kbd "C-z m") 'gnus)
 
-(provide 'zmg-emacs-email)
+(provide 'init-email)
 
-;; zmg-emacs-email.el ends here
+;; init-email.el ends here

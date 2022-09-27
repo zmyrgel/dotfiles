@@ -1,9 +1,7 @@
-;;; zmg-emacs-general.el --- General Emacs settings  -*- lexical-binding: t; -*-
+;;; init-general.el -*- lexical-binding: t; -*-
 ;;;
 ;;; Commentary:
-;;; - fix warnings on this init:
-;;; -- flymake--handle-report: Can’t find state for flymake-eslint--checker in ‘flymake--state’
-;;; - improve init speed, currently 7s.
+;;; - General emacs init settings
 
 ;;; Code:
 
@@ -131,6 +129,6 @@
 (setq ibuffer-shrink-to-minimum-size t)
 (add-hook 'ibuffer-mode-hook 'ibuffer-auto-mode)
 
-(provide 'zmg-emacs-general)
+(provide 'init-general)
 
-;; zmg-emacs-general.el ends here
+;; init-general.el ends here

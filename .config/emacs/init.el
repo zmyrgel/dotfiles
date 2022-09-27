@@ -2,7 +2,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2022-09-25 09:48:54 (tmy)>
+;;; Time-stamp: <2022-09-27 20:56:24 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
 ;;;
@@ -59,20 +59,23 @@
 
 (add-hook 'package-menu-mode-hook 'hl-line-mode)
 
-(add-to-list 'load-path (locate-user-emacs-file "lisp") nil)
+(let ((local-elisp-dir (locate-user-emacs-file "elisp")))
+  (unless (directory-name-p local-elisp-dir)
+    (make-directory local-elisp-dir))
+  (add-to-list 'load-path local-elisp-dir nil))
 
-(require 'zmg-emacs-general)
-(require 'zmg-emacs-text)
-(require 'zmg-emacs-visual)
-(require 'zmg-emacs-calendar)
-(require 'zmg-emacs-session)
-(require 'zmg-emacs-shell)
-(require 'zmg-emacs-org)
-(require 'zmg-emacs-email)
-(require 'zmg-emacs-web)
-(require 'zmg-emacs-completion)
-(require 'zmg-emacs-files)
-(require 'zmg-emacs-programming)
+(require 'init-general)
+(require 'init-text)
+(require 'init-visual)
+(require 'init-calendar)
+(require 'init-session)
+(require 'init-shell)
+(require 'init-org)
+(require 'init-email)
+(require 'init-web)
+(require 'init-completion)
+(require 'init-files)
+(require 'init-programming)
 
 ;;; ------------------------------
 ;;; Finalizers
