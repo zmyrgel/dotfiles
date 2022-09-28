@@ -8,11 +8,12 @@ CVS_RSH=ssh
 
 export HISTSIZE HISTFILE PAGER LESS CVS_RSH
 
-if [ -x $(which mg) ]
+if [ -x $(which emacsclient) ]
+then
+	VISUAL='emacsclient -a ""'
+elif [ -x $(which mg) ]
 then
 	VISUAL='mg'
-else
-	VISUAL='vi'
 fi
 
 ALTERNATE_EDITOR="$VISUAL"
@@ -29,19 +30,14 @@ then
 fi
 PATH=$PATH:/usr/local/bin:/usr/local/sbin
 
-if [ -d /usr/games ]
+if [ -x /usr/games ]
 then
 	PATH=$PATH:/usr/games
 fi
 
-if [ -d /usr/ports/infrastructure/bin ]
+if [ -x $HOME/.local/bin ]
 then
-	PATH=$PATH:/usr/ports/infrastructure/bin
-fi
-
-if [ -d $HOME/npm/bin ]
-then
-	PATH=$HOME/npm/bin:$PATH
+	PATH=$PATH:$HOME/.local/bin
 fi
 
 export PATH
@@ -49,10 +45,15 @@ export PATH
 GOPATH=$HOME/workspace
 export GOPATH
 add_path $GOPATH/bin
+add_path /usr/local/go/bin
 
-if [ -d /usr/local/gerbil ]
+export PATH=$HOME/go/bin:$PATH
+
+add_path $HOME/gauche-0.9.5/bin
+add_path $HOME/.rvm/bin
+
+if test -d $HOME/perl5/lib/perl5
 then
-	GERBIL_HOME=/usr/local/gerbil
-	export GERBIL_HOME
-	add_path /usr/local/gerbil/bin
+	eval "$(perl -I$HOME/perl5/lib/perl5 -Mlocal::lib)"
 fi
+

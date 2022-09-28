@@ -29,24 +29,46 @@ Emacs.toolBar:			off
 !Emacs.font:                     input
 
 ! Dracula Xresources palette
-*.foreground: #F8F8F2
-*.background: #282A36
-*.color0:     #000000
-*.color8:     #4D4D4D
-*.color1:     #FF5555
-*.color9:     #FF6E67
-*.color2:     #50FA7B
-*.color10:    #5AF78E
-*.color3:     #F1FA8C
-*.color11:    #F4F99D
-*.color4:     #BD93F9
-*.color12:    #CAA9FA
-*.color5:     #FF79C6
-*.color13:    #FF92D0
-*.color6:     #8BE9FD
-*.color14:    #9AEDFE
-*.color7:     #BFBFBF
-*.color15:    #E6E6E6
+! *.foreground: #F8F8F2
+! *.background: #282A36
+! *.color0:     #000000
+! *.color8:     #4D4D4D
+! *.color1:     #FF5555
+! *.color9:     #FF6E67
+! *.color2:     #50FA7B
+! *.color10:    #5AF78E
+! *.color3:     #F1FA8C
+! *.color11:    #F4F99D
+! *.color4:     #BD93F9
+! *.color12:    #CAA9FA
+! *.color5:     #FF79C6
+! *.color13:    #FF92D0
+! *.color6:     #8BE9FD
+! *.color14:    #9AEDFE
+! *.color7:     #BFBFBF
+!*.color15:    #E6E6E6
+
+! Theme: modus-vivendi
+! Description: XTerm port of modus-vivendi (Modus themes for Emacs)
+! Author: Protesilaos Stavrou, <https://protesilaos.com>
+xterm*background: #000000
+xterm*foreground: #ffffff
+xterm*color0: #000000
+xterm*color1: #ff8059
+xterm*color2: #44bc44
+xterm*color3: #d0bc00
+xterm*color4: #2fafff
+xterm*color5: #feacd0
+xterm*color6: #00d3d0
+xterm*color7: #bfbfbf
+xterm*color8: #595959
+xterm*color9: #ef8b50
+xterm*color10: #70b900
+xterm*color11: #c0c530
+xterm*color12: #00bcff
+xterm*color13: #b6a0ff
+xterm*color14: #6ae4b9
+xterm*color15: #ffffff
 
 ! -----------------------------------------
 ! Xresources for applications not supporting fontconfig
@@ -72,13 +94,9 @@ dzen2.background: #373737
 ! -----------------------------------------
 ! Xterm setting
 xterm*termName: 	xterm-256color
-!xterm*faceName:		tamsyn-16
-!xterm*faceName:		spleen-16
-!xterm*faceName:		gohufont-16
-!xterm*faceName:		'Input-10'
-xterm*faceName: Input Mono
-xterm*faceSize: 12
-xterm*renderFont: true
+xterm*faceName:		Input Mono
+xterm*faceSize:		12
+xterm*renderFont:	true
 xterm*scrollBar: 	false
 xterm*fullscreen: 	never
 xterm*loginShell:	true
@@ -91,22 +109,20 @@ xterm*ttyModes:         erase ^?
 xterm*eightBitInput:	false
 xterm*metaSendsEscape:	true
 xterm*cursorUnderLine:	true
-!xterm*background:	#414141
-!xterm*background:	#373737
-!xterm*foreground:	#bebebe
 xterm*cursorColor:	#aaaaaa
+xterm*selectToClipboard: true
 
 ! xlock ----------------------------------------------------------------------
 xpdf*fontList:		-*-terminus-medium-r-normal--14-*-*-*-*-*-iso8859-1
-xpdf.initialZoom:	width
+xpdf.initialZoom:	page
 
 ! x11-ssh-askpass ------------------------------------------------------------
-ssh-askpass*font:                   tamsyn-16
-ssh-askpass*background:             #414141
-ssh-askpass*foreground:             #bebebe
-ssh-askpass.Button*background:      #373737
-ssh-askpass.Indicator*foreground:   #bebebe
-ssh-askpass.Indicator*background:   #373737
+ssh-askpass*font:                   -*-dina-medium-r-*-*-12-*-*-*-*-*-*-*
+ssh-askpass*background:             #000000
+ssh-askpass*foreground:             #ffffff
+ssh-askpass.Button*background:      #000000
+ssh-askpass.Indicator*foreground:   #ff9900
+ssh-askpass.Indicator*background:   #090909
 ssh-askpass*topShadowColor:         #000000
 ssh-askpass*bottomShadowColor:      #000000
 ssh-askpass.*borderWidth:           1
@@ -116,20 +132,9 @@ XIdle.timeout: 300
 
 ! xlock ----------------------------------------------------------------------
 XLock*font:             -misc-spleen-medium-r-normal--16-160-72-72-c-80-iso10646-1
-XLock*planfont:             -misc-spleen-medium-r-normal--16-160-72-72-c-80-iso10646-1
-!XLock.font: 		-*-terminus-medium-r-normal--24-*-*-*-*-*-iso8859-1
-!XLock.planfont: 	-*-terminus-medium-r-normal--24-*-*-*-*-*-iso8859-1
-!XLock.mode:		blank
-!XLock.blank.delay:	2000000
-!XLock.grabmouse:	on
-!XLock.mousemotion:	on
-!XLock.usefirst:		yes
-!XLock.lockdelay:	10
-!XLock.nice:		19
+XLock*planfont:         -misc-spleen-medium-r-normal--16-160-72-72-c-80-iso10646-1
 
 ! XMessage -------------------------------------------------------------------
-!Xmessage*font:                  -*-terminus-medium-r-*-*-14-*-*-*-*-*-*-*
-!Xmessage*font:             -misc-spleen-medium-r-normal--16-160-72-72-c-80-iso10646-1
 Xmessage*font:             -misc-spleen-medium-r-normal--16-160-72-72-c-80-iso10646-1
 Xmessage*background:            #242424
 Xmessage*foreground:            #CCCCCC

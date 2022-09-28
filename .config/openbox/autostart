@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [[ $(which pasystray) ]]
+if [ $(which xwallpaper) ]
 then
-        pasystray &
+	xwallpaper --stretch ~/wallpapers/slackclean_1600x1200.jpg
 fi

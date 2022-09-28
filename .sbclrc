@@ -20,3 +20,8 @@
 
 ;; Fix encoding issues
 (setf sb-impl::*default-external-format* :utf-8)
+
+(defun list-package-dependency-licenses (package)
+  "Return list of licence names for direct dependencies of of package."
+  (loop for dependency in (asdf:system-depends-on (asdf:find-system package))
+        collect (asdf:system-licence (asdf:find-system dependency))))

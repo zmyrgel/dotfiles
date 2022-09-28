@@ -1,13 +1,16 @@
 ;; -*- mode: lisp; coding: utf-8-unix; indent-tabs-mode: nil -*-
-;; Main configuration file for StumpWM
+;; .stumpwmrc --- Main configuration file for StumpWM
 ;;
 ;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
-;; Time-stamp: <2021-09-18 20:00:24 (tmy)>
+;;
+;; Created:
+;; Time-stamp: <2021-09-16 07:23:55 (tmy)>
 ;; URL: https://github.com/zmyrgel/dotfiles/
 ;; Copyright (C) 2012 Timo Myyrä
 ;;
 ;; ----------------------------------------------------------------------------
 ;;  - Fix Webjump functionality
+;;  - Fix Raise requests, cause StumpWM to crash
 ;;  - Rewrite contrib packages to more portable way
 ;;  - Scroll firefox without focusing its frame
 ;;  - Update hook + notify on IRC messages + other urgent messages
@@ -36,11 +39,6 @@
 (defvar *font* "-*-terminus-medium-r-normal--16-*-*-*-*-*-iso10646-1"
   "Font to use for displaying stumwm ui elements.")
 
-;;"-*-terminus-*-r-normal-*-16-*-*-*-*-*-*-*"
-
-;;(defvar *fg-color* "gainsboro")
-;;(defvar *bg-color* "gray7")
-
 (defvar *contrib-path* (merge-pathnames ".stumpwm.d/modules"
                                         (user-homedir-pathname)))
 
@@ -48,7 +46,7 @@
                                           (user-homedir-pathname)))
 (defvar *wallpaper-extensions* (list "png" "jpg" "jpeg"))
 
-(defvar *local-display* "eDP"
+(defvar *local-display* "eDP1"
   "Display used for main display as given by xrandr.")
 
 (defvar *x-lock-command*
@@ -72,20 +70,6 @@ mode-line"
 
 (add-hook *new-window-hook* #'update-window-title)
 
-;; ;; Set the font. Note that since I'm using a TTF font, I need to first
-;; ;; load the ttf-fonts module, then (and this was hard to figure out!)
-;; ;; I need to call xft:cache-fonts or xft is unable to locate the
-;; ;; Monoid font.
-;; (load-stump-contrib-module "util/ttf-fonts")
-;; (xft:cache-fonts)
-
-;; (defparameter *font*
-;;   (make-instance 'xft:font :family "Monoid" :subfamily "Retina" :size 12)
-;;   "Font specification for stumpwm windows.")
-
-;; (set-font *font*)
-
-
 (setf *mouse-focus-policy* :click)
 
 ;; Append colors to color map
@@ -101,7 +85,6 @@ mode-line"
 
 ;; (set-fg-color *fg-color*)
 ;; (set-bg-color *bg-color*)
-
 ;; (set-border-color *fg-color*)
 
 (set-msg-border-width 1)
@@ -109,10 +92,10 @@ mode-line"
 (when *font*
   (set-font *font*))
 
-(setf *message-window-padding* 10
-      *message-window-gravity* :top-right
+(setf *message-window-padding* 20
+      *message-window-gravity* :top-rigth
       *timeout-wait* 1
-      *input-window-gravity* :top-right)
+      *input-window-gravity* :top-rigth)
 
 ;; ---------------------------------------
 ;; Window options
@@ -123,14 +106,12 @@ mode-line"
 ;;       *normal-border-width* 1
 ;;       *window-border-style* :thin
 ;;       *window-name-source* :title)
-;; (set-normal-gravity :top)
-;; (set-maxsize-gravity :center)
-;; (set-transient-gravity :center)
-
 ;; (set-win-bg-color *bg-color*)
 ;; (set-focus-color "MidnightBlue")
 ;; (set-unfocus-color *fg-color*)
-
+;; (set-normal-gravity :top)
+;; (set-maxsize-gravity :center)
+;; (set-transient-gravity :center)
 
 ;; ---------------------------------------
 ;; Modeline options
@@ -138,7 +119,6 @@ mode-line"
 (unless (head-mode-line (current-head))
   (toggle-mode-line (current-screen) (current-head)))
 
-;;(setf *screen-mode-line-format* "(%h){%g} [%W]")
 (setf *screen-mode-line-format* "{%g} [%W]")
 
 ;; (setf *screen-mode-line-format*
@@ -173,28 +153,32 @@ mode-line"
 
 (setf *suppress-frame-indicator* t)
 
-;; Deny the browser windows from taking focus when started
-;;(push '(:role "browser") stumpwm:*deny-map-request*)
+;; Controlling Raise And Map Requests
+(push '(:role "browser") stumpwm:*deny-map-request*)
+(push '(:class "slack") stumpwm:*deny-map-request*)
 
-;; Deny the slack windows from taking focus when started
-;;(push '(:class "Slack") stumpwm:*deny-map-request*)
+;; Deny transient raise requests
+;;(push '(:transient) *deny-map-request*)
+
+;; Deny the all windows in the xterm class from taking focus.
+;;(push '(:class "Xterm") *deny-raise-request*)
+;;(push '(:class "UXterm") *deny-raise-request*)
+;;(push '(:class "URxvt") *deny-raise-request*)
 
 ;; Window placement rules
 (clear-window-placement-rules)
 
 (define-frame-preference "Emacs"
-  (1 t t :class "Emacs"))
+    (1 t t :class "Emacs"))
 
 (define-frame-preference "Web"
-  (2 t t :role "browser"))
+    (2 t t :role "browser"))
 
 (define-frame-preference "IM"
-  (3 t t :class "skype" :role "MainWindow")
-  (3 t t :class "skype" :role "Chats")
-  (3 t t :class "Slack"))
+    (3 t t :class "Slack" :role "browser-window"))
 
 (define-frame-preference "Remote"
-  (5 t t :class "Remmina"))
+    (5 t t :class "Remmina"))
 
 ;; ---------------------------------------
 ;; Functions
@@ -220,15 +204,14 @@ mode-line"
   (loop for app in (list "xsetroot -solid rgb:11/11/11"
                          "xsetroot -cursor_name left_ptr -fg black -bg white"
                          "wmname LG3D"
-                         ;;"pgrep mpd || mpd ~/.mpdconf"
-                         )
+                         "pgrep mpd || mpd ~/.mpdconf")
         do (run-shell-command app)))
 
 #+linux
 (progn
   (defun nm-list-connections ()
-  "List connections known by NM."
-  (run-shell-command "nmcli con show" t)))
+    "List connections known by NM."
+    (run-shell-command "nmcli con show" t)))
 
 ;; ---------------------------------------
 ;; MODULES
@@ -284,8 +267,6 @@ mode-line"
     (when cmd
       (eval-command cmd t))))
 
-;; (defcommand suspend )
-
 (defcommand paste-x-selection () (:rest)
   "Universal rat-less X paste."
   (let ((cmd (concatenate 'string "insert " (get-x-selection))))
@@ -299,18 +280,13 @@ mode-line"
 (progn
   (defcommand slack () ()
     "Start Slack or switch to it, if it is already running."
-    (run-or-raise "slack" '(:class "slack")))
-
-  (defcommand steam () ()
-    "Start Steam or switch to it, if it is already running."
-    (run-or-raise "steam" '(:class "steam")))
-  )
+    (run-or-raise "slack" '(:class "slack"))))
 
 ;; Web jump (works for Google and Imdb)
 (defmacro make-web-jump (name prefix)
   `(defcommand ,(intern name) (search) ((:rest ,(concatenate 'string name " search: ")))
-               (when (string/= search "")
-                 (run-shell-command (concatenate 'string ,*browser* " " ,prefix (quri:url-encode search))))))
+     (when search
+      (run-shell-command (concatenate 'string ,*browser* " " ,prefix (quri:url-encode search))))))
 
 (make-web-jump "ddg" "https://www.duckduckgo.com?q=")
 
@@ -323,6 +299,23 @@ mode-line"
 
 ;; ---------------------------------------
 ;; KEYBINDINGS
+
+(handler-case (progn
+                (load-module "globalwindows")
+                ;;(define-key *root-map* (kbd "M-1") "global-windowlist")
+                ;;(define-key *root-map* (kbd "M-2") "global-pull-windowlist")
+                )
+  (error (c)
+    (format t "Unable to find module.~&")
+    (values nil c)))
+
+(handler-case (progn
+                (load-module "urgentwindows")
+                (define-key *root-map* (kbd "u") "raise-urgent"))
+  (error (c)
+    (format t "Unable to find module.~&")
+    (values nil c)))
+
 
 ;; Browse somewhere
 (define-key *root-map* (kbd "C-b") (uiop:strcat "colon1 exec " *browser* " https://www."))
@@ -341,13 +334,13 @@ mode-line"
 (define-key *root-map* (kbd "L") (uiop:strcat "exec " *x-lock-command*))
 
 ;; Emacs Style Frame Splitting
-;;(loop for n below 10
-;;   do (undefine-key *root-map* (kbd (write-to-string n))))
+;; (loop for n below 10
 
-;;(define-key *root-map* (kbd "0") "remove")
-;;(define-key *root-map* (kbd "1") "only")
-;;(define-key *root-map* (kbd "2") "vsplit")
-;;(define-key *root-map* (kbd "3") "hsplit")
+;;       do (undefine-key *root-map* (kbd (write-to-string n))))
+;; (define-key *root-map* (kbd "0") "remove")
+;; (define-key *root-map* (kbd "1") "only")
+;; (define-key *root-map* (kbd "2") "vsplit")
+;; (define-key *root-map* (kbd "3") "hsplit")
 
 (define-remapped-keys
     '(("(Firefox|Chrome)"
@@ -364,16 +357,17 @@ mode-line"
        ("M->"   . "End")
        ("C-M-b" . "M-Left")
        ("C-M-f" . "M-Right")
-       ("C-k"   . ("C-S-End" "C-x")))))
+       ("C-k"   . ("C-S-End" "C-x"))
+       ("C-s"   . "C-f"))))
 
 (define-key *root-map* (kbd "C-q") "send-raw-key")
 
 (define-key *root-map* (kbd "B") "mode-line")
 
 ;; s-[0-9] moves to a numbered group.
-;;(loop for i from 1 to 9
-;;   do (define-key *top-map* (kbd (format nil "s-~A" i))
-;;	(format nil "gselect ~A" i)))
+;; (loop for i from 1 to 9
+;;    do (define-key *top-map* (kbd (format nil "s-~A" i))
+;; 	(format nil "gselect ~A" i)))
 
 ;; ;; Query addresses
 ;; (defvar *query-map* nil
@@ -386,7 +380,7 @@ mode-line"
 ;;         (define-key m (kbd "w") "wikipedia")
 ;;         m))
 
-;; Allow to quickly cycle groups
+;; easy group change
 (define-key *top-map* (kbd "s-,") "gprev")
 (define-key *top-map* (kbd "s-.") "gnext")
 
