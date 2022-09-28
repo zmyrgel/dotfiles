@@ -40,5 +40,3 @@ alias xp='xprop | grep "WM_WINDOW_ROLE\|WM_CLASS"'
 
 # Capture desktop movie
 alias xcap="ffmpeg -f x11grab -s wxga -r 25 -i :0.0 -sameq /tmp/out.mpg"
-
-alias wifichan="doas ifconfig wlan scan | awk '/chan/ { print $4 }' | sort -n"

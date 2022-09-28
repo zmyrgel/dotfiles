@@ -3,23 +3,23 @@
 # ArchLinux
 if [ -f /etc/arch-release ]
 then
-    alias pacu='sudo pacman -Syu'
-    alias paci='sudo pacman -S'
-    alias pacs='sudo pacman -Ss'
-    alias pacU='sudo pacman -U'
+	alias pacu='sudo pacman -Syu'
+	alias paci='sudo pacman -S'
+	alias pacs='sudo pacman -Ss'
+	alias pacU='sudo pacman -U'
 fi
 
 # Slackware
 if [ -r /etc/slackware-version ]
 then
-    if [ $(uname -m) == "x86_64" ]
-    then
-	ARCH=x86_64
-        PATH=$PATH:/usr/lib64/java/bin:/usr/lib64/kde4/libexec:/usr/lib64/qt/bin
-    else
-	ARCH=i386
-        PATH=$PATH:/usr/lib/java/bin:/usr/lib/kde4/libexec:/usr/lib/qt/bin
-    fi
-    PATH=$PATH:/usr/share/texmf/bin
-    export ARCH PATH
+	if [ $(uname -m) == "x86_64" ]
+	then
+		ARCH=x86_64
+		PATH=$PATH:/usr/lib64/java/bin:/usr/lib64/kde4/libexec:/usr/lib64/qt/bin
+	else
+		ARCH=i386
+		PATH=$PATH:/usr/lib/java/bin:/usr/lib/kde4/libexec:/usr/lib/qt/bin
+	fi
+	PATH=$PATH:/usr/share/texmf/bin
+	export ARCH PATH
 fi

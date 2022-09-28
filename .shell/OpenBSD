@@ -6,7 +6,10 @@ alias show_beacons='doas tcpdump -n -i iwn0 -s 1500 -vvv -y IEEE802_11_RADIO sub
 alias porters='irc -icb -c porters tmy slackers.openbsd.org'
 
 # Add Latest JDK dir to PATH
-add_path /usr/local/jdk-1.8.0/bin
+if [ -x /usr/local/jdk-1.8.0/bin ]
+then
+	PATH=/usr/local/jdk-1.8.0/bin:$PATH
+fi
 
 if [ -d /usr/local/share/doc/posix/man ]
 then
@@ -19,8 +22,8 @@ if test -d /usr/local/go
 then
 	GOROOT=/usr/local/go
 	export GOROOT
-	add_path $GOROOT/bin
-	add_path $GOROOT/pkg/tool/openbsd_amd64
+	PATH=$PATH:$GOROOT/bin
+	PATH=$PATH:$GOROOT/pkg/tool/openbsd_amd64
 fi
 
 CVSROOT=anoncvs@anoncvs.eu.openbsd.org:/cvs
@@ -28,3 +31,42 @@ export CVSROOT
 
 # Shell expand got commands
 set -A complete_got_1 -- $(got -h 2>&1 | sed -n s/commands://p)
+
+# Port utilities
+alias portsql='sqlite3 /usr/local/share/sqlports'
+alias portslol='make 2>&1 | /usr/ports/infrastructure/bin/portslogger .'
+alias port-pldc='make port-lib-depends-check'
+alias port-ldc='make lib-depends-check'
+alias port-pdiff='diff -up pkg/PLIST.orig pkg/PLIST'
+alias portsrc='cd `make show=WRKSRC`'
+alias port-fast='MAKE_JOBS=4 make'
+
+# To cleanup both flavors of a python port
+alias cleanup='make clean=all && env FLAVOR=python3 make clean=all'
+
+# My most frequently used alias
+alias py3='env FLAVOR=python3'
+
+# Generates a patch for the whole port into /usr/ports/mystuff
+port-diff() {
+	cvs diff > /usr/ports/mystuff/${PWD##*/}.diff
+	less /usr/ports/mystuff/${PWD##*/}.diff
+}
+
+port-lessdiff() {
+	less /usr/ports/mystuff/${PWD##*/}.diff
+}
+
+# greps all Makefiles in ports tree for the supplied term
+port-grep() {
+	( cd /usr/ports; grep "$1" */*/Makefile */*/*/Makefile )
+}
+
+# Only greps Makefiles in ports directories that start with py-
+port-pygrep() {
+	( cd /usr/ports; grep "$1" */*/py-*/Makefile */py-*/Makefile )
+}
+
+portsfind() {
+	find /usr/ports -iname "${1}" -exec grep -iH ${2} {} +
+}
