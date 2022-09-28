@@ -2,7 +2,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2022-09-27 20:56:24 (tmy)>
+;;; Time-stamp: <2022-09-28 06:55:28 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
 ;;;
@@ -16,7 +16,7 @@
 ;; Make startup faster by reducing the frequency of gc
 (setq gc-cons-threshold (* 50 1000 1000))
 
-(defconst lisp-dir (locate-user-emacs-file "lisp"))
+(defconst local-elisp-dir (locate-user-emacs-file "elisp"))
 
 (setq custom-file (locate-user-emacs-file "custom.el"))
 (load custom-file 'noerror)
@@ -59,10 +59,14 @@
 
 (add-hook 'package-menu-mode-hook 'hl-line-mode)
 
-(let ((local-elisp-dir (locate-user-emacs-file "elisp")))
-  (unless (directory-name-p local-elisp-dir)
-    (make-directory local-elisp-dir))
-  (add-to-list 'load-path local-elisp-dir nil))
+;; add local elisp files to load path
+(unless (file-directory-p local-elisp-dir)
+  (make-directory local-elisp-dir))
+(add-to-list 'load-path local-elisp-dir nil)
+
+;; append rest of emacs init files to load path
+;; and load them
+(add-to-list 'load-path (locate-user-emacs-file "init.d" t))
 
 (require 'init-general)
 (require 'init-text)
