@@ -66,7 +66,7 @@
 
 ;; append rest of emacs init files to load path
 ;; and load them
-(add-to-list 'load-path (locate-user-emacs-file "init.d" t))
+(add-to-list 'load-path (locate-user-emacs-file "init.d") t)
 
 (require 'init-general)
 (require 'init-text)
