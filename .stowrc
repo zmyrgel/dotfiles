@@ -1,0 +1,4 @@
+--ignore .git
+--ignore README.org
+--ignore .stowrc
+--ignore sync.sh
