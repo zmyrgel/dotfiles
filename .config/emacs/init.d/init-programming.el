@@ -198,9 +198,7 @@ sendemail.annotate yes'."
 (global-eldoc-mode 1)
 
 (ensure-packages-present 'sly)
-(when-let ((sbcl-bin-path (car (file-expand-wildcards "~/sbcl-*-linux" t))))
-  (setenv "SBCL_HOME" sbcl-bin-path)
-  (add-to-list 'exec-path (expand-file-name "bin" sbcl-bin-path)))
+
 (setq sly-lisp-implementations '((sbcl ("sbcl" "--dynamic-space-size" "2048"))
                                  (ecl ("ecl"))
                                  (clisp ("clisp" "-ansi"))
