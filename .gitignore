@@ -10,6 +10,7 @@
 .config/emacs/diary
 .config/emacs/ede-projects.el
 .config/emacs/emacs.bmk
+.config/emacs/elisp
 .config/emacs/forge-database-v7-20220622-0742.sql
 .config/emacs/forge-database-v8-20220627-0723.sql
 .config/emacs/forge-database.sqlite
