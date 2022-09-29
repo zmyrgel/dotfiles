@@ -19,3 +19,5 @@ set -o trackall		# Use full pathnames for commands in alias expansions.
 
 PS1="[\u@\h \W]$ "
 export PS1
+
+HISTFILE=$HOME/.sh_history

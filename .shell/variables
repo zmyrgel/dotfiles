@@ -1,7 +1,6 @@
 # Variables -*- mode: sh; coding: utf-8-unix; -*-
 
 HISTSIZE=1000
-HISTFILE=$HOME/.sh_history
 PAGER=less
 LESS="-i -M -q -S -Sm -F -g --no-init"
 CVS_RSH=ssh
@@ -40,31 +39,31 @@ then
 	PATH=$PATH:$HOME/.local/bin
 fi
 
+# Go programming
 GOPATH=$HOME/workspace
 export GOPATH
 if [ -x $GOPATH/bin ]
 then
 	PATH=$GOPATH/bin:$PATH
 fi
-
 if [ -x /usr/local/go/bin ]
 then
 	PATH=/usr/local/go/bin:$PATH
 fi
-
 export PATH=$HOME/go/bin:$PATH
 
+# NPM setup
 if [ -x $HOME/.npm-global ]
 then
 	NPM_CONFIG_PREFIX=$HOME/.npm-global
 	PATH=$HOME/.npm-global/bin:$PATH
 fi
-
 export NPM_CONFIG_PREFIX
-export PATH
 
-# activate Perl local-lib if installed
+# Perl local-lib setup
 if test -d $HOME/perl5/lib/perl5
 then
 	eval "$(perl -I$HOME/perl5/lib/perl5 -Mlocal::lib)"
 fi
+
+export PATH
