@@ -224,7 +224,7 @@ sendemail.annotate yes'."
 
 ;; (zmg/package-instal 'quack)
 ;; (setq quack-default-program "csi")
-;; (setq quack-dir (concat user-emacs-directory "quack/"))
+;; (setq quack-dir (locate-user-emacs-file "quack"))
 ;; (setq quack-fontify-style nil)
 ;; (setq quack-newline-behavior 'indent-newline-indent)
 ;; (setq quack-pretty-lambda-p nil)

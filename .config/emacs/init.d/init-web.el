@@ -81,7 +81,7 @@
 (with-eval-after-load 'elfeed
   (setq elfeed-use-curl t)
   (setq elfeed-curl-max-connections 10)
-  (setq elfeed-db-directory "~/.emacs.d/elfeed/")
+  (setq elfeed-db-directory (locate-user-emacs-file "elfeed/"))
   (setq elfeed-enclosure-default-dir "~/Downloads/")
   (setq elfeed-search-filter "@1-months-ago +unread")
   (setq elfeed-sort-order 'descending)
