@@ -42,7 +42,7 @@
                   'Active' - where the active window is -->
   </placement>
   <theme>
-    <name>Equilux-compact</name>
+    <name>Surreal</name>
     <titleLayout>NLIMC</titleLayout>
     <!--
       available characters are NDSLIMC, each can occur at most once.
@@ -57,8 +57,8 @@
     <keepBorder>yes</keepBorder>
     <animateIconify>yes</animateIconify>
     <font place="ActiveWindow">
-      <name>Spleen</name>
-      <size>10</size>
+      <name>Noto Sans UI</name>
+      <size>12</size>
       <!-- font size in points -->
       <weight>Bold</weight>
       <!-- 'bold' or 'normal' -->
@@ -66,7 +66,7 @@
       <!-- 'italic' or 'normal' -->
     </font>
     <font place="InactiveWindow">
-      <name>Spleen</name>
+      <name>Noto Sans UI</name>
       <size>10</size>
       <!-- font size in points -->
       <weight>Normal</weight>
@@ -75,17 +75,17 @@
       <!-- 'italic' or 'normal' -->
     </font>
     <font place="MenuHeader">
-      <name>Spleen</name>
-      <size>10</size>
+      <name>Noto Sans</name>
+      <size>9</size>
       <!-- font size in points -->
-      <weight>Bold</weight>
+      <weight>Normal</weight>
       <!-- 'bold' or 'normal' -->
       <slant>Normal</slant>
       <!-- 'italic' or 'normal' -->
     </font>
     <font place="MenuItem">
-      <name>Spleen</name>
-      <size>10</size>
+      <name>Noto Sans</name>
+      <size>9</size>
       <!-- font size in points -->
       <weight>Normal</weight>
       <!-- 'bold' or 'normal' -->
@@ -93,8 +93,8 @@
       <!-- 'italic' or 'normal' -->
     </font>
     <font place="ActiveOnScreenDisplay">
-      <name>Roboto Light</name>
-      <size>10</size>
+      <name>Noto Sans</name>
+      <size>9</size>
       <!-- font size in points -->
       <weight>Normal</weight>
       <!-- 'bold' or 'normal' -->
@@ -102,8 +102,8 @@
       <!-- 'italic' or 'normal' -->
     </font>
     <font place="InactiveOnScreenDisplay">
-      <name>Roboto weight=250</name>
-      <size>10</size>
+      <name>Noto Sans</name>
+      <size>9</size>
       <!-- font size in points -->
       <weight>Normal</weight>
       <!-- 'bold' or 'normal' -->
@@ -123,11 +123,12 @@
     <number>6</number>
     <firstdesk>1</firstdesk>
     <names>
+      <!-- set names up here if you want to, like this: -->
       <name>Emacs</name>
       <name>Web</name>
-      <name>Music</name>
       <name>IM</name>
       <name>Admin</name>
+      <name>Music</name>
       <name>Remote</name>
     </names>
     <popupTime>875</popupTime>
@@ -259,24 +260,35 @@
         <to>6</to>
       </action>
     </keybind>
-    <keybind key="W-m">
-      <action name="ToggleMaximize"/>
-    </keybind>
     <keybind key="W-d">
       <action name="ToggleShowDesktop"/>
+    </keybind>
+    <keybind key="C-Escape">
+      <action name="ShowMenu">
+        <menu>root-menu</menu>
+      </action>
     </keybind>
     <!-- Keybindings for windows -->
     <keybind key="W-w">
       <action name="Close"/>
     </keybind>
-    <keybind key="A-Escape">
-      <action name="Lower"/>
-      <action name="FocusToBottom"/>
-      <action name="Unfocus"/>
+    <!-- <keybind key="W-e"> -->
+    <!--   <action name="Lower"/> -->
+    <!--   <action name="FocusToBottom"/> -->
+    <!--   <action name="Unfocus"/> -->
+    <!-- </keybind> -->
+    <!-- <keybind key="W-w"> -->
+    <!--   <action name="ShowMenu"> -->
+    <!--     <menu>client-menu</menu> -->
+    <!--   </action> -->
+    <!-- </keybind> -->
+    <keybind key="W-m">
+      <action name="ToggleMaximize"/>
     </keybind>
-    <keybind key="W-space">
-      <action name="ShowMenu">
-        <menu>client-menu</menu>
+    <!-- Take a screenshot of the current window with scrot when Alt+Print are pressed -->
+    <keybind key="A-Print">
+      <action name="Execute">
+        <command>scrot -s</command>
       </action>
     </keybind>
     <!-- Keybindings for window switching -->
@@ -331,38 +343,44 @@
       </action>
     </keybind>
     <!-- Keybindings for running applications -->
-    <keybind key="W-F1">
-      <action name="Execute">
+    <keybind key="W-e">
+      <action name="execute">
         <startupnotify>
-          <enabled>true</enabled>
-          <name>Konqueror</name>
+          <enabled>yes</enabled>
+          <name>PCManFM</name>
         </startupnotify>
-        <command>kfmclient openProfile filemanagement</command>
-      </action>
-    </keybind>
-    <keybind key="W-Return">
-      <action name="Execute">
-        <command>xterm</command>
+        <command>pcmanfm</command>
       </action>
     </keybind>
     <keybind key="W-r">
-      <action name="Execute">
-        <command>dmenu_run -fn spleen-16</command>
+      <action name="execute">
+        <command>dmenu_run -p 'Run: ' -fn tamsyn-16 -sf '#bebebe' -sb '#5a5a5a' -nf '#bebebe' -nb '#414141'</command>
+      </action>
+    </keybind>
+    <keybind key="W-slash">
+      <action name="execute">
+        <command>rofi -show window</command>
       </action>
     </keybind>
     <keybind key="W-period">
-      <action name="Execute">
-        <command>rofi -show ssh</command>
+      <action name="execute">
+        <command>/home/tmy/bin/dmenu_ssh 'xterm -e ssh'</command>
+      </action>
+    </keybind>
+    <keybind key="W-Return">
+      <action name="execute">
+        <command>xterm</command>
       </action>
     </keybind>
     <keybind key="W-l">
-      <action name="Execute">
-        <command>xlock -mode blank</command>
+      <action name="execute">
+        <command>xscreensaver-command -lock</command>
       </action>
     </keybind>
-    <keybind key="W-backspace">
+    <!-- Launch scrot when Print is pressed -->
+    <keybind key="Print">
       <action name="Execute">
-        <command>xlock -mode blank</command>
+        <command>scrot</command>
       </action>
     </keybind>
   </keyboard>
@@ -704,6 +722,8 @@
     <!-- You can specify more than one menu file in here and they are all loaded,
        just don't make menu ids clash or, well, it'll be kind of pointless -->
     <!-- default menu file (or custom one in $HOME/.config/openbox/) -->
+    <!-- system menu files on Debian systems -->
+    <file>/var/lib/openbox/debian-menu.xml</file>
     <file>menu.xml</file>
     <hideDelay>200</hideDelay>
     <!-- if a press-release lasts longer than this setting (in milliseconds), the
@@ -726,6 +746,37 @@
     <!-- show the manage desktops section in the client-list-(combined-)menu -->
   </menu>
   <applications>
+    <application name="Emacs">
+      <desktop>1</desktop>
+      <maximized>yes</maximized>
+    </application>
+    <application name="Firefox*">
+      <desktop>2</desktop>
+      <maximized>yes</maximized>
+    </application>
+    <application name="Slack">
+      <desktop>3</desktop>
+      <maximized>yes</maximized>
+    </application>
+    <application name="Skype">
+      <desktop>3</desktop>
+      <maximized>yes</maximized>
+    </application>
+    <application name="Remmina">
+      <desktop>6</desktop>
+      <maximized>yes</maximized>
+    </application>
+    <!-- MPlayer will follow me around when i switch desktop.
+       that way i can always watch my vids when coding.
+       same goes for Realplayer -->
+    <application class="MPlayer">
+      <desktop>all</desktop>
+      <layer>above</layer>
+    </application>
+    <application class="Realplay.bin">
+      <desktop>all</desktop>
+      <layer>above</layer>
+    </application>
     <!--
   # this is an example with comments through out. use these to make your
   # own rules, but without the comments of course.
