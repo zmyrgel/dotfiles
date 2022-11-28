@@ -145,10 +145,10 @@ sendemail.annotate yes'."
 (global-set-key (kbd "C-c g") 'magit-status)
 
 ;; magit-gitflow
-(when (string= (system-name) "ws-946")
+(when (string= (system-name) "ws-926")
   (ensure-packages-present 'magit-gitflow)
-  (with-eval-after-load 'magit-gitflow
-    (add-hook 'magit-mode-hook 'turn-on-magit-gitflow)))
+  (require 'magit-gitflow nil t)
+  (add-hook 'magit-mode-hook 'turn-on-magit-gitflow))
 
 (ensure-packages-present 'eglot)
 (with-eval-after-load 'eglot
