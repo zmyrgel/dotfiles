@@ -2,24 +2,17 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2022-09-28 06:55:28 (tmy)>
+;;; Time-stamp: <2022-11-26 16:09:36 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
 ;;;
 ;;; Commentary:
 ;;; - fix warnings on this init:
 ;;; -- flymake--handle-report: Can’t find state for flymake-eslint--checker in ‘flymake--state’
-;;; - improve init speed, currently 7s.
 
 ;;; Code:
 
-;; Make startup faster by reducing the frequency of gc
-(setq gc-cons-threshold (* 50 1000 1000))
-
 (defconst local-elisp-dir (locate-user-emacs-file "elisp"))
-
-(setq custom-file (locate-user-emacs-file "custom.el"))
-(load custom-file 'noerror)
 
 (require 'package)
 
@@ -49,8 +42,8 @@
   "Evaluate BODY after loading the given PACKAGE, installing it if needed."
   (declare (indent 1))
   `(progn
-       (when (and (not (package-built-in-p ,package))
-                  (not (package-installed-p ,package)))
+       (unless (or (package-built-in-p ,package)
+                   (package-installed-p ,package))
          (package-install ,package))
        (if (not (require ,package nil 'noerror))
            (display-warning 'zmg/with-package
@@ -68,18 +61,24 @@
 ;; and load them
 (add-to-list 'load-path (locate-user-emacs-file "init.d") t)
 
-(require 'init-general)
-(require 'init-text)
-(require 'init-visual)
-(require 'init-calendar)
-(require 'init-session)
-(require 'init-shell)
-(require 'init-org)
-(require 'init-email)
-(require 'init-web)
-(require 'init-completion)
-(require 'init-files)
-(require 'init-programming)
+;; Reduce startup time ~0.2s faster by reducing the frequency of gc
+(let ((gc-cons-threshold (* 50 1000 1000)))
+  (require 'init-general)
+  (require 'init-text)
+  (require 'init-visual)
+  (require 'init-calendar)
+  (require 'init-session)
+  (require 'init-shell)
+  (require 'init-org)
+  (require 'init-email)
+  (require 'init-web)
+  (require 'init-completion)
+  (require 'init-files)
+  (require 'init-programming)
+
+  ;; load custom settings
+  (setq custom-file (locate-user-emacs-file "custom.el"))
+  (load custom-file 'noerror))
 
 ;;; ------------------------------
 ;;; Finalizers
@@ -93,9 +92,6 @@
                              (float-time
                               (time-subtract after-init-time before-init-time)))
                      gcs-done)))
-
-;; Restore old gc threshold value
-(setq gc-cons-threshold 800000)
 
 ;; Load optional local startup files
 (load (locate-user-emacs-file "init-local.el") t t)
