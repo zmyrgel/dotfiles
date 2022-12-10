@@ -4,7 +4,7 @@
 ;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;
 ;; Created:
-;; Time-stamp: <2021-09-16 07:23:55 (tmy)>
+;; Time-stamp: <2022-12-10 18:09:33 (tmy)>
 ;; URL: https://github.com/zmyrgel/dotfiles/
 ;; Copyright (C) 2012 Timo Myyrä
 ;;
@@ -39,8 +39,7 @@
 (defvar *font* "-*-terminus-medium-r-normal--16-*-*-*-*-*-iso10646-1"
   "Font to use for displaying stumwm ui elements.")
 
-(defvar *contrib-path* (merge-pathnames ".stumpwm.d/modules"
-                                        (user-homedir-pathname)))
+(defvar *contrib-path* (merge-pathnames "modules/" *data-dir*))
 
 (defvar *wallpaper-path* (merge-pathnames "wallpapers"
                                           (user-homedir-pathname)))
@@ -203,8 +202,7 @@ mode-line"
 (defun start-initial-apps ()
   (loop for app in (list "xsetroot -solid rgb:11/11/11"
                          "xsetroot -cursor_name left_ptr -fg black -bg white"
-                         "wmname LG3D"
-                         "pgrep mpd || mpd ~/.mpdconf")
+                         "wmname LG3D")
         do (run-shell-command app)))
 
 #+linux
@@ -216,46 +214,38 @@ mode-line"
 ;; ---------------------------------------
 ;; MODULES
 
-;; (handler-case (progn
-;;                 (load-module "stumptray")
-;;                 (stumptray::stumptray))
-;;   (error (c)
-;;     (format t "Unable to find module.~&")
-;;     (values nil c)))
+(defmacro with-module (name &rest body)
+  "Load module with NAME and execute BODY if succesfull."
+  `(handler-case
+       (progn
+         (load-module ,name)
+         ,@body)
+     (error (c)
+       (format t "Unable to find module.~&")
+       (values nil c))))
+
+(with-module "stumptray"
+  (stumptray::stumptray))
 
 #+openbsd
-(handler-case (progn
-                (load-module "stumpwm-sndioctl")
-                (define-key *top-map* (kbd "XF86AudioMute") "toggle-mute")
-                (define-key *top-map* (kbd "XF86AudioLowerVolume") "volume-down")
-                (define-key *top-map* (kbd "XF86AudioRaiseVolume") "volume-up"))
-  (error (c)
-    (format t "Unable to find module.~&")
-    (values nil c)))
+(with-module "stumpwm-sndioctl"
+  (define-key *top-map* (kbd "XF86AudioMute") "toggle-mute")
+  (define-key *top-map* (kbd "XF86AudioLowerVolume") "volume-down")
+  (define-key *top-map* (kbd "XF86AudioRaiseVolume") "volume-up"))
 
-(handler-case (progn
-                (load-module "globalwindows")
-                ;;(define-key *root-map* (kbd "M-1") "global-windowlist")
-                ;;(define-key *root-map* (kbd "M-2") "global-pull-windowlist")
-                )
-  (error (c)
-    (format t "Unable to find module.~&")
-    (values nil c)))
+(with-module "globalwindows"
+  (define-key *root-map* (kbd "M-1") "global-windowlist")
+  (define-key *root-map* (kbd "M-2") "global-pull-windowlist"))
 
-(handler-case (progn
-                (load-module "urgentwindows")
-                (define-key *root-map* (kbd "u") "raise-urgent"))
-  (error (c)
-    (format t "Unable to find module.~&")
-    (values nil c)))
+(with-module "urgentwindows"
+  (define-key *root-map* (kbd "u") "raise-urgent"))
 
-(handler-case (progn
-                (load-module "notifications")
-                (setf (uiop:strcat *screen-mode-line-format*) " (%N)")
-                (define-key *root-map* (kbd "N") '*notifications-map*))
-  (error (c)
-    (format t "Unable to find module.~&")
-    (values nil c)))
+(with-module "notifications"
+  (setf *screen-mode-line-format* (uiop:strcat uiop:strcat *screen-mode-line-format* " (%N)"))
+  (define-key *root-map* (kbd "N") '*notifications-map*))
+
+(with-module "urgentwindows"
+  (define-key *root-map* (kbd "u") "raise-urgent"))
 
 ;; ---------------------------------------
 ;; Commands
@@ -271,10 +261,6 @@ mode-line"
   "Universal rat-less X paste."
   (let ((cmd (concatenate 'string "insert " (get-x-selection))))
     (eval-command cmd)))
-
-(defcommand firefox () ()
-  "run firefox"
-  (run-or-raise "firefox" '(:class "Firefox")))
 
 #+linux
 (progn
@@ -300,23 +286,6 @@ mode-line"
 ;; ---------------------------------------
 ;; KEYBINDINGS
 
-(handler-case (progn
-                (load-module "globalwindows")
-                ;;(define-key *root-map* (kbd "M-1") "global-windowlist")
-                ;;(define-key *root-map* (kbd "M-2") "global-pull-windowlist")
-                )
-  (error (c)
-    (format t "Unable to find module.~&")
-    (values nil c)))
-
-(handler-case (progn
-                (load-module "urgentwindows")
-                (define-key *root-map* (kbd "u") "raise-urgent"))
-  (error (c)
-    (format t "Unable to find module.~&")
-    (values nil c)))
-
-
 ;; Browse somewhere
 (define-key *root-map* (kbd "C-b") (uiop:strcat "colon1 exec " *browser* " https://www."))
 ;; Ssh somewhere
@@ -335,7 +304,6 @@ mode-line"
 
 ;; Emacs Style Frame Splitting
 ;; (loop for n below 10
-
 ;;       do (undefine-key *root-map* (kbd (write-to-string n))))
 ;; (define-key *root-map* (kbd "0") "remove")
 ;; (define-key *root-map* (kbd "1") "only")
@@ -398,64 +366,3 @@ mode-line"
 (undefine-key *root-map* (kbd "C-m"))
 (undefine-key *root-map* (kbd "C-l"))
 (undefine-key *root-map* (kbd "C-k"))
-
-;; (setf *root-map*
-;;       (let ((m (make-sparse-keymap)))
-;;         (define-key m (kbd "c") "exec xterm")
-;;         (define-key m (kbd "e") "emacs")
-;;         (define-key m (kbd "b") "banish")
-;;         (define-key m (kbd "a") "time")
-;;         (define-key m (kbd "C-g") "abort")
-;;         (define-key m (kbd "t") "send-escape")
-;;         (define-key m (kbd ";") "colon")
-;;         (define-key m (kbd ":") "eval")
-;;         (define-key m (kbd "C-m") "lastmsg")
-;;         (define-key m (kbd "G") "vgroups")
-;;         (define-key m (kbd "g") '*groups-map*)
-;;         (define-key m (kbd "h") '*help-map*)
-;;         (define-key m (kbd "m") '*mpd-map*)
-;;         (define-key m (kbd "q") '*query-map*)
-;;         (define-key m (kbd "N") '*notifications-map*)
-;;         (define-key m (kbd "!") "exec dmenu_run")
-;;         (define-key m (kbd "quoteright") "windowlist")
-;;         (define-key m (kbd "\"") "select")
-;;         (define-key m (kbd "n") "pull-hidden-next")
-;;         (define-key m (kbd "p") "pull-hidden-previous")
-;;         (define-key m (kbd "M-n") "next")
-;;         (define-key m (kbd "M-p") "prev")
-;;         (define-key m (kbd "C-M-n") "next-in-frame")
-;;         (define-key m (kbd "C-M-p") "prev-in-frame")
-;;         (define-key m (kbd "W") "place-existing-windowns")
-;;         (define-key m (kbd "C-t") "pull-hidden-other")
-;;         (define-key m (kbd "M-t") "other-in-frame")
-;;         (define-key m (kbd "R") "remove")
-;;         (define-key m (kbd "s") "vsplit")
-;;         (define-key m (kbd "S") "hsplit")
-;;         (define-key m (kbd "r") "iresize")
-;;         (define-key m (kbd "o") "fnext")
-;;         (define-key m (kbd "M-TAB") "fprev")
-;;         (define-key m (kbd "f") "fselect")
-;;         (define-key m (kbd "F") "curframe")
-;;         (define-key m (kbd "-") "fclear")
-;;         (define-key m (kbd "Q") "only")
-;;         ;; (define-key m (kbd "Up") "move-focus up")
-;;         ;; (define-key m (kbd "Down") "move-focus down")
-;;         ;; (define-key m (kbd "Left") "move-focus left")
-;;         ;; (define-key m (kbd "Right") "move-focus right")
-;;         ;; (define-key m (kbd "M-Up") "move-window up")
-;;         ;; (define-key m (kbd "M-Up") "move-window down")
-;;         ;; (define-key m (kbd "M-up") "move-window left")
-;;         ;; (define-key m (kbd "M-Up") "move-window right")
-;;         (define-key m (kbd "+") "balance-frames")
-;;         (define-key m (kbd "l") "redisplay")
-;;         (define-key m (kbd "L") "exec xlock -mode blank")
-;;         (define-key m (kbd "C-u") "next-urgert")
-;;         (define-key m (kbd "w") "windows")
-;;         (define-key m (kbd "k") "delete")
-;;         (define-key m (kbd "K") "kill")
-;;         (define-key m (kbd "C-N") "number")
-;;         (define-key m (kbd "#") "mark")
-;;         (define-key m (kbd "C-F") "fullscreen")
-;;         (define-key m (kbd "A") "title")
-;;         (define-key m (kbd "i") "info")
-;;         m))
