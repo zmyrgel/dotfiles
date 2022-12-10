@@ -4,7 +4,7 @@
 ;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;
 ;; Created:
-;; Time-stamp: <2022-12-10 18:09:33 (tmy)>
+;; Time-stamp: <2022-12-10 21:40:21 (tmy)>
 ;; URL: https://github.com/zmyrgel/dotfiles/
 ;; Copyright (C) 2012 Timo Myyrä
 ;;
@@ -33,19 +33,31 @@
   (setf stumpwm:*top-level-error-action* :break)
   (slynk:create-server))
 
+;; for stumptray
+(ql:quickload 'xembed)
+
 ;; ---------------------------------------
 ;; Define global configurations
 
 (defvar *font* "-*-terminus-medium-r-normal--16-*-*-*-*-*-iso10646-1"
   "Font to use for displaying stumwm ui elements.")
 
-(defvar *contrib-path* (merge-pathnames "modules/" *data-dir*))
+;; Update module directory path
+(let ((my-module-dir (merge-pathnames ".config/stumpwm/modules"
+                                      (user-homedir-pathname))))
+  (when (probe-file my-module-dir)
+    (set-module-dir my-module-dir)))
 
 (defvar *wallpaper-path* (merge-pathnames "wallpapers"
                                           (user-homedir-pathname)))
 (defvar *wallpaper-extensions* (list "png" "jpg" "jpeg"))
 
-(defvar *local-display* "eDP1"
+(defvar *local-display*
+  (let ((host (uiop:hostname)))
+    (cond ((string= host "asteroid.bittivirhe.fi")
+           "eDP")
+          (t
+           "eDP1")))
   "Display used for main display as given by xrandr.")
 
 (defvar *x-lock-command*
@@ -60,14 +72,14 @@
 ;; ---------------------------------------
 ;; Misc options
 
-(defun update-window-title (window)
-  "If the window comes up with no title, set the user title to the
-window's instance name so it doesn't appear with no context on the
-mode-line"
-  (when (equal "" (window-title window))
-    (setf (window-user-title window) (window-res window))))
+;(defun update-window-title (window)
+;  "If the window comes up with no title, set the user title to the
+;window's instance name so it doesn't appear with no context on the
+;mode-line"
+;  (when (equal "" (window-title window))
+;    (setf (window-user-title window) (window-res window))))
 
-(add-hook *new-window-hook* #'update-window-title)
+;(add-hook *new-window-hook* #'update-window-title)
 
 (setf *mouse-focus-policy* :click)
 
@@ -91,10 +103,10 @@ mode-line"
 (when *font*
   (set-font *font*))
 
-(setf *message-window-padding* 20
-      *message-window-gravity* :top-rigth
-      *timeout-wait* 1
-      *input-window-gravity* :top-rigth)
+(setf *message-window-padding* 20)
+(setf *timeout-wait* 1)
+;(setf *message-window-gravity* :top-rigth)
+;(setf *input-window-gravity* :top-rigth)
 
 ;; ---------------------------------------
 ;; Window options
@@ -227,6 +239,10 @@ mode-line"
 (with-module "stumptray"
   (stumptray::stumptray))
 
+#+linux
+(with-module "stump-nm"
+  (define-key *root-map* (kbd "C-w") "nm-list-wireless-networks"))
+
 #+openbsd
 (with-module "stumpwm-sndioctl"
   (define-key *top-map* (kbd "XF86AudioMute") "toggle-mute")
@@ -236,9 +252,6 @@ mode-line"
 (with-module "globalwindows"
   (define-key *root-map* (kbd "M-1") "global-windowlist")
   (define-key *root-map* (kbd "M-2") "global-pull-windowlist"))
-
-(with-module "urgentwindows"
-  (define-key *root-map* (kbd "u") "raise-urgent"))
 
 (with-module "notifications"
   (setf *screen-mode-line-format* (uiop:strcat uiop:strcat *screen-mode-line-format* " (%N)"))
@@ -261,6 +274,10 @@ mode-line"
   "Universal rat-less X paste."
   (let ((cmd (concatenate 'string "insert " (get-x-selection))))
     (eval-command cmd)))
+
+(defcommand firefox () ()
+  "run firefox"
+  (run-or-raise "firefox" '(:class "Firefox")))
 
 #+linux
 (progn
