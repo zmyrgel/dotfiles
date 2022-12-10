@@ -32,6 +32,9 @@
   (add-to-list 'mm-body-charset-encoding-alist '(utf-8 . base64)) ;; FIXME: undefined
   (add-hook 'message-setup-hook 'message-sort-headers)
 
+  (setq gnus-extra-headers
+        '(To Newsgroups X-GM-LABELS))
+
   ;; gnus
   (setq gnus-treat-hide-citation t)
   (setq gnus-gcc-mark-as-read t)
