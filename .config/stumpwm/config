@@ -4,7 +4,7 @@
 ;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;
 ;; Created:
-;; Time-stamp: <2022-12-10 21:40:21 (tmy)>
+;; Time-stamp: <2022-12-11 22:49:02 (tmy)>
 ;; URL: https://github.com/zmyrgel/dotfiles/
 ;; Copyright (C) 2012 Timo Myyrä
 ;;
@@ -16,6 +16,7 @@
 ;;  - Update hook + notify on IRC messages + other urgent messages
 ;;  - Prevent pop-ups from stealing focus from current frame
 ;;  - Remove useless keymaps somehow
+;;  - test ttf fonts git clone https://github.com/lihebi/clx-truetype.git
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -34,7 +35,10 @@
   (slynk:create-server))
 
 ;; for stumptray
-(ql:quickload 'xembed)
+;; (ql:quickload 'xembed)
+
+;; for ttf-fonts
+(ql:quickload 'clx-truetype)
 
 ;; ---------------------------------------
 ;; Define global configurations
@@ -43,10 +47,10 @@
   "Font to use for displaying stumwm ui elements.")
 
 ;; Update module directory path
-(let ((my-module-dir (merge-pathnames ".config/stumpwm/modules"
+(let ((module-dir (merge-pathnames ".config/stumpwm/modules"
                                       (user-homedir-pathname))))
-  (when (probe-file my-module-dir)
-    (set-module-dir my-module-dir)))
+  (when (probe-file module-dir)
+    (set-module-dir module-dir)))
 
 (defvar *wallpaper-path* (merge-pathnames "wallpapers"
                                           (user-homedir-pathname)))
@@ -69,17 +73,20 @@
 (defvar *browser* "firefox"
   "Default web browser to use.")
 
+(defvar *xterm* "xterm"
+  "X terminal program to use.")
+
 ;; ---------------------------------------
 ;; Misc options
 
-;(defun update-window-title (window)
-;  "If the window comes up with no title, set the user title to the
-;window's instance name so it doesn't appear with no context on the
-;mode-line"
-;  (when (equal "" (window-title window))
-;    (setf (window-user-title window) (window-res window))))
+(defun update-window-title (window)
+ "If the window comes up with no title, set the user title to the
+window's instance name so it doesn't appear with no context on the
+mode-line"
+ (when (equal (window-title window) "")
+   (setf (window-user-title window) (window-res window))))
 
-;(add-hook *new-window-hook* #'update-window-title)
+(add-hook *new-window-hook* #'update-window-title)
 
 (setf *mouse-focus-policy* :click)
 
@@ -90,6 +97,65 @@
 ;;       (append *colors*
 ;;               (list *fg-color* "MidnightBlue")))
 ;; (update-color-map (current-screen))
+
+;; Color scheme for Modus vivendi
+;; (defvar *color-0* "#000000")
+;; (defvar *color-1* "#ff8059")
+;; (defvar *color-2* "#44bc44")
+;; (defvar *color-3* "#d0bc00")
+;; (defvar *color-4* "#2fafff")
+;; (defvar *color-5* "#feacd0")
+;; (defvar *color-6* "#00d3d0")
+;; (defvar *color-7* "#bfbfbf")
+;; (defvar *color-8* "#595959")
+;; (defvar *color-9* "#ef8b50")
+;; (defvar *color-10* "#70b900")
+;; (defvar *color-11* "#c0c530")
+;; (defvar *color-12* "#79a8ff")
+;; (defvar *color-13* "#b6a0ff")
+;; (defvar *color-14* "#6aefb9")
+;; (defvar *color-15* "#ffffff")
+
+;; Color scheme for Nord
+(defvar *color-0* "#2e3440")
+(defvar *color-1* "#3b4252")
+(defvar *color-2* "#434c5e")
+(defvar *color-3* "#4c566a")
+(defvar *color-4* "#d8dee9")
+(defvar *color-5* "#e5e9f0")
+(defvar *color-6* "#eceff4")
+(defvar *color-7* "#8fbcbb")
+(defvar *color-8* "#88c0d0")
+(defvar *color-9* "#81a1c1")
+(defvar *color-10* "#5e81ac")
+(defvar *color-11* "#bf616a")
+(defvar *color-12* "#d08770")
+(defvar *color-13* "#ebcb8b")
+(defvar *color-14* "#a3be8c")
+(defvar *color-15* "#b48ead")
+
+(setq *colors*
+      `(,*color-1*   ;; 0 black
+        ,*color-11*  ;; 1 red
+        ,*color-14*  ;; 2 green
+        ,*color-13*  ;; 3 yellow
+        ,*color-10*  ;; 4 blue
+        ,*color-14*  ;; 5 magenta
+        ,*color-8*   ;; 6 cyan
+        ,*color-5*)) ;; 7 white
+
+(set-border-color        *color-1*)
+(set-focus-color         *color-1*)
+(set-unfocus-color       *color-3*)
+(set-float-focus-color   *color-1*)
+(set-float-unfocus-color *color-3*)
+
+;; (set-win-bg-color *bg-color*)
+;; (set-focus-color "MidnightBlue")
+;; (set-unfocus-color *fg-color*)
+
+(when *initializing*
+  (update-color-map (current-screen)))
 
 ;; ---------------------------------------
 ;; Message and Input Bar options
@@ -105,21 +171,22 @@
 
 (setf *message-window-padding* 20)
 (setf *timeout-wait* 1)
-;(setf *message-window-gravity* :top-rigth)
-;(setf *input-window-gravity* :top-rigth)
+;;(setf *message-window-gravity* :top-rigth)
+;;(setf *input-window-gravity* :top-rigth)
 
 ;; ---------------------------------------
 ;; Window options
 
-;; (setf *window-format* "%m%n%s%20t"
+;; (setf *float-window-modifier* :super)
+
+;;(setf *window-format* "%m%n%s%20t")
+(setf *window-format* "%n: %30t")
+
 ;;       *maxsize-border-width* 1
 ;;       *transient-border-width* 1
 ;;       *normal-border-width* 1
 ;;       *window-border-style* :thin
 ;;       *window-name-source* :title)
-;; (set-win-bg-color *bg-color*)
-;; (set-focus-color "MidnightBlue")
-;; (set-unfocus-color *fg-color*)
 ;; (set-normal-gravity :top)
 ;; (set-maxsize-gravity :center)
 ;; (set-transient-gravity :center)
@@ -127,8 +194,15 @@
 ;; ---------------------------------------
 ;; Modeline options
 
-(unless (head-mode-line (current-head))
-  (toggle-mode-line (current-screen) (current-head)))
+(when *initializing*
+  (unless (head-mode-line (current-head))
+  (toggle-mode-line (current-screen) (current-head))))
+
+(setf *mode-line-background-color* *color-1*)
+(setf *mode-line-foreground-color* *color-5*)
+
+(setf *mode-line-border-color* *color-1*)
+(setf *mode-line-border-width* 0)
 
 (setf *screen-mode-line-format* "{%g} [%W]")
 
@@ -149,14 +223,24 @@
 
 (defun set-stumpwm-groups ()
   "Rename the first group to Emacs and create the other groups."
-  (setf (group-name (first (screen-groups (current-screen)))) "Emacs")
-  (run-commands "gnewbg Web"
-                "gnewbg IM"
-                "gnewbg Misc"
-                "gnewbg Remote"))
+  (when *initializing*
+    (grename "Dev")
+    (gnewbg "Web")
+    (gnewbg "IM")
+    (gnewbg "Misc")
+    (gnewbg "Games")
+    (gnewbg "Remote"))
+  ;; (setf (group-name (first (screen-groups (current-screen)))) "Dev")
+  ;; (run-commands "gnewbg Web"
+  ;;               "gnewbg IM"
+  ;;               "gnewbg Misc"
+  ;;               "gnewbg Remote"))
+  )
 
 ;; ---------------------------------------
 ;; Frame options
+
+(setf *dynamic-group-master-split-ratio* 1/2)
 
 ;; start numbering from 1 instead of 0
 (setf *frame-number-map* "1234567890"
@@ -179,17 +263,20 @@
 ;; Window placement rules
 (clear-window-placement-rules)
 
-(define-frame-preference "Emacs"
-    (1 t t :class "Emacs"))
+(define-frame-preference "Dev"
+  (1 t t :class "Emacs"))
 
 (define-frame-preference "Web"
-    (2 t t :role "browser"))
+  (2 t t :role "browser"))
 
 (define-frame-preference "IM"
-    (3 t t :class "Slack" :role "browser-window"))
+  (3 t t :class "Slack" :role "browser-window"))
+
+(define-frame-preference "Games"
+  (5 t t :class "Steam"))
 
 (define-frame-preference "Remote"
-    (5 t t :class "Remmina"))
+  (6 t t :class "Remmina"))
 
 ;; ---------------------------------------
 ;; Functions
@@ -212,16 +299,10 @@
   (run-shell-command "setxkbmap -layout us -variant dvorak -option ctrl:nocaps"))
 
 (defun start-initial-apps ()
-  (loop for app in (list "xsetroot -solid rgb:11/11/11"
-                         "xsetroot -cursor_name left_ptr -fg black -bg white"
-                         "wmname LG3D")
-        do (run-shell-command app)))
-
-#+linux
-(progn
-  (defun nm-list-connections ()
-    "List connections known by NM."
-    (run-shell-command "nmcli con show" t)))
+  (mapc #'run-shell-command
+        '("xsetroot -solid rgb:11/11/11"
+          "xsetroot -cursor_name left_ptr -fg black -bg white"
+          "wmname LG3D")))
 
 ;; ---------------------------------------
 ;; MODULES
@@ -236,12 +317,15 @@
        (format t "Unable to find module.~&")
        (values nil c))))
 
-(with-module "stumptray"
-  (stumptray::stumptray))
+;; (with-module "stumptray"
+;;   (stumptray::stumptray))
 
 #+linux
 (with-module "stump-nm"
   (define-key *root-map* (kbd "C-w") "nm-list-wireless-networks"))
+
+#+linux
+(with-module "end-session")
 
 #+openbsd
 (with-module "stumpwm-sndioctl"
@@ -258,7 +342,15 @@
   (define-key *root-map* (kbd "N") '*notifications-map*))
 
 (with-module "urgentwindows"
-  (define-key *root-map* (kbd "u") "raise-urgent"))
+             (define-key *root-map* (kbd "u") "raise-urgent"))
+
+;;(xft:cache-fonts)
+;; (clx-truetype:get-font-families)
+(with-module "ttf-fonts"
+             (setf *font*
+                   (make-instance 'xft:font :family "InputMono Medium" :subfamily "Regular" :size 6 :antialias t)
+                   "Default font to use in StumpWM UI.")
+             (set-font *font*))
 
 ;; ---------------------------------------
 ;; Commands
@@ -276,14 +368,50 @@
     (eval-command cmd)))
 
 (defcommand firefox () ()
-  "run firefox"
+  "run or raise firefox"
   (run-or-raise "firefox" '(:class "Firefox")))
 
 #+linux
-(progn
-  (defcommand slack () ()
-    "Start Slack or switch to it, if it is already running."
-    (run-or-raise "slack" '(:class "slack"))))
+(defcommand steam () ()
+  "run or raise Steam app"
+  (run-or-raise "steam" '(:class "Steam")))
+
+#+linux
+(defcommand slack () ()
+  "run or raise Slack app"
+  (run-or-raise "slack" '(:class "Slack")))
+
+(defcommand remmina () ()
+  "run or raise the Remmina remote connection manager."
+  (run-or-raise "steam" '(:class "Steam")))
+
+;; TODO: check why using thread here
+;; (defcommand firefox () ()
+;;   "Run or raise Firefox."
+;;   (sb-thread:make-thread (lambda ()
+;;                            (run-or-raise "firefox" '(:class "Firefox") t nil))))
+
+
+(defcommand delete-window-and-frame () ()
+  "Delete the current frame with its window."
+  (delete-window)
+  (remove-split))
+
+(defcommand hsplit-and-focus () ()
+  "Create a new frame on the right and focus it."
+  (hsplit)
+  (move-focus :right))
+
+(defcommand vsplit-and-focus () ()
+  "Create a new frame below and move focus to it."
+  (vsplit)
+  (move-focus :down))
+
+(defcommand term (&optional program) ()
+  "Invoke a terminal, possibly with a @arg{program}."
+  (sb-thread:make-thread
+   (lambda ()
+     (run-shell-command (format nil "~a ~a" *xterm* program)))))
 
 ;; Web jump (works for Google and Imdb)
 (defmacro make-web-jump (name prefix)
@@ -302,6 +430,10 @@
 
 ;; ---------------------------------------
 ;; KEYBINDINGS
+
+;; register AltGr key
+;;(setf *altgr-offset* 4)
+;;(register-altgr-as-modifier)
 
 ;; Browse somewhere
 (define-key *root-map* (kbd "C-b") (uiop:strcat "colon1 exec " *browser* " https://www."))
@@ -326,6 +458,35 @@
 ;; (define-key *root-map* (kbd "1") "only")
 ;; (define-key *root-map* (kbd "2") "vsplit")
 ;; (define-key *root-map* (kbd "3") "hsplit")
+
+(defvar *applications-keymap*
+  (let ((m (make-sparse-keymap)))
+    (define-key m (kbd "b") "firefox")
+    (define-key m (kbd "s") "slack")
+    (define-key m (kbd "S") "steam")
+    (define-key m (kbd "r") "remmina")
+    (define-key m (kbd "g") "exec gimp")
+    m))
+
+(define-key *root-map* (kbd "C") *applications-keymap*)
+
+(defvar *session-keymap*
+  (let ((m (make-sparse-keymap)))
+    (define-key m (kbd "q") "end-session")
+    (define-key m (kbd "l") "logout")
+    (define-key m (kbd "s") "suspend-computer")
+    (define-key m (kbd "S") "shutdown-computer")
+    (define-key m (kbd "r") "loadrc")
+    (define-key m (kbd "R") "restart-hard")
+    (define-key m (kbd "C-r") "restart-computer")
+    m))
+
+(defvar *keyboard-layout-keymap*
+  (let ((m (make-sparse-keymap)))
+    (define-key m (kbd "d") "exec setxkbmap dvorak")
+    (define-key m (kbd "u") "exec setxkbmap us")
+    m))
+;;(define-key *root-map* (kbd "k") '*keyboard-layout-keymap*)
 
 (define-remapped-keys
     '(("(Firefox|Chrome)"
