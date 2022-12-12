@@ -6,6 +6,7 @@
 key "Super+t"               xterm
 key "Super+b"               xdg-open about:blank
 key "Super+s"               xdg-open https://www.duckduckgo.com
+key "Super+l"               xscreensaver-command -lock
 
 key "Super+KP_Subtract"     amixer sset Master 5%-
 key "Super+KP_Add"          amixer sset Master 5%+
