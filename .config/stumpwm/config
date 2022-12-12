@@ -1,24 +1,24 @@
-;; -*- mode: lisp; coding: utf-8-unix; indent-tabs-mode: nil -*-
-;; .stumpwmrc --- Main configuration file for StumpWM
-;;
-;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
-;;
-;; Created:
-;; Time-stamp: <2022-12-11 22:49:02 (tmy)>
-;; URL: https://github.com/zmyrgel/dotfiles/
-;; Copyright (C) 2012 Timo Myyrä
-;;
-;; ----------------------------------------------------------------------------
-;;  - Fix Webjump functionality
-;;  - Fix Raise requests, cause StumpWM to crash
-;;  - Rewrite contrib packages to more portable way
-;;  - Scroll firefox without focusing its frame
-;;  - Update hook + notify on IRC messages + other urgent messages
-;;  - Prevent pop-ups from stealing focus from current frame
-;;  - Remove useless keymaps somehow
-;;  - test ttf fonts git clone https://github.com/lihebi/clx-truetype.git
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; -*- mode: lisp; coding: utf-8-unix; indent-tabs-mode: nil -*-
+;;; .stumpwmrc --- Main configuration file for StumpWM
+;;;
+;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
+;;;
+;;; Created:
+;;; Time-stamp: <2022-12-12 22:21:23 (tmy)>
+;;; URL: https://github.com/zmyrgel/dotfiles/
+;;; Copyright (C) 2012 Timo Myyrä
+;;;
+;;; ----------------------------------------------------------------------------
+;;;  - Fix Webjump functionality
+;;;  - Fix Raise requests, cause StumpWM to crash
+;;;  - Rewrite contrib packages to more portable way
+;;;  - Scroll firefox without focusing its frame
+;;;  - Update hook + notify on IRC messages + other urgent messages
+;;;  - Prevent pop-ups from stealing focus from current frame
+;;;  - Remove useless keymaps somehow
+;;;  - test ttf fonts git clone https://github.com/lihebi/clx-truetype.git
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (in-package :stumpwm)
 
@@ -37,6 +37,9 @@
 ;; for stumptray
 ;; (ql:quickload 'xembed)
 
+;; for swm-ssh
+(ql:quickload :cl-ppcre)
+
 ;; for ttf-fonts
 (ql:quickload 'clx-truetype)
 
@@ -48,13 +51,13 @@
 
 ;; Update module directory path
 (let ((module-dir (merge-pathnames ".config/stumpwm/modules"
-                                      (user-homedir-pathname))))
+                                   (user-homedir-pathname))))
   (when (probe-file module-dir)
     (set-module-dir module-dir)))
 
 (defvar *wallpaper-path* (merge-pathnames "wallpapers"
                                           (user-homedir-pathname)))
-(defvar *wallpaper-extensions* (list "png" "jpg" "jpeg"))
+(defvar *wallpaper-extensions* '("png" "jpg" "jpeg"))
 
 (defvar *local-display*
   (let ((host (uiop:hostname)))
@@ -79,6 +82,40 @@
 ;; ---------------------------------------
 ;; Misc options
 
+;; DarkTooth colors
+(setq *colors*
+      '("#1c1c1c"   ;; 0 black
+        "#870000"   ;; 1 red
+        "#878700"   ;; 2 green
+        "#af8700"   ;; 3 yellow
+        "#005f87"   ;; 4 blue
+        "#875f87"   ;; 5 magenta
+        "#00afaf"   ;; 6 cyan
+        "#a8a8a8")) ;; 7 white
+
+(when *initializing*
+  (update-color-map (current-screen)))
+
+;; ---------------------------------------
+;; Message and Input Bar options
+
+(set-msg-border-width 1)
+(when *font*
+  (set-font *font*))
+
+(set-border-color "#1c1c1c") ;; black
+(setf *message-window-padding* 20)
+(setf *timeout-wait* 5)
+(setf *message-window-gravity* :top-right)
+(setf *input-window-gravity* :top-right)
+
+(set-fg-color "#ffffdf")
+(set-bg-color "#1c1c1c")
+;; (set-border-color *fg-color*)
+
+;; ---------------------------------------
+;; Window options
+
 (defun update-window-title (window)
  "If the window comes up with no title, set the user title to the
 window's instance name so it doesn't appear with no context on the
@@ -88,108 +125,30 @@ mode-line"
 
 (add-hook *new-window-hook* #'update-window-title)
 
+(setf *float-window-modifier* :meta)
+(set-win-bg-color "#1c1c1c") ;; black
+(set-focus-color "#1c1c1c")  ;; black
+(set-unfocus-color "#af8700") ;; yellow
+
+(set-float-focus-color "#1c1c1c") ;; black
+(set-float-unfocus-color "#af8700") ;; yellow
+
 (setf *mouse-focus-policy* :click)
 
-;; Append colors to color map
-;; XXX: add function to return name for hex value
-;;      and to convert other color formats too
-;; (setf *colors*
-;;       (append *colors*
-;;               (list *fg-color* "MidnightBlue")))
-;; (update-color-map (current-screen))
+(setf *key-seq-color* "^3")
+(setf *which-key-format* (concat *key-seq-color* "*~5a^n ~a")
 
-;; Color scheme for Modus vivendi
-;; (defvar *color-0* "#000000")
-;; (defvar *color-1* "#ff8059")
-;; (defvar *color-2* "#44bc44")
-;; (defvar *color-3* "#d0bc00")
-;; (defvar *color-4* "#2fafff")
-;; (defvar *color-5* "#feacd0")
-;; (defvar *color-6* "#00d3d0")
-;; (defvar *color-7* "#bfbfbf")
-;; (defvar *color-8* "#595959")
-;; (defvar *color-9* "#ef8b50")
-;; (defvar *color-10* "#70b900")
-;; (defvar *color-11* "#c0c530")
-;; (defvar *color-12* "#79a8ff")
-;; (defvar *color-13* "#b6a0ff")
-;; (defvar *color-14* "#6aefb9")
-;; (defvar *color-15* "#ffffff")
-
-;; Color scheme for Nord
-(defvar *color-0* "#2e3440")
-(defvar *color-1* "#3b4252")
-(defvar *color-2* "#434c5e")
-(defvar *color-3* "#4c566a")
-(defvar *color-4* "#d8dee9")
-(defvar *color-5* "#e5e9f0")
-(defvar *color-6* "#eceff4")
-(defvar *color-7* "#8fbcbb")
-(defvar *color-8* "#88c0d0")
-(defvar *color-9* "#81a1c1")
-(defvar *color-10* "#5e81ac")
-(defvar *color-11* "#bf616a")
-(defvar *color-12* "#d08770")
-(defvar *color-13* "#ebcb8b")
-(defvar *color-14* "#a3be8c")
-(defvar *color-15* "#b48ead")
-
-(setq *colors*
-      `(,*color-1*   ;; 0 black
-        ,*color-11*  ;; 1 red
-        ,*color-14*  ;; 2 green
-        ,*color-13*  ;; 3 yellow
-        ,*color-10*  ;; 4 blue
-        ,*color-14*  ;; 5 magenta
-        ,*color-8*   ;; 6 cyan
-        ,*color-5*)) ;; 7 white
-
-(set-border-color        *color-1*)
-(set-focus-color         *color-1*)
-(set-unfocus-color       *color-3*)
-(set-float-focus-color   *color-1*)
-(set-float-unfocus-color *color-3*)
-
-;; (set-win-bg-color *bg-color*)
-;; (set-focus-color "MidnightBlue")
-;; (set-unfocus-color *fg-color*)
-
-(when *initializing*
-  (update-color-map (current-screen)))
-
-;; ---------------------------------------
-;; Message and Input Bar options
-
-;; (set-fg-color *fg-color*)
-;; (set-bg-color *bg-color*)
-;; (set-border-color *fg-color*)
-
-(set-msg-border-width 1)
-
-(when *font*
-  (set-font *font*))
-
-(setf *message-window-padding* 20)
-(setf *timeout-wait* 1)
-;;(setf *message-window-gravity* :top-rigth)
-;;(setf *input-window-gravity* :top-rigth)
-
-;; ---------------------------------------
-;; Window options
-
-;; (setf *float-window-modifier* :super)
-
-;;(setf *window-format* "%m%n%s%20t")
 (setf *window-format* "%n: %30t")
+(setf *maxsize-border-width* 1)
+(setf *transient-border-width* 1)
+(setf *normal-border-width* 1)
+(setf *window-border-style* :thin)
+(setf *window-name-source* :title)
 
-;;       *maxsize-border-width* 1
-;;       *transient-border-width* 1
-;;       *normal-border-width* 1
-;;       *window-border-style* :thin
-;;       *window-name-source* :title)
-;; (set-normal-gravity :top)
-;; (set-maxsize-gravity :center)
-;; (set-transient-gravity :center)
+;; (sync-all-frame-windows (group-number 1))
+(set-normal-gravity :top)
+(set-maxsize-gravity :center)
+(set-transient-gravity :center)
 
 ;; ---------------------------------------
 ;; Modeline options
@@ -198,44 +157,26 @@ mode-line"
   (unless (head-mode-line (current-head))
   (toggle-mode-line (current-screen) (current-head))))
 
-(setf *mode-line-background-color* *color-1*)
-(setf *mode-line-foreground-color* *color-5*)
+(setf *mode-line-background-color* "#1c1c1c")
+(setf *mode-line-foreground-color* "#4e4e4e")
+(setf *mode-line-border-color* "#3a3a3a")
 
-(setf *mode-line-border-color* *color-1*)
+(setf *mode-line-position* :top)
 (setf *mode-line-border-width* 0)
 
-(setf *screen-mode-line-format* "{%g} [%W]")
-
-;; (setf *screen-mode-line-format*
-;;       "[^9*^B%n^b^n] %W
-;; %d | %m %N ")
-;; (setf *mode-line-position* :bottom
-;;       *mode-line-border-width* 1
-;;       *mode-line-pad-x* 1
-;;       *mode-line-pad-y* 1
-;;       *mode-line-background-color* "gray7"
-;;       *mode-line-foreground-color* "gainsboro"
-;;       *mode-line-border-color* "gray7"
-;;       *mode-line-timeout* 1)
+(setf *screen-mode-line-format* "{%g} | %W")
+(setf *mode-line-timeout* 60) ;; default 60
 
 ;; ---------------------------------------
 ;; Group options
 
-(defun set-stumpwm-groups ()
-  "Rename the first group to Emacs and create the other groups."
-  (when *initializing*
-    (grename "Dev")
-    (gnewbg "Web")
-    (gnewbg "IM")
-    (gnewbg "Misc")
-    (gnewbg "Games")
-    (gnewbg "Remote"))
-  ;; (setf (group-name (first (screen-groups (current-screen)))) "Dev")
-  ;; (run-commands "gnewbg Web"
-  ;;               "gnewbg IM"
-  ;;               "gnewbg Misc"
-  ;;               "gnewbg Remote"))
-  )
+(when *initializing*
+  (grename "Dev")
+  (gnewbg "Web")
+  (gnewbg "IM")
+  (gnewbg "Misc")
+  (gnewbg "Games")
+  (gnewbg "Remote"))
 
 ;; ---------------------------------------
 ;; Frame options
@@ -347,11 +288,26 @@ mode-line"
 ;;(xft:cache-fonts)
 ;; (clx-truetype:get-font-families)
 (with-module "ttf-fonts"
-             (setf *font*
-                   (make-instance 'xft:font :family "InputMono Medium" :subfamily "Regular" :size 6 :antialias t)
-                   "Default font to use in StumpWM UI.")
-             (set-font *font*))
+  (setf *font*
+        (make-instance 'xft:font :family "InputMono Medium" :subfamily "Regular" :size 6 :antialias t)
+        "Default font to use in StumpWM UI.")
+  (set-font *font*))
 
+(with-module "swm-ssh"
+  (setq swm-ssh:*swm-ssh-default-term* *xterm*)
+  (define-key *root-map* (kbd "C-a") "swm-ssh-menu"))
+
+(with-module "clipboard-history"
+  (define-key *root-map* (kbd "C-y") "show-clipboard-history")
+  ;; start the polling timer process
+  (clipboard-history:start-clipboard-manager))
+
+;; (with-module "kbd-layouts"
+;;   (setf kbd-layouts:*caps-lock-behavior* :ctrl)
+;;   (keyboard-layout-list "us" "dvorak -variant phonetic")
+;;   )
+
+;; checkout: lookup
 ;; ---------------------------------------
 ;; Commands
 
@@ -391,7 +347,6 @@ mode-line"
 ;;   (sb-thread:make-thread (lambda ()
 ;;                            (run-or-raise "firefox" '(:class "Firefox") t nil))))
 
-
 (defcommand delete-window-and-frame () ()
   "Delete the current frame with its window."
   (delete-window)
@@ -424,8 +379,8 @@ mode-line"
 ;; ---------------------------------------
 ;; HOOKS
 
-;(add-hook *start-hook* #'set-displays)
-(add-hook *start-hook* #'set-stumpwm-groups)
+;;(add-hook *start-hook* #'set-displays)
+;;(add-hook *start-hook* #'set-stumpwm-groups)
 (add-hook *start-hook* #'set-wallpaper)
 
 ;; ---------------------------------------
@@ -481,11 +436,12 @@ mode-line"
     (define-key m (kbd "C-r") "restart-computer")
     m))
 
-(defvar *keyboard-layout-keymap*
-  (let ((m (make-sparse-keymap)))
-    (define-key m (kbd "d") "exec setxkbmap dvorak")
-    (define-key m (kbd "u") "exec setxkbmap us")
-    m))
+;; TODO: check how xmodmap module works
+;; (defvar *keyboard-layout-keymap*
+;;   (let ((m (make-sparse-keymap)))
+;;     (define-key m (kbd "d") "exec setxkbmap dvorak")
+;;     (define-key m (kbd "u") "exec setxkbmap us")
+;;     m))
 ;;(define-key *root-map* (kbd "k") '*keyboard-layout-keymap*)
 
 (define-remapped-keys
