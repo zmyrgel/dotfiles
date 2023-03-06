@@ -2,7 +2,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2022-11-26 16:09:36 (tmy)>
+;;; Time-stamp: <2023-03-03 22:25:27 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
 ;;;
@@ -28,6 +28,13 @@
 
 (defvar *packages-refreshed* nil)
 ;;(package-refresh-contents)
+
+;; commands:
+;; package-update, package-update-all
+;; package-recompile, package-recompile-all
+
+;; (network-lookup-address-info "127.1" 'ipv4 'numeric)
+;; recentf-open command
 
 (defun ensure-packages-present (maybe-packages)
   "Ensures given PACKAGES are installed."

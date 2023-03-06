@@ -63,6 +63,9 @@
   (context-menu-mode 1))
 (add-hook 'after-init-hook 'mouse-wheel-mode)
 
+(when (fboundp 'pixel-scroll-precision-mode)
+  (pixel-scroll-precision-mode 1))
+
   ;; :commands (ispell-change-dictionary
   ;;            ispell-word
   ;;            flyspell-buffer
@@ -128,6 +131,17 @@
 (setq ibuffer-expert t)
 (setq ibuffer-shrink-to-minimum-size t)
 (add-hook 'ibuffer-mode-hook 'ibuffer-auto-mode)
+
+;; buffer switching
+(setq switch-to-prev-buffer-skip-regexp nil)
+(define-key ctl-x-x-map "p" #'switch-to-prev-buffer)
+(define-key ctl-x-x-map "n" #'switch-to-next-buffer)
+
+;; (rename-visited-file)
+
+;; buffers to registers, C-x r j m
+(when (version<= "29" emacs-version)
+  (set-register ?m '(buffer . "*Messages*")))
 
 (provide 'init-general)
 

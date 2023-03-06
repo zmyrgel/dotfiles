@@ -148,7 +148,10 @@
 
   (setq browse-url-new-window-flag nil)
   (setq browse-url-firefox-new-window-is-tab t)
-  (setq browse-url-browser-function 'eww-browse-url))
+  (setq browse-url-browser-function 'eww-browse-url)
+  (setq eww-auto-rename-buffer 'url) ;; 29
+  ;;(setq shr-use-xwidgets-for-media t) ;; experimental
+  )
 
 (ensure-packages-present 'restclient)
   (add-to-list 'auto-mode-alist '("\\.http\\'" . restclient-mode))

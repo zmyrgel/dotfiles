@@ -23,18 +23,17 @@
 
 (require 'corfu nil t)
 (global-corfu-mode)
-;; Optional customizations
 
-;; (setq corfu-cycle nil)                ;; Enable cycling for `corfu-next/previous'
-;; (setq corfu-auto nil)                 ;; Enable auto completion
-;; (setq corfu-separator ?\s)          ;; Orderless field separator
-;; (setq corfu-quit-at-boundary 'separator)   ;; Never quit at completion boundary
-;; (setq corfu-quit-no-match 'separator)      ;; Never quit, even if there is no match
-;; (setq corfu-preview-current 'insert)    ;; Disable current candidate preview
-;; (setq corfu-preselect-first t)    ;; Disable candidate preselection
-;; (setq corfu-on-exact-match 'insert)     ;; Configure handling of exact matches
-;; (setq corfu-echo-documentation '(1.0 . 0.2) ;; Disable documentation in the echo area
-;; (setq corfu-scroll-margin 2)        ;; Use scroll margin
+(setq corfu-cycle nil)                      ;; Enable cycling for `corfu-next/previous'
+(setq corfu-auto nil)                       ;; Enable auto completion
+(setq corfu-separator ?\s)                  ;; Orderless field separator
+(setq corfu-quit-at-boundary 'separator)    ;; Never quit at completion boundary
+(setq corfu-quit-no-match 'separator)       ;; Never quit, even if there is no match
+(setq corfu-preview-current 'insert)        ;; Disable current candidate preview
+(setq corfu-preselect-first t)              ;; Disable candidate preselection
+(setq corfu-on-exact-match 'insert)         ;; Configure handling of exact matches
+(setq corfu-echo-documentation '(1.0 . 0.2) ;; Disable documentation in the echo area
+(setq corfu-scroll-margin 2)                ;; Use scroll margin
 
 ;; TAB cycle if there are only few candidates
 (setq completion-cycle-threshold 3)
@@ -82,7 +81,13 @@
 (minibuffer-depth-indicate-mode 1)
 (minibuffer-electric-default-mode 1)
 
-;; imenu
+;; 29
+(setq completion-auto-select t)
+(setq completion-auto-wrap t)
+(setq completions-sort 'alphabetical)
+;;(setq completions-header-format %s / nil)
+
+;; imenu: M-g i
 (setq imenu-auto-rescan t)
 (setq imenu-max-item-length 100)
 (setq imenu-space-replacement ".")
