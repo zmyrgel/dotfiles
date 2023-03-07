@@ -20,60 +20,85 @@
 
 ;; message
 (with-eval-after-load 'gnus
-  (setq mail-user-agent 'message-user-agent)
-  (setq message-mail-user-agent nil)    ; default is `gnus'
+  (setq mail-user-agent 'gnus-user-agent)
+  (setq message-mail-user-agent nil)
   (setq compose-mail-user-agent-warnings nil)
-  (setq message-citation-line-format "%f [%Y-%m-%d, %R %z]:\n")
-  (setq message-citation-line-function
-        'message-insert-formatted-citation-line)
+  (setq message-citation-line-function 'message-insert-formatted-citation-line)
   (setq message-confirm-send nil)
   (setq message-kill-buffer-on-exit t)
   (setq message-wide-reply-confirm-recipients t)
-  (add-to-list 'mm-body-charset-encoding-alist '(utf-8 . base64)) ;; FIXME: undefined
   (add-hook 'message-setup-hook 'message-sort-headers)
 
+  (add-hook 'gnus-started-hook
+            (lambda ()
+              (add-to-list 'mm-body-charset-encoding-alist '(utf-8 . base64))))
+
+  ;; prompt extra labels from Gmail
   (setq gnus-extra-headers
         '(To Newsgroups X-GM-LABELS))
 
-  ;; gnus
-  (setq gnus-treat-hide-citation t)
   (setq gnus-gcc-mark-as-read t)
-  (setq gnus-cited-lines-visible '(0 . 5))
   (setq gnus-always-read-dribble-file t)
   (setq mm-inline-large-images 'resize)
   (setq mm-discouraged-alternatives '("text/html" "text/richtext"))
   (setq mm-text-html-renderer 'shr)
   (setq gnus-select-method '(nntp "news.gmane.io"))
   (setq gnus-secondary-select-methods
-        '((nnimap "work-gmail"
-                  (nnimap-address "imap.gmail.com")
-                  (nnimap-server-port "993")
-                  (nnir-search-engine imap)
-                  (nnimap-stream ssl))
-          (nnimap "fastmail"
+        '((nnimap "home"
                   (nnimap-address "imap.fastmail.com")
                   (nnir-search-engine imap)
-                  (nnimap-stream tls))))
+                  (nnimap-stream tls)
+                  (nnmail-expiry-target "nnimap+home:Trash"))))
 
-  (setq gnus-article-mode-line-format "%G %S %m")
+  (setq gnus-posting-styles
+        '((".*"
+           (address "Timo Myyrä <timo.myyra@bittivirhe.fi>")
+           (gcc "nnimap+home:Sent"))))
+
   (setq gnus-visible-headers
         '("^From:" "^Subject:" "^To:" "^Cc:" "^Newsgroups:" "^Date:"
           "Followup-To:" "Reply-To:" "^Organization:" "^X-Newsreader:"
           "^X-Mailer:"))
   (setq gnus-sorted-header-list gnus-visible-headers)
 
+  (setq gnus-auto-expirable-newsgroups
+        "nnimap\\+home:\\(ABCL\\|CHICKEN\\|OpenBSD\\|Postgresql-general\\|SBCL\\)")
+
   ;; gnus-async
   (setq gnus-asynchronous t)
-  (setq gnus-use-article-prefetch 15)
+  (setq gnus-use-article-prefetch t)
 
   ;; nnmail
-  (setq nnmail-expiry-wait 30)
+  (setq nnmail-expiry-wait 7)
 
   ;; gnus-agent
-  (setq gnus-agent-expire-days 30)
+  (setq gnus-agent-expire-days 7)
+
+  ;; do not load images by default
+  (setq gnus-inhibit-images t)
 
   ;; gnus-dired
   (add-hook 'dired-mode-hook 'turn-on-gnus-dired-mode))
+
+;; remember: install xsltproc
+;; remember: download https://atom.geekhood.net/atom2rss.xsl
+(require 'mm-url)
+(defadvice mm-url-insert (after DE-convert-atom-to-rss () )
+  "Converts atom to RSS by calling xsltproc."
+  (when (re-search-forward "xmlns=\"http://www.w3.org/.*/Atom\""
+			   nil t)
+    (let ((atom2rss-file (locate-user-emacs-file "atom2rss.xsl")))
+      (if (not (file-exists-p atom2rss-file))
+          (display-warning 'init-email
+                           (format "Missing `%s' file, remember to download it" atom2rss-file) :warning)
+        (goto-char (point-min))
+        (message "Converting Atom to RSS... ")
+        (call-process-region (point-min) (point-max)
+			     "xsltproc"
+			     t t nil
+			     atom2rss-file "-")
+        (goto-char (point-min))
+        (message "Converting Atom to RSS... done")))))
 
 (global-set-key (kbd "C-z m") 'gnus)
 
