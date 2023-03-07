@@ -204,12 +204,16 @@ sendemail.annotate yes'."
                                  (clisp ("clisp" "-ansi"))
                                  (chicken ("csi"))
                                  (abcl ("abcl"))))
-(setq common-lisp-hyperspec-symbol-table
-      (let ((pkg-path "/usr/local/share/doc/clisp-hyperspec/Data/Map_Sym.txt")
-            (home-path "~/lisp/docs/HyperSpec/Data/Map_Sym.txt"))
-        (cond ((file-exists-p pkg-path) pkg-path)
-	      ((file-exists-p home-path) home-path)
-	      (t "http://www.lispworks.com/documentation/HyperSpec/Data/Map_Sym.txt"))))
+(when-let ((local-hyperspec-path
+            (seq-some (lambda (p)
+                        (let ((full-path (expand-file-name p)))
+                          (when (file-directory-p full-path)
+                            full-path)))
+                      '("/usr/local/share/doc/clisp-hyperspec/"
+                        "/usr/share/doc/hyperspec/"
+                        "~/src/lisp/HyperSpec/"))))
+  (setq common-lisp-hyperspec-root (concat "file://" local-hyperspec-path))
+  (setq common-lisp-hyperspec-symbol-table (concat common-lisp-hyperspec-root "Data/Map_Sym.txt")))
 
 ;; if we have log4cl dist use it to set global logging
 (let ((default-directory (expand-file-name "~/quicklisp/dists/quicklisp/software/")))
