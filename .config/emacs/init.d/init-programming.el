@@ -14,8 +14,15 @@
 ;; project commands
 ;; project-list-buffers C-x p C-b (change to ibuffer?)
 ;; project-kill-buffers C-x p k
-
+;; project-show-todos C-x p t
 (setq project-vc-include-untracked nil)
+
+(defun project-show-todos ()
+  "Function shows all found TODO notes in given project in single buffer."
+  (interactive)
+  (project-find-regexp "\\(TODO:\\|HACK:\\|XXX:\\)"))
+
+(define-key project-prefix-map (kbd "t") 'project-show-todos)
 
 ;; TODO: keybindings:
 ;; C-x v t - prefix for tag commands
