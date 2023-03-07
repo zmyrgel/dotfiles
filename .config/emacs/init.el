@@ -2,13 +2,15 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2022-11-26 16:09:36 (tmy)>
+;;; Time-stamp: <2023-03-06 07:23:05 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
 ;;;
 ;;; Commentary:
 ;;; - fix warnings on this init:
 ;;; -- flymake--handle-report: Can’t find state for flymake-eslint--checker in ‘flymake--state’
+;;; - improve init speed, currently 7s.
+;;; - fix highlight of got diffs in gnus
 
 ;;; Code:
 
@@ -61,7 +63,7 @@
 ;; and load them
 (add-to-list 'load-path (locate-user-emacs-file "init.d") t)
 
-;; Reduce startup time ~0.2s faster by reducing the frequency of gc
+;; Reduce startup time by ~0.2s reducing the frequency of gc
 (let ((gc-cons-threshold (* 50 1000 1000)))
   (require 'init-general)
   (require 'init-text)
@@ -75,6 +77,9 @@
   (require 'init-completion)
   (require 'init-files)
   (require 'init-programming)
+
+  ;; Load optional local startup files
+  (load (locate-user-emacs-file "init-local.el") t t)
 
   ;; load custom settings
   (setq custom-file (locate-user-emacs-file "custom.el"))
@@ -92,9 +97,6 @@
                              (float-time
                               (time-subtract after-init-time before-init-time)))
                      gcs-done)))
-
-;; Load optional local startup files
-(load (locate-user-emacs-file "init-local.el") t t)
 
 ;; Only start server mode for non-admin accounts
 (unless (string-equal "root" (getenv "USER"))
