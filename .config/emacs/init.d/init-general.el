@@ -49,6 +49,10 @@
 (setq isearch-allow-scroll 'unlimited)
 (setq query-replace-highlight t)
 
+;; Clipboard stuff
+;; (setq save-interprogram-paste-before-kill t)
+;; (setq yank-pop-change-selection t)
+
 ;; mouse options
 (setq mouse-wheel-scroll-amount
       '(1
