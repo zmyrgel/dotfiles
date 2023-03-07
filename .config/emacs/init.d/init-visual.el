@@ -135,7 +135,7 @@
 
 (add-hook 'help-mode-hook (lambda () (setq truncate-lines t)))
 
-;; ;; Set Default font if present
+;; Set Default font if present
 (when (find-font (font-spec :name "Input Mono"))
   (set-face-attribute 'default nil :family "Input Mono" :height 120)
   (set-face-attribute 'variable-pitch nil :family "Input Serif")
