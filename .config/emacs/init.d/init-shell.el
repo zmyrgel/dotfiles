@@ -12,6 +12,9 @@
     (add-to-list 'man-path home-man)
     (setenv "MANPATH" (string-join man-path ":"))))
 
+(unless (version<= emacs-version "29")
+  (setq shell-kill-buffer-on-exit t))
+
 (defun my/sh-mode-hook ()
   (set (make-local-variable 'indent-tabs-mode) t)
   ;; ensure this matches tab-width

@@ -5,12 +5,34 @@
 
 ;;; Code:
 
+;;; project
+(setq project-vc-ignores '("target/" "bin/" "obj/"))
+(setq project-vc-extra-root-markers '("pom.xml" "*.csproj" "*.asd"))
+;;(add-to-list 'project-switch-commands '(magit-project-status "Magit" ?m))
+;;((nil . ((compile-command . "make --directory=doc/site"))))
+
+;; project commands
+;; project-list-buffers C-x p C-b (change to ibuffer?)
+;; project-kill-buffers C-x p k
+
+(setq project-vc-include-untracked nil)
+
 ;; TODO: keybindings:
 ;; C-x v t - prefix for tag commands
 ;; C-x v b - prefix for branch commands
 
 ;;  vc
-;; init
+;; vc-pull-push
+;; C-x v b prefix for branch commands: l, c s
+;; C-x v ! -> edit next vc command
+;; C-x v v in diffs, commit only part of changes
+;; vc-prepare-patch, vc-prepare-patches-separately, vc-default-patch-adressee
+
+;;; xref
+;; Commands:
+;; xref-query-replace-in-results
+;; xref-find-references-and-replace
+
 (when (eq system-type 'berkeley-unix)
   (setenv "CVSROOT" "anoncvs.eu.openbsd.org:/cvs"))
 ;; config
@@ -111,6 +133,8 @@ sendemail.annotate yes'."
 (setq diff-refine 'font-lock)
 (setq diff-update-on-the-fly t)
 
+(setq diff-add-log-use-relative-names t) ; 29
+
 ;; diff
 (setq diff-switches '("-u"))
 
@@ -183,6 +207,7 @@ sendemail.annotate yes'."
   (add-hook 'go-mode-hook 'go-eldoc-setup))
 
 ;;; Ruby
+;;(add-to-list 'major-mode-remap-alist '(ruby-mode . ruby-ts-mode))
 (dolist (m '(("\\.\\(?:gemspec\\|irbrc\\|gemrc\\|rake\\|rb\\|ru\\|thor\\)\\'" . ruby-mode)
              ("\\(Capfile\\|Gemfile\\(?:\\.[a-zA-Z0-9._-]+\\)?\\|[rR]akefile\\)\\'"  . ruby-mode)))
   (add-to-list 'magic-mode-alist m))
@@ -337,8 +362,10 @@ sendemail.annotate yes'."
     (setq whitespace-line-column 100
           whitespace-style '(face lines-tail))))
 
-;;  :init
-(defalias 'perl-mode 'cperl-mode)
+;;; Perl
+(if (version<= emacs-version "29")
+    (defalias 'perl-mode 'cperl-mode)
+  (add-to-list 'major-mode-remap-alist '(perl-mode . cperl-mode)))
 
 (defvar cperl-font-lock)
 (defvar cperl-info-on-command-no-prompt)

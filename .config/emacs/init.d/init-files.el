@@ -17,6 +17,7 @@
 (setq dired-recursive-deletes 'always)
 (setq dired-isearch-filenames t)
 (setq dired-omit-verbose nil)
+(setq dired-omit-lines dired-re-no-dot) ;; 29
 (setq dired-ls-F-marks-symlinks t)
 ;; Don't pass --dired flag to ls on BSD
 (when (eq system-type 'berkeley-unix)
@@ -35,7 +36,15 @@
   (setq dired-create-destination-dirs 'ask)
   (setq dired-vc-rename-file t))
 
+;; 29 allows to set wallpapers
+(when (executable-find "xwallpaper")
+  (setq wallpaper-command "xwallpaper")
+  (setq wallpaper-command-args '("--maximize" "%f")))
+
 ;; TRAMP stuff
+
+;; 29 adds methods for docker, podman, kubernetes
+(setq tramp-use-scp-direct-remote-copying t)
 
 ;; bongo
 (with-eval-after-load 'bongo

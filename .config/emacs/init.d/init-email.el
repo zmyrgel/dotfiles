@@ -18,6 +18,9 @@
 (setq message-send-mail-function 'smtpmail-send-it)
 (setq send-mail-function 'smtpmail-send-it)
 
+;; mml
+(setq mml-attach-file-at-the-end t)
+
 ;; message
 (with-eval-after-load 'gnus
   (setq mail-user-agent 'gnus-user-agent)

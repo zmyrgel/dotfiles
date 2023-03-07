@@ -37,7 +37,11 @@
 (ensure-packages-present 'auctex)
 (load "auctex.el" nil t t)
 (load "preview.el" nil t t)
-(add-to-list 'magic-mode-alist '("\\.[tT]e[xX]\\'" . latex-mode))
+
+(if (version<= emacs-version "29")
+    (add-to-list 'magic-mode-alist '("\\.[tT]e[xX]\\'" . latex-mode))
+  (add-to-list 'major-mode-remap-alist '(TeX-mode . latex-mode)))
+
 (add-hook 'latex-mode-hook 'auto-fill-mode)
 (add-hook 'latex-mode-hook 'reftex-mode)
 (add-hook 'tex-mode-hook (lambda () (setq ispell-parser 'tex)))
@@ -73,7 +77,9 @@
 (add-hook 'pdf-view-mode 'pdf-history-minor-mode)
 
 (setq pdf-view-display-size 'fit-page)
-(pdf-tools-install :no-query)
+;;(pdf-tools-install :no-query)
+
+(setq doc-view-mupdf-use-svg t) ;; 29
 
 (ensure-packages-present 'nov)
 (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
