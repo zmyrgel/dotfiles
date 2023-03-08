@@ -81,11 +81,22 @@
 (minibuffer-depth-indicate-mode 1)
 (minibuffer-electric-default-mode 1)
 
-;; 29
-(setq completion-auto-select t)
-(setq completion-auto-wrap t)
-(setq completions-sort 'alphabetical)
-;;(setq completions-header-format %s / nil)
+(when (version<= "29" emacs-version)
+  (setq completion-auto-select t)
+  (setq completion-auto-wrap t)
+  (setq completions-sort 'alphabetical)
+  ;;(setq completions-header-format %s / nil)
+
+  ;; (setq completion-auto-help 'visible) ;; t lazy always visible
+  ;; (setq completion-auto-select 'second-tab) ;; nil t second-tab
+
+  ;; Up/down when completing in the minibuffer
+  (define-key minibuffer-local-map (kbd "C-p") #'minibuffer-previous-completion)
+  (define-key minibuffer-local-map (kbd "C-n") #'minibuffer-next-completion)
+
+  ;; Up/down when competing in a normal buffer
+  (define-key completion-in-region-mode-map (kbd "C-p") #'minibuffer-previous-completion)
+  (define-key completion-in-region-mode-map (kbd "C-n") #'minibuffer-next-completion))
 
 ;; imenu: M-g i
 (setq imenu-auto-rescan t)
