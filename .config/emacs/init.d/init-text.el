@@ -134,6 +134,9 @@
  auto-mode-alist)
 ;;(define-key global-map (kbd "C-c C-f") 'bf-pretty-print-xml-region)
 
+(ensure-packages-present 'plantuml-mode)
+(setq plantuml-default-exec-mode 'jar)
+
 (provide 'init-text)
 
 ;; init-text.el ends here
