@@ -32,6 +32,10 @@
   (setq message-wide-reply-confirm-recipients t)
   (add-hook 'message-setup-hook 'message-sort-headers)
 
+  ;; use gmail extra labels
+  (setq gnus-extra-headers
+        '(To Newsgroups X-GM-LABELS))
+
   (add-hook 'gnus-started-hook
             (lambda ()
               (add-to-list 'mm-body-charset-encoding-alist '(utf-8 . base64))))
@@ -56,7 +60,7 @@
   (setq gnus-posting-styles
         '((".*"
            (address "Timo Myyrä <timo.myyra@bittivirhe.fi>")
-           (gcc "nnimap+home:Sent"))))
+           (gcc "nnimap+home:Sent")))))))
 
   (setq gnus-visible-headers
         '("^From:" "^Subject:" "^To:" "^Cc:" "^Newsgroups:" "^Date:"

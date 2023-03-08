@@ -63,6 +63,8 @@
          (3 'change-log-name)
          (4 'change-log-date))))
 
+;; TODO: C-x p p -> add magit option
+
 ;; allow reverting changes in vc-dir
 (with-eval-after-load 'vc-dir-mode
   (define-key vc-dir-mode-map (kbd "R") 'vc-revert))

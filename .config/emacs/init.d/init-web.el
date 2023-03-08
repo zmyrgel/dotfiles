@@ -18,7 +18,7 @@
   (setq rcirc-default-full-name "Curious Minds Want To Know")
 
   (rcirc-track-minor-mode 1)
-  (rcirc-omit-mode 1)
+  ;;(rcirc-omit-mode 1)
 
   (when-let ((nickserv-pass (password-lookup :host "irc.libera.chat")))
     (setq rcirc-authinfo
@@ -26,7 +26,7 @@
 
   ;;(setq rcirc-omit-responses '("JOIN" "PART" "QUIT" "NICK" "AWAY"))
   (setq rcirc-time-format "%Y-%m-%d %H:%M "))
-
+;;(setq debug-on-error nil)
 ;;  erc
 (with-eval-after-load 'erc
   (add-hook 'erc-mode-hook 'erc-services-mode)

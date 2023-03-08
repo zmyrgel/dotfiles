@@ -93,3 +93,4 @@ fi
 
 # Start WM
 exec ssh-agent icewm-session 2> ~/.xerrors
+#exec ssh-agent stumpwm 2> ~/.xerrors
