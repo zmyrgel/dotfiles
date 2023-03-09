@@ -60,10 +60,11 @@
   (setq gnus-posting-styles
         '((".*"
            (address "Timo Myyrä <timo.myyra@bittivirhe.fi>")
-           (gcc "nnimap+home:Sent")))))))
+           (gcc "nnimap+home:Sent"))))
 
   (setq gnus-visible-headers
-        '("^From:" "^Subject:" "^To:" "^Cc:" "^Newsgroups:" "^Date:"
+        '("^From:" "^Subject:" "^To:"
+          "^Cc:" "^Newsgroups:" "^Date:"
           "Followup-To:" "Reply-To:" "^Organization:" "^X-Newsreader:"
           "^X-Mailer:"))
   (setq gnus-sorted-header-list gnus-visible-headers)

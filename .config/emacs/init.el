@@ -2,11 +2,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-<<<<<<< HEAD
-;;; Time-stamp: <2023-03-07 21:48:00 (tmy)>
-=======
-;;; Time-stamp: <2023-03-03 22:25:27 (tmy)>
->>>>>>> 128f944993b7838c6a318b9d05c16fa8c8af5249
+;;; Time-stamp: <2023-03-08 19:35:00 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
 ;;;

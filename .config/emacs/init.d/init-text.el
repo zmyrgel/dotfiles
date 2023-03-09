@@ -13,8 +13,7 @@
 ;; | find-lisp-find-dired| use emacs regexp  |
 
 ;; grep
-(when (version<= "27" emacs-version)
-  (setq grep-find-use-xargs 'exec-plus))
+(setq grep-find-use-xargs 'exec-plus)
 ;; https://stegosaurusdormant.com/emacs-ripgrep/
 ;; https://stackoverflow.com/questions/45526670/rgrep-in-emacs-to-use-ripgrep
 ;; (when (executable-find "rg")
@@ -132,7 +131,6 @@
            (eq (cdr pair) 'sgml-mode))
        (setcdr pair 'nxml-mode)))
  auto-mode-alist)
-;;(define-key global-map (kbd "C-c C-f") 'bf-pretty-print-xml-region)
 
 (ensure-packages-present 'plantuml-mode)
 (setq plantuml-default-exec-mode 'jar)

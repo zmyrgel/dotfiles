@@ -6,15 +6,9 @@
 ;;; Code:
 
 ;;; project
+
 (setq project-vc-ignores '("target/" "bin/" "obj/"))
 (setq project-vc-extra-root-markers '("pom.xml" "*.csproj" "*.asd"))
-;;(add-to-list 'project-switch-commands '(magit-project-status "Magit" ?m))
-;;((nil . ((compile-command . "make --directory=doc/site"))))
-
-;; project commands
-;; project-list-buffers C-x p C-b (change to ibuffer?)
-;; project-kill-buffers C-x p k
-;; project-show-todos C-x p t
 (setq project-vc-include-untracked nil)
 
 (defun project-show-todos ()
@@ -27,18 +21,15 @@
 ;; TODO: keybindings:
 ;; C-x v t - prefix for tag commands
 ;; C-x v b - prefix for branch commands
-
-;;  vc
-;; vc-pull-push
 ;; C-x v b prefix for branch commands: l, c s
+;; M-x project-list-buffers C-x p C-b (change to ibuffer?)
+;; M-x project-kill-buffers C-x p k
 ;; C-x v ! -> edit next vc command
 ;; C-x v v in diffs, commit only part of changes
-;; vc-prepare-patch, vc-prepare-patches-separately, vc-default-patch-adressee
-
-;;; xref
-;; Commands:
-;; xref-query-replace-in-results
-;; xref-find-references-and-replace
+;; M-x vc-pull-push
+;; M-x vc-prepare-patch
+;; M-x vc-prepare-patches-separately
+;; M-x vc-default-patch-adressee
 
 (when (eq system-type 'berkeley-unix)
   (setenv "CVSROOT" "anoncvs.eu.openbsd.org:/cvs"))
@@ -62,8 +53,6 @@
          (2 'change-log-list nil lax)
          (3 'change-log-name)
          (4 'change-log-date))))
-
-;; TODO: C-x p p -> add magit option
 
 ;; allow reverting changes in vc-dir
 (with-eval-after-load 'vc-dir-mode
@@ -109,6 +98,10 @@ sendemail.annotate yes'."
 (add-to-list 'vc-handled-backends 'Got)
 (add-to-list 'vc-directory-exclusion-list ".got")
 
+;;; xref
+;; M-x xref-query-replace-in-results
+;; M-x xref-find-references-and-replace
+
 ;; bug-reference
 (add-hook 'prog-mode-hook 'bug-reference-prog-mode)
 (add-hook 'text-mode-hook 'bug-reference-mode)
@@ -131,7 +124,6 @@ sendemail.annotate yes'."
 
 ;; or use smerge-ediff to resolve conflicts
 ;; smerge-mode
-;;  :init
 (setq smerge-command-prefix (kbd "C-c v"))
 
 ;; diff-mode
@@ -141,8 +133,7 @@ sendemail.annotate yes'."
 (setq diff-font-lock-syntax 'hunk-also)
 (setq diff-refine 'font-lock)
 (setq diff-update-on-the-fly t)
-
-(setq diff-add-log-use-relative-names t) ; 29
+(setq diff-add-log-use-relative-names t)
 
 ;; diff
 (setq diff-switches '("-u"))
@@ -175,6 +166,7 @@ sendemail.annotate yes'."
 (setq magit-repository-directories
       '(("~/git" . 1)
         ("~/quicklisp/local-projects" . 1)))
+(add-to-list 'project-switch-commands '(magit-project-status "Magit" ?m))
 (global-set-key (kbd "C-c g") 'magit-status)
 
 ;; magit-gitflow
@@ -199,7 +191,6 @@ sendemail.annotate yes'."
 (setq flymake-eslint-defer-binary-check t)
 
 ;;; Go programming
-;; init
 (setenv "GOPATH" (expand-file-name "workspace" "~"))
 (add-hook 'before-save-hook 'gofmt-before-save)
 (add-hook 'go-mode-hook 'eglot-ensure)
@@ -228,7 +219,6 @@ sendemail.annotate yes'."
 (add-hook 'ruby-mode-hook 'my/ruby-mode-hook)
 
 ;;; Lisp programming
-
 (global-eldoc-mode 1)
 
 (ensure-packages-present 'sly)
@@ -247,7 +237,7 @@ sendemail.annotate yes'."
                         "/usr/share/doc/hyperspec/"
                         "~/src/lisp/HyperSpec/"))))
   (setq common-lisp-hyperspec-root (concat "file://" local-hyperspec-path))
-  (setq common-lisp-hyperspec-symbol-table (concat common-lisp-hyperspec-root "Data/Map_Sym.txt")))
+  (setq common-lisp-hyperspepac-symbol-table (concat common-lisp-hyperspec-root "Data/Map_Sym.txt")))
 
 ;; if we have log4cl dist use it to set global logging
 (let ((default-directory (expand-file-name "~/quicklisp/dists/quicklisp/software/")))

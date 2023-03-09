@@ -123,6 +123,8 @@
 ;;; Buffer management
 ;;; ------------------------------
 
+;; M-x rename-visited-file
+
 ;; uniquify
 (setq uniquify-buffer-name-style 'post-forward-angle-brackets)
 (setq uniquify-separator ":")
@@ -140,8 +142,6 @@
 (setq switch-to-prev-buffer-skip-regexp nil)
 (define-key ctl-x-x-map "p" #'switch-to-prev-buffer)
 (define-key ctl-x-x-map "n" #'switch-to-next-buffer)
-
-;; (rename-visited-file)
 
 ;; buffers to registers, C-x r j m
 (when (version<= "29" emacs-version)

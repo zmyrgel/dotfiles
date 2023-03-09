@@ -5,10 +5,6 @@
 
 ;;; Code:
 
-(when (version< "28.2" emacs-version)
-  (define-key ctl-x-map (kbd "C-j") 'dired-jump)
-  (define-key ctl-x-4-map (kbd "C-j") 'dired-jump-other-window))
-
 (add-hook 'dired-mode-hook 'hl-line-mode)
 (add-hook 'dired-mode-hook 'dired-hide-details-mode)
 
@@ -17,11 +13,8 @@
 (setq dired-recursive-deletes 'always)
 (setq dired-isearch-filenames t)
 (setq dired-omit-verbose nil)
-(setq dired-omit-lines dired-re-no-dot) ;; 29
+(setq dired-omit-lines dired-re-no-dot)
 (setq dired-ls-F-marks-symlinks t)
-;; Don't pass --dired flag to ls on BSD
-(when (eq system-type 'berkeley-unix)
-  (setq dired-use-ls-dired nil))
 (setq dired-omit-files "^#\\|\\.$\\|~$\\|^RCS$\\|,v$")
 (setq dired-guess-shell-alist-user
       '(("\\.avi$\\|\\.mkv$\\|\\.mov$\\|\\.mpeg$\\|\\.mp4$" "cvlc"
@@ -29,12 +22,12 @@
 (setq dired-guess-shell-gnutar (unless (eq system-type 'berkeley-unix)
                                  "tar"))
 
-;; dired-aux
 (setq dired-isearch-filenames 'dwim)
-;; The following variables were introduced in Emacs 27.1
-(unless (version<= emacs-version "27")
-  (setq dired-create-destination-dirs 'ask)
-  (setq dired-vc-rename-file t))
+(setq dired-create-destination-dirs 'ask)
+(setq dired-vc-rename-file t)
+
+(define-key ctl-x-map (kbd "C-j") 'dired-jump)
+(define-key ctl-x-4-map (kbd "C-j") 'dired-jump-other-window)
 
 ;; 29 allows to set wallpapers
 (when (executable-find "xwallpaper")
@@ -42,8 +35,7 @@
   (setq wallpaper-command-args '("--maximize" "%f")))
 
 ;; TRAMP stuff
-
-;; 29 adds methods for docker, podman, kubernetes
+;; methods for docker, podman, kubernetes
 (setq tramp-use-scp-direct-remote-copying t)
 
 ;; bongo

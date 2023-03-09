@@ -26,7 +26,7 @@
 
   ;;(setq rcirc-omit-responses '("JOIN" "PART" "QUIT" "NICK" "AWAY"))
   (setq rcirc-time-format "%Y-%m-%d %H:%M "))
-;;(setq debug-on-error nil)
+
 ;;  erc
 (with-eval-after-load 'erc
   (add-hook 'erc-mode-hook 'erc-services-mode)
@@ -149,7 +149,7 @@
   (setq browse-url-new-window-flag nil)
   (setq browse-url-firefox-new-window-is-tab t)
   (setq browse-url-browser-function 'eww-browse-url)
-  (setq eww-auto-rename-buffer 'url) ;; 29
+  (setq eww-auto-rename-buffer 'url)
   ;;(setq shr-use-xwidgets-for-media t) ;; experimental
   )
 
