@@ -10,7 +10,7 @@
 (ensure-packages-present '(orderless marginalia embark corfu vertico))
 
 (setq marginalia-max-relative-age 0)
-;;(marginalia-mode)
+(marginalia-mode)
 
 (setq prefix-help-command #'embark-prefix-help-command)
 (add-to-list 'display-buffer-alist
@@ -22,7 +22,7 @@
 (global-set-key (kbd "C-h B") 'embark-bindings)
 
 (require 'corfu nil t)
-;;(global-corfu-mode)
+(global-corfu-mode)
 
 (setq corfu-cycle nil)                      ;; Enable cycling for `corfu-next/previous'
 (setq corfu-auto nil)                       ;; Enable auto completion
@@ -46,7 +46,7 @@
 (setq tab-always-indent 'complete)
 
 (require 'vertico nil t)
-;;(vertico-mode)
+(vertico-mode)
 
 ;; minibuffer
 (setq completion-styles '(orderless))
@@ -80,21 +80,22 @@
 (minibuffer-electric-default-mode 1)
 
 (when (version<= "29" emacs-version)
-  (setq completion-auto-select t)
   (setq completion-auto-wrap t)
   (setq completions-sort 'alphabetical)
   (setq completions-header-format #("%s possible completions:
 " 0 25 (face shadow)))
-  (setq completion-auto-help 'visible) ;; t lazy always visible
-  (setq completion-auto-select 'second-tab) ;; nil t second-tab
+  (setq completion-auto-help 'visible)
 
-  ;; Up/down when completing in the minibuffer
-  (define-key minibuffer-local-map (kbd "C-p") #'minibuffer-previous-completion)
-  (define-key minibuffer-local-map (kbd "C-n") #'minibuffer-next-completion)
-
-  ;; Up/down when competing in a normal buffer
-  (define-key completion-in-region-mode-map (kbd "C-p") #'minibuffer-previous-completion)
-  (define-key completion-in-region-mode-map (kbd "C-n") #'minibuffer-next-completion))
+  ;;; Following should be used when corfu/vertico is not used:
+  (unless (or (featurep 'corfu) (featurep 'vertico))
+    (setq completion-auto-select 'second-tab) ;; nil t second-tab
+    ;; Up/down when completing in the minibuffer
+    (define-key minibuffer-local-map (kbd "C-p") #'minibuffer-previous-completion)
+    (define-key minibuffer-local-map (kbd "C-n") #'minibuffer-next-completion)
+    ;; Up/down when competing in a normal buffer
+    (define-key completion-in-region-mode-map (kbd "C-p") #'minibuffer-previous-completion)
+    (define-key completion-in-region-mode-map (kbd "C-n") #'minibuffer-next-completion))
+)
 
 ;; imenu: M-g i
 (setq imenu-auto-rescan t)
