@@ -34,11 +34,11 @@
 (when (eq system-type 'berkeley-unix)
   (setenv "CVSROOT" "anoncvs.eu.openbsd.org:/cvs"))
 ;; config
-;; `vc-git-annotate-switches' to "-w"
+(setq vc-git-annotate-switches "-w")
 (setq vc-suppress-confirm t)
 (setq vc-command-messages t)
 (setq vc-find-revision-no-save t)
-(setq vc-annotate-display-mode 'scale)
+(setq vc-annotate-display-mode 'fullscale)
 (setq add-log-keep-changes-together t)
 (setq vc-git-diff-switches '("--patch-with-stat"))
 (setq vc-git-revision-complete-only-branches t)
@@ -159,13 +159,18 @@ sendemail.annotate yes'."
                                  1 font-lock-warning-face prepend))))
 (add-hook 'prog-mode-hook 'electric-pair-mode)
 (add-hook 'prog-mode-hook 'whitespace-mode)
-(add-hook 'prog-mode-hook 'which-function-mode)
 (add-hook 'prog-mode-hook 'my/prog-mode-hook)
+
+;; enable which-func on programming modes
+;; NOTE: avoid in diff-mode, causes cpu use due to looping in git remote call
+(setq which-func-modes '(prog-mode))
+(which-function-mode)
 
 (ensure-packages-present 'magit)
 (setq magit-repository-directories
       '(("~/git" . 1)
         ("~/quicklisp/local-projects" . 1)))
+;; XXX: Symbol's value as variable is void: project-switch-commands
 (add-to-list 'project-switch-commands '(magit-project-status "Magit" ?m))
 (global-set-key (kbd "C-c g") 'magit-status)
 
@@ -177,7 +182,12 @@ sendemail.annotate yes'."
 
 (ensure-packages-present 'eglot)
 (with-eval-after-load 'eglot
-  (define-key eglot-mode-map (kbd "C-c h") 'eglot-help-at-point))
+  (setq eglot-autoshutdown t)
+  (setq eglot-extend-to-xref t)
+  (define-key eglot-mode-map (kbd "C-c h") 'eglot-help-at-point)
+  (define-key eglot-mode-map (kbd "C-c a") 'eglot-code-actions)
+  (define-key eglot-mode-map pa(kbd "C-c z") 'eglot-format)
+  (define-key eglot-mode-map (kbd "C-c r") 'eglot-rename))
 
 ;; flymake
 (with-eval-after-load 'flymake
@@ -220,6 +230,8 @@ sendemail.annotate yes'."
 
 ;;; Lisp programming
 (global-eldoc-mode 1)
+(setq eldoc-echo-area-use-multiline-p nil) ;; test t, 'truncate-sym-name-if-fit
+(setq eldoc-idle-delay 0.1) ;; default 0.5
 
 (ensure-packages-present 'sly)
 
@@ -250,17 +262,17 @@ sendemail.annotate yes'."
 ;; (ensure-packages-present 'sly-repl-ansi-color)
 ;; (sly-enable-contrib 'sly-repl-ansi-color)
 
-;; (zmg/package-instal 'quack)
-;; (setq quack-default-program "csi")
-;; (setq quack-dir (locate-user-emacs-file "quack"))
-;; (setq quack-fontify-style nil)
-;; (setq quack-newline-behavior 'indent-newline-indent)
-;; (setq quack-pretty-lambda-p nil)
-;; (setq quack-remap-find-file-bindings-p nil)
-;; (setq quack-run-scheme-always-prompts-p nil)
-;; (setq quack-run-scheme-prompt-defaults-to-last-p t)
-;; (setq quack-smart-open-paren-p t)
-;; (setq quack-switch-to-scheme-method 'other-window)
+(ensure-packages-present 'quack)
+(setq quack-default-program "csi")
+(setq quack-dir (locate-user-emacs-file "quack"))
+(setq quack-fontify-style nil)
+(setq quack-newline-behavior 'indent-newline-indent)
+(setq quack-pretty-lambda-p nil)
+(setq quack-remap-find-file-bindings-p nil)
+(setq quack-run-scheme-always-prompts-p nil)
+(setq quack-run-scheme-prompt-defaults-to-last-p t)
+(setq quack-smart-open-paren-p t)
+(setq quack-switch-to-scheme-method 'other-window)
 
 (when (and (not (getenv "GERBIL_HOME"))
            (file-exists-p "/usr/local/gerbil"))
@@ -279,26 +291,10 @@ sendemail.annotate yes'."
     (define-key m (kbd "C-S-l") 'clear-comint-buffer))
 
   (with-eval-after-load 'gerbil-mode
-    (setf scheme-program-name (concat gerbil "/bin/gxi"))
+    (setq scheme-program-name (concat gerbil "/bin/gxi"))
     (when (require 'gambit nil t)
-      (setf scheme-program-name (concat gerbil-home "/bin/gxi"))
-      (add-hook 'inferior-scheme-mode-hook 'gambit-inferior-mode))
-
-    (define-key m (kbd "C-S-l") 'clear-comint-buffer)
-
-    (defun gerbil-setup-buffers ()
-      "Change current buffer mode to gerbil-mode and start a REPL"
-      (interactive)
-      (gerbil-mode)
-      (split-window-right)
-      (shrink-window-horizontally 2)
-      (let ((buf (buffer-name)))
-        (other-window 1)
-        (run-scheme "gxi")
-        (switch-to-buffer-other-window "*scheme*" nil)
-        (switch-to-buffer buf))))
-
-  (global-set-key (kbd "C-c C-g") 'gerbil-setup-buffers)
+      (setq scheme-program-name (concat gerbil-home "/bin/gxi"))
+      (add-hook 'inferior-scheme-mode-hook 'gambit-inferior-mode)))
 
   (let ((tags (locate-dominating-file default-directory "TAGS")))
     (when tags (visit-tags-table tags)))
@@ -319,7 +315,7 @@ sendemail.annotate yes'."
 (ensure-packages-present 'geiser)
 (when (eq system-type 'berkeley-unix)
   (setq geiser-chicken-binary "chicken-csi")
-  (setq geiser-guile-binary "guile2"))
+  (setq geiser-guile-binary "guile3.0"))
 
 ;;;; PHP programming
 
