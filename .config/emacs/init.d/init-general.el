@@ -16,7 +16,7 @@
   (when-let ((result (apply #'auth-source-search keys)))
     (funcall (plist-get (car result) :secret))))
 
-(dolist (p '("~/bin" "~/.local/bin" "~/workspace/bin"))
+(dolist (p '("~/bin" "~/.local/bin" "~/workspace/bin" "~/opt/bin"))
   (prepend-to-exec-path p))
 
 (add-hook 'after-init-hook 'delete-selection-mode)
