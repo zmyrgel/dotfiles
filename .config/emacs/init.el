@@ -51,13 +51,13 @@
   "Evaluate BODY after loading the given PACKAGE, installing it if needed."
   (declare (indent 1))
   `(progn
-       (unless (or (package-built-in-p ,package)
-                   (package-installed-p ,package))
-         (package-install ,package))
-       (if (not (require ,package nil 'noerror))
-           (display-warning 'zmg/with-package
-                            (format "Loading of package `%s' failed" ,package) :error)
-         ,@body)))
+     (unless (or (package-built-in-p ,package)
+                 (package-installed-p ,package))
+       (package-install ,package))
+     (if (not (require ,package nil 'noerror))
+         (display-warning 'zmg/with-package
+                          (format "Loading of package `%s' failed" ,package) :error)
+       ,@body)))
 
 (add-hook 'package-menu-mode-hook 'hl-line-mode)
 
