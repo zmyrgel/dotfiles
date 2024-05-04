@@ -154,12 +154,19 @@ privileges."
 
 (add-hook 'help-mode-hook (lambda () (setq truncate-lines t)))
 
+;; (defvar *my-fixed-font* "Input Mono")
+;; (defvar *my-variable-font* "Input Serif")
+
+(defvar *my-fixed-font* "Jetbrains Mono")
+(defvar *my-variable-font* "Iosevka Aile")
+
+
 ;; Set Default font if present
-(when (find-font (font-spec :name "Input Mono"))
-  (set-face-attribute 'default nil :family "Input Mono" :height 120)
-  (set-face-attribute 'variable-pitch nil :family "Input Serif")
-  (set-face-attribute 'fixed-pitch nil :family "Input Mono")
-  (set-face-attribute 'tooltip nil :family "Input Mono"))
+(when (find-font (font-spec :name *my-fixed-font*))
+  (set-face-attribute 'default nil :family *my-fixed-font* :height 120)
+  (set-face-attribute 'variable-pitch nil :family *my-variable-font*)
+  (set-face-attribute 'fixed-pitch nil :family *my-fixed-font*)
+  (set-face-attribute 'tooltip nil :family *my-fixed-font*))
 
 (if (boundp 'use-short-answers)
     (setq use-short-answers t)
