@@ -74,18 +74,37 @@
   (kill-buffer (current-buffer))
   (other-window 1))
 
-;; FIXME: remote tramp uses multihop
-;; /ssh:user@foo.example.fi|sudo:root@foo.example.fi:/path/to/file
-;; FIXME: make this work for dired buffers too for remote admin tasks
 (defun become ()
-  "Use TRAMP to open the current buffer with elevated privileges."
+  "Use TRAMP to open the current file or directory buffer with elevated
+privileges."
   (interactive)
-  (when buffer-file-name
-    (let* ((cmd (or (executable-find "doas")
-                    (executable-find "sudo")))
-           (method (substring cmd -4)))
-      (find-alternate-file
-       (concat "/" method ":root@localhost:" buffer-file-name)))))
+  (let ((create-become-path (lambda (path)
+    (let* ((remote-path (file-remote-p path))
+           (cmd (or (executable-find "doas" remote-path)
+                    (executable-find "sudo" remote-path)))
+           (become-cmd (substring cmd -4))
+           (become-user "root"))
+      (if (not remote-path)
+           (concat "/" become-cmd ":root@localhost:" path)
+        (let ((file-parts (tramp-dissect-file-name path)))
+           (concat "/"
+                   (tramp-file-name-method file-parts)
+                   ":"
+                   (tramp-file-name-user file-parts)
+                   "@"
+                   (tramp-file-name-host file-parts)
+                   "|"
+                   become-cmd
+                   ":"
+                   become-user
+                   "@"
+                   (tramp-file-name-host file-parts)
+                   ":"
+                   (tramp-file-name-localname file-parts))))))))
+    (cond ((eq major-mode 'dired-mode)
+           (dired (funcall create-become-path default-directory)))
+          (buffer-file-name
+           (find-alternate-file (funcall create-become-path buffer-file-name))))))
 
 (when (display-graphic-p)
   (tool-bar-mode -1)
