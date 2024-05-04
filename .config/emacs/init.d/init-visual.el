@@ -196,33 +196,25 @@ privileges."
 (global-set-key [remap mark-sexp] #'easy-mark)
 
 ;; theme settings
-(setq modus-themes-italic-constructs t)
-(setq modus-themes-bold-constructs t)
-(setq modus-themes-variable-pitch-ui t)
-(setq modus-themes-mixed-fonts t)
-(setq moduls-themes-headings
-      '((1 . (background overline variable-pitch 1.5))
-        (2 . (overline rainbow 1.3))
-        (3 . (overline 1.1))
-        (t . (monochrome))))
-(setq moduls-themes-headings nil)
-(setq modus-themes-fringes 'intense)
-(setq modus-themes-org-blocks nil)
-(setq modus-themes-mode-line '(borderless accented))
-(setq modus-themes-diffs nil)
-(setq modus-themes-completions '((matches . (extrabold background))
-                                 (selection . (semibold accented))
-                                 (popup . (accented))))
-(setq modus-themes-completions nil)
-(setq modus-themes-prompts nil)
-(setq modus-themes-hl-line '(accented intense))
-(setq modus-themes-subtle-line-numbers nil)
-(setq modus-themes-markup nil)
-(setq modus-themes-paren-match '(bold))
-(setq modus-themes-syntax '(yellow-comments green-strings))
-(setq modus-themes-links '(bold italic))
-(setq modus-themes-region '(accented))
-(setq modus-themes-mail-citations '(intense))
+
+(setq modus-themes-custom-auto-reload nil
+      modus-themes-to-toggle '(modus-operandi modus-vivendi)
+      modus-themes-mixed-fonts t
+      modus-themes-variable-pitch-ui t
+      modus-themes-italic-constructs t
+      modus-themes-bold-constructs nil
+      modus-themes-org-blocks nil ;; obsolete
+      modus-themes-completions '((t . (extrabold)))
+      modus-themes-prompts '(extrabold)
+      modus-themes-headings
+      '((agenda-structure . (variable-pitch light 2.2))
+        (agenda-date . (variable-pitch regular 1.3))
+        (t . (regular 1.15))))
+
+(setq modus-themes-common-palette-overrides nil)
+;; '((bg-mode-line-active bg-cyan-subtle)
+;;   (keybind yellow-warmer)))
+
 (load-theme 'modus-vivendi t)
 
 (provide 'init-visual)
