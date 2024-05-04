@@ -113,14 +113,18 @@
              "\\.pom\\'"))
   (add-to-list 'auto-mode-alist `(,p . nxml-mode)))
 
+;; TODO: is this needed at all, compare with sgml-pretty-print
+;; TODO: external app to indent?
 (defun bf-pretty-print-xml-region (begin end)
-  "Function formats XML elements in region between BEGIN and END."
+  "Pretty format XML markup in region. The function inserts linebreaks to
+separate tags that have nothing but whitespace between them. It then
+indents the markup by using nxml's indentation rules."
   (interactive "r")
   (save-excursion
     (nxml-mode)
     (goto-char begin)
     (while (search-forward-regexp "\>[ \\t]*\<" nil t)
-      (backward-char) (insert "\n"))
+      (backward-char) (insert "\n") (setq end (1+ end)))
     (indent-region begin end))
   (message "Ah, much better!"))
 
