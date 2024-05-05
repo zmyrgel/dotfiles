@@ -28,7 +28,7 @@
 (setq calendar-view-diary-initially-flag t)
 (setq calendar-mark-diary-entries-flag t)
 (setq diary-show-holidays-flag t)
-(setq diary-file "/ssh:mars.bittivirhe.fi:diary")
+(setq diary-file "~/Documents/diary")
 
 (setq calendar-latitude 60.29414
       calendar-longitude 25.04099)

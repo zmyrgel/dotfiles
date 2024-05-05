@@ -8,7 +8,7 @@
 (setq org-list-allow-alphabetical t)
 
 (with-eval-after-load 'org
-  (setq org-directory "/ssh:tmy@mars.bittivirhe.fi:Org")
+  (setq org-directory "~/Documents/OrgFiles")
   (setq org-default-notes-file (concat org-directory "/notes.org"))
   (setq org-agenda-files (list org-directory))
   (setq org-agenda-file-regexp "\\(school\\|todo\\|work\\)\\.org")
@@ -138,7 +138,7 @@
   ;; ox-publish
   (setq org-publish-project-alist
 	'(("blog"
-           :base-directory "/ssh:tmy@mars.bittivirhe.fi:Org/blog/posts/"
+           :base-directory "~/Documents/OrgFiles/blog/posts/"
            :base-extension "org"
            :publishing-directory "/ssh:tmy@mars.bittivirhe.fi:public/"
            :recursive t
