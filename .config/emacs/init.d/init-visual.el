@@ -74,33 +74,36 @@
   (kill-buffer (current-buffer))
   (other-window 1))
 
-(defun become ()
-  "Use TRAMP to open the current file or directory buffer with elevated
-privileges."
-  (interactive)
-  (let ((create-become-path (lambda (path)
-    (let* ((remote-path (file-remote-p path))
-           (cmd (or (executable-find "doas" remote-path)
-                    (executable-find "sudo" remote-path)))
-           (become-cmd (substring cmd -4))
-           (become-user "root"))
-      (if (not remote-path)
-           (concat "/" become-cmd ":root@localhost:" path)
-        (let ((file-parts (tramp-dissect-file-name path)))
-           (concat "/"
-                   (tramp-file-name-method file-parts)
-                   ":"
-                   (tramp-file-name-user file-parts)
-                   "@"
-                   (tramp-file-name-host file-parts)
-                   "|"
-                   become-cmd
-                   ":"
-                   become-user
-                   "@"
-                   (tramp-file-name-host file-parts)
-                   ":"
-                   (tramp-file-name-localname file-parts))))))))
+(defun become (&optional user)
+  "Use TRAMP to open the current file or directory buffer with
+different user account. By default the user is set to `root'."
+  (interactive (list (if current-prefix-arg
+                         (completing-read "User: " (system-users))
+                       "root")))
+  (let ((create-become-path
+         (lambda (path)
+           (let* ((remote-path (file-remote-p path))
+                  (cmd (or (executable-find "doas" remote-path)
+                           (executable-find "sudo" remote-path)))
+                  (become-cmd (substring cmd -4))
+                  (become-user (if user user "root")))
+             (if (not remote-path)
+                 (concat "/" become-cmd ":" become-user "@localhost:" path)
+               (let ((file-parts (tramp-dissect-file-name path)))
+                 (concat "/"
+                         (tramp-file-name-method file-parts)
+                         ":"
+                         (tramp-file-name-user file-parts)
+                         "@"
+                         (tramp-file-name-host file-parts)
+                         "|"
+                         become-cmd
+                         ":"
+                         become-user
+                         "@"
+                         (tramp-file-name-host file-parts)
+                         ":"
+                         (tramp-file-name-localname file-parts))))))))
     (cond ((eq major-mode 'dired-mode)
            (dired (funcall create-become-path default-directory)))
           (buffer-file-name
