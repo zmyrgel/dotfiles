@@ -4,7 +4,7 @@
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;;
 ;;; Created:
-;;; Time-stamp: <2022-12-12 22:21:23 (tmy)>
+;;; Time-stamp: <2024-03-05 07:12:32 (tmy)>
 ;;; URL: https://github.com/zmyrgel/dotfiles/
 ;;; Copyright (C) 2012 Timo Myyrä
 ;;;
@@ -136,7 +136,7 @@ mode-line"
 (setf *mouse-focus-policy* :click)
 
 (setf *key-seq-color* "^3")
-(setf *which-key-format* (concat *key-seq-color* "*~5a^n ~a")
+(setf *which-key-format* (concat *key-seq-color* "*~5a^n ~a"))
 
 (setf *window-format* "%n: %30t")
 (setf *maxsize-border-width* 1)
