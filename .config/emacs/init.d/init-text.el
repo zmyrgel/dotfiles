@@ -99,7 +99,7 @@
 (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
 
 (ensure-packages-present 'yaml-mode)
-(add-to-list 'auto-mode-alist '("\\.yml$\\|\\.yaml$" . yaml-mode))
+(add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-mode))
 (add-to-list 'magic-mode-alist '("---" . yaml-mode))
 
 ;; Any file start with xml will be treat as nxml-mode
