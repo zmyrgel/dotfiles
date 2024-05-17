@@ -54,6 +54,8 @@
   (add-hook 'org-mode-hook 'visual-line-mode)
   (add-hook 'message-mode-hook 'turn-on-orgtbl)
 
+  (define-key org-mode-map (kbd "C-M-i") 'completion-at-point)
+
   ;; Use fixed-pitch font to keep tables aligned
   (defun set-buffer-variable-pitch ()
     (interactive)
@@ -255,13 +257,6 @@
 (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
 (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)
 
-
-;; [FREHL] 2024/05/05 10:05:32 INFO: Established secure connection to COFVDCW at 10.0.10.11:22000-10.0.10.1:22000/tcp-client/TLS1.3-TLS_AES_128_GCM_SHA256/LAN-P10-5UCGMOSQB6J5SH4PEPQ9HCO0DM
-;; [FREHL] 2024/05/05 10:05:32 INFO: Device COFVDCW client is "syncthing v1.27.3" named "" at 10.0.10.11:22000-10.0.10.1:22000/tcp-client/TLS1.3-TLS_AES_128_GCM_SHA256/LAN-P10-5UCGMOSQB6J5SH4PEPQ9HCO0DM
-;; [FREHL] 2024/05/05 10:05:33 INFO: Lost primary connection to COFVDCW at 10.0.10.11:22000-10.0.10.1:22000/tcp-client/TLS1.3-TLS_AES_128_GCM_SHA256/LAN-P10-5UCGMOSQB6J5SH4PEPQ9HCO0DM: reading length: EOF (0 remain)
-;; [FREHL] 2024/05/05 10:05:33 INFO: Connection to COFVDCW at 10.0.10.11:22000-10.0.10.1:22000/tcp-client/TLS1.3-TLS_AES_128_GCM_SHA256/LAN-P10-5UCGMOSQB6J5SH4PEPQ9HCO0DM closed: reading length: EOF
-
-
 (setq org-roam-v2-ack t)
 
 (let ((roam-dir "~/Documents/OrgRoamNotes"))
@@ -270,8 +265,6 @@
   (setq org-roam-directory "~/Documents/OrgRoamNotes"))
 
 (setq org-roam-completion-everywhere t)
-
-(define-key org-mode-map (kbd "C-M-i") 'completion-at-point)
 
 (define-key global-map (kbd "C-c n l") 'org-roam-buffer-toggle)
 (define-key global-map (kbd "C-c n f") 'org-roam-node-find)
