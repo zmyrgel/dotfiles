@@ -4,7 +4,7 @@
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;;
 ;;; Created:
-;;; Time-stamp: <2024-03-05 07:12:32 (tmy)>
+;;; Time-stamp: <2024-05-17 07:14:22 (tmy)>
 ;;; URL: https://github.com/zmyrgel/dotfiles/
 ;;; Copyright (C) 2012 Timo Myyrä
 ;;;
@@ -293,10 +293,12 @@ mode-line"
         "Default font to use in StumpWM UI.")
   (set-font *font*))
 
+#-openbsd
 (with-module "swm-ssh"
   (setq swm-ssh:*swm-ssh-default-term* *xterm*)
   (define-key *root-map* (kbd "C-a") "swm-ssh-menu"))
 
+#-openbsd
 (with-module "clipboard-history"
   (define-key *root-map* (kbd "C-y") "show-clipboard-history")
   ;; start the polling timer process
