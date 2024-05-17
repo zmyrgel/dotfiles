@@ -32,6 +32,10 @@ export CVSROOT
 # Shell expand got commands
 set -A complete_got_1 -- $(got -h 2>&1 | sed -n s/commands://p)
 
+# CD PATH
+CDPATH=.:$HOME/quicklisp/local-projects:$HOME/git:/usr/ports:/usr/ports/mystuff
+export CDPATH
+
 # Port utilities
 alias portsql='sqlite3 /usr/local/share/sqlports'
 alias portslol='make 2>&1 | /usr/ports/infrastructure/bin/portslogger .'
