@@ -186,7 +186,7 @@ sendemail.annotate yes'."
   (setq eglot-extend-to-xref t)
   (define-key eglot-mode-map (kbd "C-c h") 'eglot-help-at-point)
   (define-key eglot-mode-map (kbd "C-c a") 'eglot-code-actions)
-  (define-key eglot-mode-map pa(kbd "C-c z") 'eglot-format)
+  (define-key eglot-mode-map (kbd "C-c z") 'eglot-format)
   (define-key eglot-mode-map (kbd "C-c r") 'eglot-rename))
 
 ;; flymake
