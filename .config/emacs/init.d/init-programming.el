@@ -56,7 +56,7 @@
 
 ;; allow reverting changes in vc-dir
 (with-eval-after-load 'vc-dir-mode
-  (define-key vc-dir-mode-map (kbd "R") 'vc-revert))
+  (define-key vc-dir-mode-map (kbd "k") 'vc-revert))
 
 (defun vc-git-checkout-remote ()
   "Checkout Git remote and set local branch to track it."
