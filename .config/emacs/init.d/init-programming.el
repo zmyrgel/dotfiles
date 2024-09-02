@@ -251,6 +251,16 @@ sendemail.annotate yes'."
   (setq common-lisp-hyperspec-root (concat "file://" local-hyperspec-path))
   (setq common-lisp-hyperspepac-symbol-table (concat common-lisp-hyperspec-root "Data/Map_Sym.txt")))
 
+;; compile and add sly info manual to emacs info-directory alist
+(when-let ((sly-doc-dirs (file-expand-wildcards (concat (locate-user-emacs-file "elpa") "/sly-*/doc"))))
+  (let ((sly-doc-dir (car sly-doc-dirs)))
+    (when (file-directory-p sly-doc-dir)
+      ;; if no Info file found, generate it
+      (unless (file-exists-p (concat sly-doc-dir "/sly.info"))
+        (let ((default-directory (car sly-doc-dirs)))
+          (async-shell-command "make sly.info")))
+      (add-to-list 'Info-directory-list (car sly-doc-dirs)))))
+
 ;; if we have log4cl dist use it to set global logging
 (let ((default-directory (expand-file-name "~/quicklisp/dists/quicklisp/software/")))
   (when-let (log4cl-dirs (file-expand-wildcards "log4cl-*-git"))
