@@ -420,7 +420,6 @@ sendemail.annotate yes'."
              ("\\.rhtml\\'" . web-mode)
              ("\\.mustache\\'" . web-mode)
              ("\\.djhtml\\'" . web-mode)
-             ("\\.tsx\\'" . web-mode)
              ("\\.jsx\\'" . web-mode)))
   (add-to-list 'magic-mode-alist m))
 
@@ -429,7 +428,7 @@ sendemail.annotate yes'."
   (setq web-mode-markup-indent-offset 2)
   (setq web-mode-css-indent-offset 2)
   (setq web-mode-code-indent-offset 4)
-  (when (and (member (file-name-extension buffer-file-name) '("tsx" "jsx"))
+  (when (and (member (file-name-extension buffer-file-name) '("jsx"))
              (require 'eglot nil 'noerror))
       (eglot-ensure)))
 
@@ -437,10 +436,31 @@ sendemail.annotate yes'."
 (add-hook 'web-mode-hook 'flymake-eslint-enable)
 
 (ensure-packages-present 'typescript-mode)
-(with-eval-after-load 'typescript-mode
-  (add-hook 'typescript-mode-hook 'eglot-ensure)
-  (add-hook 'typescript-mode-hook 'flymake-eslint-enable)
+(with-eval-after-load 'typescript-ts-mode
+  (add-hook 'typescript-ts-mode-hook 'eglot-ensure)
+  (add-hook 'typescript-ts-mode-hook 'flymake-eslint-enable)
+  (add-hook 'tsx-ts-mode-hook 'eglot-ensure)
+  (add-hook 'tsx-ts-mode-hook 'flymake-eslint-enable)
   (setq whitespace-line-column 120))
+
+(when (treesit-available-p)
+  (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.json\\'" . json-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.js\\'" . json-ts-mode)))
+
+(ensure-packages-present 'prettier)
+(add-hook 'typescript-ts-hook #'prettier-mode)
+
+(ensure-packages-present 'ts-comint)
+(add-hook 'typescript-ts-mode-hook
+          (lambda ()
+            (setq typescript-ts-mode-indent-offset 4)
+            (local-set-key (kbd "C-x C-e") 'ts-send-last-sexp)
+            (local-set-key (kbd "C-M-x") 'ts-send-last-sexp-and-go)
+            (local-set-key (kbd "C-c b") 'ts-send-buffer)
+            (local-set-key (kbd "C-c C-b") 'ts-send-buffer-and-go)
+            (local-set-key (kbd "C-c l") 'ts-load-file-and-go)))
 
 (provide 'init-programming)
 
