@@ -293,8 +293,9 @@ sendemail.annotate yes'."
   (autoload 'gerbil-mode
     (concat gerbil-home "/etc/gerbil-mode.el") "Gerbil editing mode." t)
 
-  (add-to-list auto-mode-alist '(("\\.ss\\'"  . gerbil-mode)
-                                 ("\\.pkg\\'" . gerbil-mode)))
+  (add-to-list 'auto-mode-alist '("\\.ss\\'"  . gerbil-mode))
+  (add-to-list 'auto-mode-alist '("\\.pkg\\'"  . gerbil-mode))
+
   (let ((m comint-mode-map))
     (define-key m (kbd "C-S-n") 'comint-next-input)
     (define-key m (kbd "C-S-p") 'comint-previous-input)
@@ -308,7 +309,9 @@ sendemail.annotate yes'."
 
   (let ((tags (locate-dominating-file default-directory "TAGS")))
     (when tags (visit-tags-table tags)))
-  (visit-tags-table (concat gerbil "/src/TAGS"))
+  (let ((gerbil-tags (concat gerbil-home "/src/TAGS")))
+    (when (file-exists-p gerbil-tags)
+      (visit-tags-table gerbil-tags)))
 
   (defun clear-comint-buffer ()
     (interactive)
