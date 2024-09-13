@@ -46,7 +46,6 @@
 (global-set-key (kbd "C-w") 'my/backward-kill-word-or-region)
 (global-set-key (kbd "C-c C-j") 'join-line)
 (global-set-key (kbd "M-z") 'zap-up-to-char)
-(global-set-key (kbd "C-x k") 'kill-this-buffer)
 (global-set-key (kbd "C-x M-k") 'kill-buffer-other-window)
 (global-set-key (kbd "C-x C-z") nil)
 (global-set-key (kbd "C-z") nil)
@@ -157,16 +156,12 @@ different user account. By default the user is set to `root'."
 
 (add-hook 'help-mode-hook (lambda () (setq truncate-lines t)))
 
-;; (defvar *my-fixed-font* "Input Mono")
-;; (defvar *my-variable-font* "Input Serif")
-
-(defvar *my-fixed-font* "Jetbrains Mono")
-(defvar *my-variable-font* "Iosevka Aile")
-
+(defvar *my-fixed-font* "Input Mono")
+(defvar *my-variable-font* "Input Serif")
 
 ;; Set Default font if present
 (when (find-font (font-spec :name *my-fixed-font*))
-  (set-face-attribute 'default nil :family *my-fixed-font* :height 120)
+  (set-face-attribute 'default nil :family *my-fixed-font* :height 110)
   (set-face-attribute 'variable-pitch nil :family *my-variable-font*)
   (set-face-attribute 'fixed-pitch nil :family *my-fixed-font*)
   (set-face-attribute 'tooltip nil :family *my-fixed-font*))
@@ -213,7 +208,6 @@ different user account. By default the user is set to `root'."
       modus-themes-variable-pitch-ui t
       modus-themes-italic-constructs t
       modus-themes-bold-constructs nil
-      modus-themes-org-blocks nil ;; obsolete
       modus-themes-completions '((t . (extrabold)))
       modus-themes-prompts '(extrabold)
       modus-themes-headings
@@ -221,11 +215,9 @@ different user account. By default the user is set to `root'."
         (agenda-date . (variable-pitch regular 1.3))
         (t . (regular 1.15))))
 
-(setq modus-themes-common-palette-overrides nil)
-;; '((bg-mode-line-active bg-cyan-subtle)
-;;   (keybind yellow-warmer)))
-
 (load-theme 'modus-vivendi t)
+
+(setq image-use-external-converter t)
 
 (provide 'init-visual)
 
