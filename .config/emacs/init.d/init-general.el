@@ -70,44 +70,6 @@
 (when (fboundp 'pixel-scroll-precision-mode)
   (pixel-scroll-precision-mode 1))
 
-  ;; :commands (ispell-change-dictionary
-  ;;            ispell-word
-  ;;            flyspell-buffer
-  ;;            flyspell-mode
-  ;;            flyspell-region)
-
-  ;;:hook text-mode-hook
-(setq flyspell-issue-message-flag nil)
-(setq flyspell-issue-welcome-flag nil)
-(setq ispell-program-name "aspell")
-(setq ispell-dictionary "en_US")
-
-(ensure-packages-present '(wcheck-mode))
-(with-eval-after-load 'wcheck-mode
-  (setq wcheck-language-data
-	`(("British English"
-           (program . ,(or (executable-find "aspell") "ispell"))
-           (args "-l" "-d" "british")
-           (action-program . ,(or (executable-find "aspell") "ispell"))
-           (action-args "-a" "-d" "british")
-           (action-parser . wcheck-parser-ispell-suggestions))
-          ("Finnish"
-           (program . ,(or (executable-find "enchant-2")
-                           (executable-find "enchant")))
-           (args "-l" "-d" "fi")
-           (syntax . my-finnish-syntax-table)
-           (action-program . "/usr/bin/enchant")
-           (action-args "-a" "-d" "fi")
-           (action-parser . wcheck-parser-ispell-suggestions)))))
-
-(let ((map (make-sparse-keymap)))
-  (define-key map "w" 'wcheck-mode)
-  (define-key map "l" 'wcheck-change-language)
-  (define-key map "a" 'wcheck-actions)
-  (define-key map "f" 'wcheck-jump-forward)
-  (define-key map "b" 'wcheck-jump-backward)
-  (define-key ctl-x-x-map "w" map))
-
 (add-hook 'before-save-hook 'time-stamp)
 (add-hook 'comint-output-filter-functions 'comint-watch-for-password-prompt)
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
@@ -146,6 +108,9 @@
 ;; buffers to registers, C-x r j m
 (when (version<= "29" emacs-version)
   (set-register ?m '(buffer . "*Messages*")))
+
+(setq Man-prefer-synchronous-call t)
+(setq Man-support-remote-systems t)
 
 (provide 'init-general)
 
