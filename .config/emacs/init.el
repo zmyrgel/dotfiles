@@ -2,7 +2,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2023-03-08 19:35:00 (tmy)>
+;;; Time-stamp: <2024-09-13 07:10:51 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
 ;;;
@@ -11,6 +11,18 @@
 ;;; -- flymake--handle-report: Can’t find state for flymake-eslint--checker in ‘flymake--state’
 ;;; - improve init speed, currently 7s.
 ;;; - fix highlight of got diffs in gnus
+;;; - gpttel package for AI
+;;; - {C-h 4 s} to `help-find-source'
+;;; - `kill-matching-buffers-no-ask'
+;;; - recover-file has = to show diff
+;;; - read-passwd has TAB to toggle password display
+;;; - remote-file-name-inhibit-delete-by-moving-to-trash
+;;; - remote-file-name-inhibit-auto-save
+;;; - 'read-process-output-max' was increased to 65536, init uses 1048576
+;;; - `replace-regexp-as-diff', 'multi-file-replace-regexp-as-diff', 'dired-do-replace-regexp-as-diff'
+;;; - register-use-preview t
+;;; - grep-use-headings t
+;;; -
 
 ;;; Code:
 
@@ -29,7 +41,6 @@
 (package-refresh-contents 'async)
 
 (defvar *packages-refreshed* nil)
-;;(package-refresh-contents)
 
 ;; commands:
 ;; package-update, package-update-all
@@ -37,6 +48,7 @@
 
 ;; (network-lookup-address-info "127.1" 'ipv4 'numeric)
 ;; recentf-open command
+;; (setq garbage-collection-messages t)
 
 (defun ensure-packages-present (maybe-packages)
   "Ensures given PACKAGES are installed."
