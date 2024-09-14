@@ -17,19 +17,19 @@
 (setq dired-ls-F-marks-symlinks t)
 (setq dired-omit-files "^#\\|\\.$\\|~$\\|^RCS$\\|,v$")
 (setq dired-guess-shell-alist-user
-      '(("\\.avi$\\|\\.mkv$\\|\\.mov$\\|\\.mpeg$\\|\\.mp4$" "cvlc"
-         "\\.rar$" "unrar e")))
+      '(("\\.avi$\\|\\.mkv$\\|\\.mov$\\|\\.mpeg$\\|\\.mp4$" "cvlc")))
 (setq dired-guess-shell-gnutar (unless (eq system-type 'berkeley-unix)
                                  "tar"))
 
 (setq dired-isearch-filenames 'dwim)
 (setq dired-create-destination-dirs 'ask)
 (setq dired-vc-rename-file t)
+(setq dired-movement-style 'cycle)
+;; {E} 'dired-do-open'
 
 (define-key ctl-x-map (kbd "C-j") 'dired-jump)
 (define-key ctl-x-4-map (kbd "C-j") 'dired-jump-other-window)
 
-;; 29 allows to set wallpapers
 (when (executable-find "xwallpaper")
   (setq wallpaper-command "xwallpaper")
   (setq wallpaper-command-args '("--maximize" "%f")))
@@ -37,6 +37,10 @@
 ;; TRAMP stuff
 ;; methods for docker, podman, kubernetes
 (setq tramp-use-scp-direct-remote-copying t)
+;; `tramp-revert-buffer-with-sudo'
+(setq tramp-file-name-with-method
+      (or (executable-find "doas")
+          (executable-find "sudo")))
 
 ;; bongo
 (with-eval-after-load 'bongo
