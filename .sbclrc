@@ -2,7 +2,15 @@
 
 (require :asdf)
 
+;; Load quicklisp if it is missing
+#-quicklisp
+(let ((quicklisp-init (merge-pathnames "quicklisp/setup.lisp"
+                                       (user-homedir-pathname))))
+  (when (probe-file quicklisp-init)
+    (load quicklisp-init)))
+
 ;;; If a fasl was stale, try to recompile and load (once).
+#+sbcl
 (defmethod asdf:perform :around ((o asdf:load-op)
                                  (c asdf:cl-source-file))
   (handler-case (call-next-method o c)
@@ -11,17 +19,24 @@
       (asdf:perform (make-instance 'asdf:compile-op) c)
       (call-next-method))))
 
-;;; The following lines added by ql:add-to-init-file:
-#-quicklisp
-(let ((quicklisp-init (merge-pathnames "quicklisp/setup.lisp"
-                                       (user-homedir-pathname))))
-  (when (probe-file quicklisp-init)
-    (load quicklisp-init)))
-
-;; Fix encoding issues
-(setf sb-impl::*default-external-format* :utf-8)
+(defun list-exports (package-name)
+  "Print all exported symbols from package named by PACKAGE-NAME."
+  (do-external-symbols (s (find-package package-name))
+    (print s)))
 
 (defun list-package-dependency-licenses (package)
-  "Return list of licence names for direct dependencies of of package."
+  "Return list of licence names for direct dependencies of an PACKAGE."
   (loop for dependency in (asdf:system-depends-on (asdf:find-system package))
         collect (asdf:system-licence (asdf:find-system dependency))))
+
+;; TODO: List system dependencies in SBOM format
+
+;; #+sbcl
+;; (progn
+;;   (sb-ext:add-package-local-nickname '#:jzon '#:com.inuoe.jzon)
+;;   (sb-ext:add-package-local-nickname '#:re '#:cl-ppcre)
+;;   (sb-ext:add-package-local-nickname '#:a '#:alexandria))
+
+;; Setup logical pathnames for SBCL sources
+#+sbcl
+(set-sbcl-source-location (merge-pathnames "git/sbcl/" (user-homedir-pathname)))
