@@ -16,6 +16,7 @@
 (setq grep-find-use-xargs 'exec-plus)
 ;; https://stegosaurusdormant.com/emacs-ripgrep/
 ;; https://stackoverflow.com/questions/45526670/rgrep-in-emacs-to-use-ripgrep
+
 ;; (when (executable-find "rg")
 ;;   (grep-apply-setting
 ;;    'grep-find-command
@@ -23,23 +24,40 @@
 
 ;; electric
 (setq electric-pair-preserve-balance t)
+(setq electric-pair-delete-adjacent-pairs t)
+(setq electric-pair-open-newline-between-pairs t)
+(setq electric-pair-skip-whitespace 'nil)
 ;;(add-to-list 'electric-pair-pairs '(?\{ . ?\}) t)
 (setq electric-pair-skip-self t)
-(setq electric-pair-skip-whitespace 'nil)
+
 (add-hook 'after-init-hook 'electric-indent-mode)
+
+;; use print helper
+(when (executable-find "gtklp")
+  (setq lpr-command "gtklp"))
+
+;; spelling
+(setq flyspell-issue-message-flag nil)
+(setq flyspell-issue-welcome-flag nil)
+(setq ispell-program-name
+      (or (executable-find "enchant-2")
+          (executable-find "aspell")
+          (executable-find "ispell")
+          (executable-find "hunspell")))
+(setq ispell-dictionary "american")
+(setq flyspell-check-changes t)
+(add-hook 'text-mode-hook 'flyspell-mode)
 
 ;; | Key chord      | Description     |
 ;; |----------------+-----------------|
-;; | C-c [          | add cite        |
-;; | C-c =          | show toc        |
+;; | { C-c [ }      | add cite        |
+;; | { C-c = }      | show toc        |
 
 (ensure-packages-present 'auctex)
 (load "auctex.el" nil t t)
 (load "preview.el" nil t t)
 
-(if (version<= emacs-version "29")
-    (add-to-list 'magic-mode-alist '("\\.[tT]e[xX]\\'" . latex-mode))
-  (add-to-list 'major-mode-remap-alist '(TeX-mode . latex-mode)))
+(add-to-list 'major-mode-remap-alist '(TeX-mode . latex-mode))
 
 (add-hook 'latex-mode-hook 'auto-fill-mode)
 (add-hook 'latex-mode-hook 'reftex-mode)
@@ -138,6 +156,10 @@ indents the markup by using nxml's indentation rules."
 
 (ensure-packages-present 'plantuml-mode)
 (setq plantuml-default-exec-mode 'jar)
+(setq plantuml-jar-path
+      (car (file-expand-wildcards
+            (concat (getenv "HOME") "/java/plantuml-*.jar"))))
+(add-to-list 'auto-mode-alist '("\\.puml\\'" . plantuml-mode))
 
 (provide 'init-text)
 
