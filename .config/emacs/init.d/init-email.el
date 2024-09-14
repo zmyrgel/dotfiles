@@ -5,7 +5,6 @@
 
 ;;; Code:
 
-(setq user-mail-address "timo.myyra@bittivirhe.fi")
 (setq user-full-name "Timo Myyrä")
 
 ;; smtpmail
@@ -39,10 +38,6 @@
   (add-hook 'gnus-started-hook
             (lambda ()
               (add-to-list 'mm-body-charset-encoding-alist '(utf-8 . base64))))
-
-  ;; prompt extra labels from Gmail
-  (setq gnus-extra-headers
-        '(To Newsgroups X-GM-LABELS))
 
   (setq gnus-gcc-mark-as-read t)
   (setq gnus-always-read-dribble-file t)
