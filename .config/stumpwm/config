@@ -4,7 +4,7 @@
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;;
 ;;; Created:
-;;; Time-stamp: <2024-05-17 07:14:22 (tmy)>
+;;; Time-stamp: <2024-09-14 10:00:10 (tmy)>
 ;;; URL: https://github.com/zmyrgel/dotfiles/
 ;;; Copyright (C) 2012 Timo Myyrä
 ;;;
@@ -17,7 +17,10 @@
 ;;;  - Prevent pop-ups from stealing focus from current frame
 ;;;  - Remove useless keymaps somehow
 ;;;  - test ttf fonts git clone https://github.com/lihebi/clx-truetype.git
-;;;
+;;;  - Set UIOP/CONFIGURATION:*USER-CACHE* during build to avoid following paths:
+;;;  - SB-IMPL::DIR = (:ABSOLUTE "stumpwm-23.11_writes_to_HOME" ".cache" "common-lisp" "sbcl-2.4.4.openbsd.sbcl-2.4.4-bsd-x64" "home" "tmy" "quicklisp" "dists" "quicklisp" "software" "trivial-features-20230618-git" "src")
+;;;  - set XDG_CACHE_HOME during build? push to sb
+;;;  - Alt-. -> find-file-noselect: Getting attributes: Permission denied, /usr/obj/ports/stumpwm-23.11/stumpwm-23.11/pathnames.lisp
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (in-package :stumpwm)
@@ -47,15 +50,15 @@
 ;; Define global configurations
 
 (defvar *font* "-*-terminus-medium-r-normal--16-*-*-*-*-*-iso10646-1"
-  "Font to use for displaying stumwm ui elements.")
+  "Font to use for displaying StumWM UI elements.")
 
 ;; Update module directory path
-(let ((module-dir (merge-pathnames ".config/stumpwm/modules"
+(let ((module-dir (merge-pathnames ".config/stumpwm/modules/"
                                    (user-homedir-pathname))))
   (when (probe-file module-dir)
     (set-module-dir module-dir)))
 
-(defvar *wallpaper-path* (merge-pathnames "wallpapers"
+(defvar *wallpaper-path* (merge-pathnames "wallpapers/"
                                           (user-homedir-pathname)))
 (defvar *wallpaper-extensions* '("png" "jpg" "jpeg"))
 
@@ -79,22 +82,26 @@
 (defvar *xterm* "xterm"
   "X terminal program to use.")
 
+;; (defvar *data-dir* (merge-pathnames ))?
+;; log everything to ~/.stumpwm.d/stumpwm.log
+;; (redirect-all-output (merge-pathnames *data-dir* "stumpwm.log"))
+
 ;; ---------------------------------------
 ;; Misc options
 
-;; DarkTooth colors
-(setq *colors*
-      '("#1c1c1c"   ;; 0 black
-        "#870000"   ;; 1 red
-        "#878700"   ;; 2 green
-        "#af8700"   ;; 3 yellow
-        "#005f87"   ;; 4 blue
-        "#875f87"   ;; 5 magenta
-        "#00afaf"   ;; 6 cyan
-        "#a8a8a8")) ;; 7 white
-
 (when *initializing*
   (update-color-map (current-screen)))
+
+(stumpwm-themes:define-theme "Modus Vivendi"
+  (set-bg-color "#000000")
+  (set-fg-color "#ffffff")
+  (set-border-color "#000000")
+  (set-focus-color "#000000")
+  (set-unfocus-color "#d0bc00")
+  (setf *mode-line-background-color* "#1c1c1c"
+        *mode-line-foreground-color* "#4e4e4e")
+  (setf *colors* '("#000000" "#ff5f59" "#44bc44" "#d0bc00"
+                   "#2fafff" "#feacd0" "#00d3d0" "#ffffff")))
 
 ;; ---------------------------------------
 ;; Message and Input Bar options
@@ -103,15 +110,10 @@
 (when *font*
   (set-font *font*))
 
-(set-border-color "#1c1c1c") ;; black
 (setf *message-window-padding* 20)
 (setf *timeout-wait* 5)
 (setf *message-window-gravity* :top-right)
 (setf *input-window-gravity* :top-right)
-
-(set-fg-color "#ffffdf")
-(set-bg-color "#1c1c1c")
-;; (set-border-color *fg-color*)
 
 ;; ---------------------------------------
 ;; Window options
@@ -126,13 +128,6 @@ mode-line"
 (add-hook *new-window-hook* #'update-window-title)
 
 (setf *float-window-modifier* :meta)
-(set-win-bg-color "#1c1c1c") ;; black
-(set-focus-color "#1c1c1c")  ;; black
-(set-unfocus-color "#af8700") ;; yellow
-
-(set-float-focus-color "#1c1c1c") ;; black
-(set-float-unfocus-color "#af8700") ;; yellow
-
 (setf *mouse-focus-policy* :click)
 
 (setf *key-seq-color* "^3")
@@ -156,10 +151,6 @@ mode-line"
 (when *initializing*
   (unless (head-mode-line (current-head))
   (toggle-mode-line (current-screen) (current-head))))
-
-(setf *mode-line-background-color* "#1c1c1c")
-(setf *mode-line-foreground-color* "#4e4e4e")
-(setf *mode-line-border-color* "#3a3a3a")
 
 (setf *mode-line-position* :top)
 (setf *mode-line-border-width* 0)
@@ -224,14 +215,14 @@ mode-line"
 
 (defun select-random-background-image ()
   "Select a random image from wallpapers directory."
-  (let ((file-list (remove-if-not (lambda (x)
-                                    (member (pathname-type x) *wallpaper-extensions* :test #'string=))
+  (let ((file-list (remove-if-not (lambda (file)
+                                    (member (pathname-type file) *wallpaper-extensions* :test #'string=))
                                   (list-directory *wallpaper-path*)))
         (*random-state* (make-random-state t)))
     (namestring (nth (random (length file-list)) file-list))))
 
 (defun set-wallpaper ()
-  (run-shell-command "xwallpaper --maximize ~/wallpapers/pluto_blueskies.png"))
+ (run-shell-command "xwallpaper --maximize ~/wallpapers/pluto_blueskies.png"))
 
 (defun set-qwerty-input ()
   (run-shell-command "setxkbmap -layout us -variant altgr-intl -option ctrl:nocaps"))
@@ -279,18 +270,18 @@ mode-line"
   (define-key *root-map* (kbd "M-2") "global-pull-windowlist"))
 
 (with-module "notifications"
-  (setf *screen-mode-line-format* (uiop:strcat uiop:strcat *screen-mode-line-format* " (%N)"))
+  (setf *screen-mode-line-format* (uiop:strcat *screen-mode-line-format* " (%N)"))
   (define-key *root-map* (kbd "N") '*notifications-map*))
 
 (with-module "urgentwindows"
-             (define-key *root-map* (kbd "u") "raise-urgent"))
+  (define-key *root-map* (kbd "u") "raise-urgent"))
 
 ;;(xft:cache-fonts)
 ;; (clx-truetype:get-font-families)
 (with-module "ttf-fonts"
+  ;; "Default font to use in StumpWM UI."
   (setf *font*
-        (make-instance 'xft:font :family "InputMono Medium" :subfamily "Regular" :size 6 :antialias t)
-        "Default font to use in StumpWM UI.")
+        (make-instance 'xft:font :family "InputMono Medium" :subfamily "Regular" :size 6 :antialias t))
   (set-font *font*))
 
 #-openbsd
@@ -383,7 +374,7 @@ mode-line"
 
 ;;(add-hook *start-hook* #'set-displays)
 ;;(add-hook *start-hook* #'set-stumpwm-groups)
-(add-hook *start-hook* #'set-wallpaper)
+;;(add-hook *start-hook* #'set-wallpaper)
 
 ;; ---------------------------------------
 ;; KEYBINDINGS
@@ -473,7 +464,7 @@ mode-line"
 ;;    do (define-key *top-map* (kbd (format nil "s-~A" i))
 ;; 	(format nil "gselect ~A" i)))
 
-;; ;; Query addresses
+;; Query addresses
 ;; (defvar *query-map* nil
 ;;   "The keymap with net queries (e.g. IMDB)")
 
