@@ -17,15 +17,17 @@
   (setq rcirc-default-user-name "zmyrgel")
   (setq rcirc-default-full-name "Curious Minds Want To Know")
 
+  (setq rcirc-omit-responses '("JOIN" "PART" "QUIT" "NICK" "AWAY"))
+  (rcirc-omit-mode 1)
+
   (rcirc-track-minor-mode 1)
-  ;;(rcirc-omit-mode 1)
 
   (when-let ((nickserv-pass (password-lookup :host "irc.libera.chat")))
     (setq rcirc-authinfo
           `(("libera" nickserv "zmyrgel" ,nickserv-pass))))
 
-  ;;(setq rcirc-omit-responses '("JOIN" "PART" "QUIT" "NICK" "AWAY"))
-  (setq rcirc-time-format "%Y-%m-%d %H:%M "))
+  (setq rcirc-time-format "%Y-%m-%d %H:%M ")
+  (setq rcirc-log-time-format "%Y-%m-%d %H:%M "))
 
 ;;  erc
 (with-eval-after-load 'erc
