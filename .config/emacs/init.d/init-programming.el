@@ -10,6 +10,9 @@
 (setq project-vc-ignores '("target/" "bin/" "obj/"))
 (setq project-vc-extra-root-markers '("pom.xml" "*.csproj" "*.asd"))
 (setq project-vc-include-untracked nil)
+(setq project-mode-line t)
+(setq project-file-history-behavior 'relativize)
+(setq project-key-prompt-style t)
 
 (defun project-show-todos ()
   "Function shows all found TODO notes in given project in single buffer."
@@ -42,7 +45,7 @@
 (setq add-log-keep-changes-together t)
 (setq vc-git-diff-switches '("--patch-with-stat"))
 (setq vc-git-revision-complete-only-branches t)
-(setq vc-git-print-log-follow t)
+(setq vc-git-print-log-follow nil)
 (setq vc-git-root-log-format
       '("%d %h %ad %an: %s"
         "^\\(?:[*/\\|]+\\)\\(?:[*/\\| ]+\\)?\
@@ -53,6 +56,10 @@
          (2 'change-log-list nil lax)
          (3 'change-log-name)
          (4 'change-log-date))))
+
+(setq vc-git-shortlog-switches nil)
+(setq vc-display-status 'no-backend)
+(setq vc-annotate-use-short-revision t)
 
 ;; allow reverting changes in vc-dir
 (with-eval-after-load 'vc-dir-mode
@@ -90,6 +97,85 @@ sendemail.annotate yes'."
   "path to patch and project (default current if in one)"
   (interactive)
   (shell-command-on-region (point-min) (point-max) "git am"))
+
+;; project-vc-dir or vc-dir {C-x p v} or {C-x v d}
+;; vc-dir binds:
+;; {z p}, {z s}, {z c} for stashing
+
+;; Tune up for git clone
+(defvar my-vc-git-emails
+  '("timo.myyra@bittivirhe.fi"
+    "timo.myyra@edita.fi")
+  "List of email addresses that can be associated with a repository")
+
+(defun my-vc-git-clone (repository-url local-dir)
+  "Run \"git clone REPOSITORY-URL\" to LOCAL-DIR.
+It also prompts what email to use in the directory, from the
+values in `hoagie-vc-git-emails'.
+Executes `vc-dir' in the newly cloned directory."
+  (interactive
+   (let* ((url (read-string "Repository URL: "))
+          (dir (file-name-base url)))
+     (list url (read-string "Target directory: " dir))))
+  (vc-git-command nil 0 nil "clone" repository-url local-dir)
+  (let ((default-directory (file-name-concat default-directory local-dir)))
+    (vc-git-command nil 0 nil "config" "user.email"
+                    (completing-read "Email for this repo: "
+                                     hoagie-vc-git-emails))
+    (vc-dir default-directory)))
+
+;; {C-c C-d} will show a diff of the changes, which brings us a bit closer to Magit's commit view.
+;; {C-c C-k} aborts the operation. You could just kill the buffer, but this command also restores the window configuration.
+;; {C-c C-e} will amend the last commit, bringing back its message.
+
+
+;; b c creates and switches to a new branch
+;; b l prints the log for a specific branch
+;; b s switches to an existing branch. By default, it adds "origin/" in front of the name, which gives you a detached head. So delete the prefix when picking a remote branch to clone it locally.
+
+(defun my-vc-git-show-branches (&optional arg)
+  "Show in a buffer the list of branches in the current repository.
+With prefix ARG show the remote branches."
+  (interactive "P")
+  ;; TODO: this is a mix of vc-git stuff and project.el stuff...
+  (let* ((default-directory (project-root (project-current t)))
+         (buffer-name (project-prefixed-buffer-name (if arg
+                                                        "git remote branches"
+                                                      "git local branches"))))
+    (vc-git-command buffer-name
+                    0
+                    nil
+                    "branch"
+                    (when arg "-r"))
+    (pop-to-buffer buffer-name)
+    (goto-char (point-min))
+    (special-mode)))
+
+;; When there's a conflict, open the relevant file and invoke
+;; vc-resolve-conflicts to navigate the problem areas. Once you save the
+;; file, the conflict should be marked as resolved.
+
+(defun vc-git-reset (&optional arg)
+  "Runs \"git reset\" to unstage all changes.
+With prefix arg, does a hard reset (thus it asks for confirmation)."
+  (interactive "P")
+  (if arg
+      (when (y-or-n-p "Perform a hard reset? ")
+        (vc-git-command nil 0 nil "reset" "--hard")
+        (message "Completed. All pending changes are lost."))
+    (vc-git-command nil 0 nil "reset")
+    (message "All changes are unstaged."))
+  (vc-dir-refresh))
+
+;; This was the last thing that I missed from Magit, and is also a
+;; somewhat recent addition. From a diff buffer (for example, one
+;; invoked in the current file via C-x v =), you can drop a hunk using
+;; k, or split it using C-c C-s. There are a few other bindings, check
+;; out the major mode help.
+
+;; Once satisfied, in the diff buffer, press C-x v v to create a commit
+;; with only the contents that you didn't drop. I don't use this often,
+;; but it was very convenient the few times I needed it.
 
 (ensure-packages-present 'vc-got)
 
@@ -134,6 +220,9 @@ sendemail.annotate yes'."
 (setq diff-refine 'font-lock)
 (setq diff-update-on-the-fly t)
 (setq diff-add-log-use-relative-names t)
+(setq diff-refine-nonmodified t)
+(setq diff-ignore-whitespace-switches "-b")
+;; {C-c RET a} 'diff-apply-buffer'
 
 ;; diff
 (setq diff-switches '("-u"))
@@ -161,8 +250,9 @@ sendemail.annotate yes'."
 (add-hook 'prog-mode-hook 'whitespace-mode)
 (add-hook 'prog-mode-hook 'my/prog-mode-hook)
 
-;; enable which-func on programming modes
-;; NOTE: avoid in diff-mode, causes cpu use due to looping in git remote call
+;; enable which-func on programming modes NOTE: enable which-func only
+;; on prog-mode instead of globally. This is to avoid having it enabled in diff-mode,
+;; which causes cpu use due to looping in git remote call
 (setq which-func-modes '(prog-mode))
 (which-function-mode)
 
@@ -188,6 +278,9 @@ sendemail.annotate yes'."
   (define-key eglot-mode-map (kbd "C-c a") 'eglot-code-actions)
   (define-key eglot-mode-map (kbd "C-c z") 'eglot-format)
   (define-key eglot-mode-map (kbd "C-c r") 'eglot-rename))
+
+;; TODO: check this, should speed up eglot use
+(fset #'jsonrpc--log-event #'ignore)
 
 ;; flymake
 (with-eval-after-load 'flymake
@@ -240,6 +333,7 @@ sendemail.annotate yes'."
                                  (clisp ("clisp" "-ansi"))
                                  (chicken ("csi"))
                                  (abcl ("abcl"))))
+
 (when-let ((local-hyperspec-path
             (seq-some (lambda (p)
                         (let ((full-path (expand-file-name p)))
@@ -262,12 +356,14 @@ sendemail.annotate yes'."
       (add-to-list 'Info-directory-list (car sly-doc-dirs)))))
 
 ;; if we have log4cl dist use it to set global logging
-(let ((default-directory (expand-file-name "~/quicklisp/dists/quicklisp/software/")))
-  (when-let (log4cl-dirs (file-expand-wildcards "log4cl-*-git"))
-    (display-warning 'warning "log4cl dirs: %s" log4cl-dirs)
-    (add-to-list 'load-path (concat default-directory (car (last log4cl-dirs)) "/elisp"))
-    (require 'log4sly nil t)
-    (global-log4sly-mode 1)))
+(let ((ql-software-dir (expand-file-name "~/quicklisp/dists/quicklisp/software/")))
+  (when (file-exists-p ql-software-dir)
+    (let ((default-directory ql-software-dir))
+      (when-let (log4cl-dirs (file-expand-wildcards "log4cl-*-git"))
+        (display-warning 'warning "log4cl dirs: %s" log4cl-dirs)
+        (add-to-list 'load-path (concat default-directory (car (last log4cl-dirs)) "/elisp"))
+        (require 'log4sly nil t)
+        (global-log4sly-mode 1)))))
 
 ;; (ensure-packages-present 'sly-repl-ansi-color)
 ;; (sly-enable-contrib 'sly-repl-ansi-color)
@@ -461,6 +557,59 @@ sendemail.annotate yes'."
             (local-set-key (kbd "C-c b") 'ts-send-buffer)
             (local-set-key (kbd "C-c C-b") 'ts-send-buffer-and-go)
             (local-set-key (kbd "C-c l") 'ts-load-file-and-go)))
+
+;;; treesit
+(when (featurep 'treesit)
+  (setq treesit-language-source-alist
+        '((clojure "https://github.com/sogaiu/tree-sitter-clojure")
+          (elisp "https://github.com/Wilfred/tree-sitter-elisp")
+          (markdown "https://github.com/ikatyang/tree-sitter-markdown")
+          (css . ("https://github.com/tree-sitter/tree-sitter-css" ))
+          (html . ("https://github.com/tree-sitter/tree-sitter-html" ))
+          (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript" ))
+          (json . ("https://github.com/tree-sitter/tree-sitter-json" ))
+          (python . ("https://github.com/tree-sitter/tree-sitter-python"))
+          (php . ("https://github.com/tree-sitter/tree-sitter-php" "master" "php/src" ))
+          (toml "https://github.com/tree-sitter/tree-sitter-toml" )
+          (tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src"))
+          (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
+          (yaml . ("https://github.com/ikatyang/tree-sitter-yaml"))))
+
+  ;; color all the things
+  (setq treesit-font-lock-level 4)
+  ;; refresh font lock on buffers
+  (treesit-font-lock-recompute-features)
+
+  ;; Setup tree-sitter modes over the default ones.
+  (dolist (m '((python-mode . python-ts-mode)
+               (css-mode . css-ts-mode)
+               (typescript-mode . typescript-ts-mode)
+               (js2-mode . js-ts-mode)
+               (bash-mode . bash-ts-mode)
+               (css-mode . css-ts-mode)
+               (json-mode . json-ts-mode)
+               (js-json-mode . json-ts-mode)))
+    (add-to-list 'major-mode-remap-alist m))
+
+  (defun install-treesit-grammars ()
+    "Install all Tree-sitter grammars which are not present on current system."
+    (interactive)
+    (dolist (grammar (mapcar #'car treesit-language-source-alist))
+      (unless (treesit-language-available-p grammar)
+        (treesit-install-language-grammar grammar)))
+    t))
+
+(ensure-packages-present 'gptel)
+(with-eval-after-load 'gptel
+  (gptel-make-openai "local-deepcoder"
+    :stream t
+    :protocol "http"
+    :host "localhost:8080"
+    :models '("coder"))
+  (setq gptel-model "gemini-pro"
+        gptel-backend (gptel-make-gemini "Gemini"
+                        :key "YOUR_GEMINI_API_KEY"
+                        :stream t)))
 
 (provide 'init-programming)
 
