@@ -4,13 +4,13 @@
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;;
 ;;; Created:
-;;; Time-stamp: <2024-09-14 10:00:10 (tmy)>
+;;; Time-stamp: <2024-09-15 08:08:42 (tmy)>
 ;;; URL: https://github.com/zmyrgel/dotfiles/
 ;;; Copyright (C) 2012 Timo Myyrä
 ;;;
 ;;; ----------------------------------------------------------------------------
 ;;;  - Fix Webjump functionality
-;;;  - Fix Raise requests, cause StumpWM to crash
+;;;  - Fix Raise requests, causes StumpWM to crash
 ;;;  - Rewrite contrib packages to more portable way
 ;;;  - Scroll firefox without focusing its frame
 ;;;  - Update hook + notify on IRC messages + other urgent messages
@@ -21,6 +21,7 @@
 ;;;  - SB-IMPL::DIR = (:ABSOLUTE "stumpwm-23.11_writes_to_HOME" ".cache" "common-lisp" "sbcl-2.4.4.openbsd.sbcl-2.4.4-bsd-x64" "home" "tmy" "quicklisp" "dists" "quicklisp" "software" "trivial-features-20230618-git" "src")
 ;;;  - set XDG_CACHE_HOME during build? push to sb
 ;;;  - Alt-. -> find-file-noselect: Getting attributes: Permission denied, /usr/obj/ports/stumpwm-23.11/stumpwm-23.11/pathnames.lisp
+;;;  -- Use logical-translation like SBCL sources?
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (in-package :stumpwm)
@@ -89,19 +90,8 @@
 ;; ---------------------------------------
 ;; Misc options
 
-(when *initializing*
-  (update-color-map (current-screen)))
-
-(stumpwm-themes:define-theme "Modus Vivendi"
-  (set-bg-color "#000000")
-  (set-fg-color "#ffffff")
-  (set-border-color "#000000")
-  (set-focus-color "#000000")
-  (set-unfocus-color "#d0bc00")
-  (setf *mode-line-background-color* "#1c1c1c"
-        *mode-line-foreground-color* "#4e4e4e")
-  (setf *colors* '("#000000" "#ff5f59" "#44bc44" "#d0bc00"
-                   "#2fafff" "#feacd0" "#00d3d0" "#ffffff")))
+;; (when *initializing*
+;;   (update-color-map (current-screen)))
 
 ;; ---------------------------------------
 ;; Message and Input Bar options
@@ -300,6 +290,18 @@ mode-line"
 ;;   (keyboard-layout-list "us" "dvorak -variant phonetic")
 ;;   )
 
+(with-module "stumpwm-themes"
+  (stumpwm-themes:define-theme "Modus Vivendi"
+      (set-bg-color "#000000")
+    (set-fg-color "#ffffff")
+    (set-border-color "#000000")
+    (set-focus-color "#000000")
+    (set-unfocus-color "#d0bc00")
+    (setf *mode-line-background-color* "#1c1c1c"
+          *mode-line-foreground-color* "#4e4e4e")
+    (setf *colors* '("#000000" "#ff5f59" "#44bc44" "#d0bc00"
+                     "#2fafff" "#feacd0" "#00d3d0" "#ffffff"))))
+
 ;; checkout: lookup
 ;; ---------------------------------------
 ;; Commands
@@ -384,7 +386,7 @@ mode-line"
 ;;(register-altgr-as-modifier)
 
 ;; Browse somewhere
-(define-key *root-map* (kbd "C-b") (uiop:strcat "colon1 exec " *browser* " https://www."))
+(define-key *root-map* (kbd "C-b") (format nil "colon1 exec ~a  https://www." *browser*))
 ;; Ssh somewhere
 (define-key *root-map* (kbd "C-s") "colon1 exec xterm -e ssh ")
 
@@ -397,7 +399,7 @@ mode-line"
 (define-key *root-map* (kbd "i") "ddg")
 
 ;; allow locking x
-(define-key *root-map* (kbd "L") (uiop:strcat "exec " *x-lock-command*))
+(define-key *root-map* (kbd "L") (format nil "exec ~a" *x-lock-command*))
 
 ;; Emacs Style Frame Splitting
 ;; (loop for n below 10
