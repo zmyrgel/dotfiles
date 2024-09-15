@@ -25,11 +25,10 @@ then
 	setxkbmap -layout us -variant altgr-intl -option ctrl:nocaps
 else
 	setxkbmap -layout us -variant dvorak -option ctrl:nocaps
-	[ -x ~/bin/fix-keys.sh ] && ~/bin/fix-keys.sh    
 fi
+[ -x ~/bin/fix-keys.sh ] && ~/bin/fix-keys.sh
 
 # Environment variables for X
-
 GDK_USE_XFT=1
 QT_XFT=true
 export GDK_USE_XFT QT_XFT
@@ -63,8 +62,11 @@ then
 	eval $(dbus-launch --sh-syntax --exit-with-session)
 fi
 
-# Increase memory limits to 6GB, I got plenty to spare
-ulimit -d 6144000
+# Increase default memory limit on OpenBSD
+if test $(uname) = "OpenBSD"
+then
+	ulimit -d 6144000
+fi
 
 # Restore previous background image, if any
 #[ -x ~/.fehbg ] && ~/.fehbg &
@@ -92,5 +94,5 @@ then
 fi
 
 # Start WM
-exec ssh-agent icewm-session 2> ~/.xerrors
-#exec ssh-agent stumpwm 2> ~/.xerrors
+#exec ssh-agent icewm-session 2> ~/.xerrors
+exec ssh-agent stumpwm 2> ~/.xerrors
