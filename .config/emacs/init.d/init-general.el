@@ -61,6 +61,7 @@
         ((control) . text-scale)))
 (setq mouse-drag-copy-region nil)
 (setq make-pointer-invisible t)
+(setq mouse-yank-at-point t)
 (setq mouse-wheel-progressive-speed t)
 (setq mouse-wheel-follow-mouse t)
 (when (fboundp 'context-menu-mode)
@@ -76,10 +77,9 @@
 
 (global-so-long-mode 1)
 
-(when (version<= "28" emacs-version)
-  (setq repeat-on-final-keystroke t)
-  (setq set-mark-command-repeat-pop t)
-  (repeat-mode 1))
+(setq repeat-on-final-keystroke t)
+(setq set-mark-command-repeat-pop t)
+(repeat-mode 1)
 
 ;;; ------------------------------
 ;;; Buffer management
@@ -106,8 +106,7 @@
 (define-key ctl-x-x-map "n" #'switch-to-next-buffer)
 
 ;; buffers to registers, C-x r j m
-(when (version<= "29" emacs-version)
-  (set-register ?m '(buffer . "*Messages*")))
+(set-register ?m '(buffer . "*Messages*"))
 
 (setq Man-prefer-synchronous-call t)
 (setq Man-support-remote-systems t)
