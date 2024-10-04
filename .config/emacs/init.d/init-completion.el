@@ -45,18 +45,25 @@
 ;; `completion-at-point' is often bound to M-TAB.
 (setq tab-always-indent 'complete)
 
+(setq suggest-key-bindings t)
+
 (require 'vertico nil t)
-(vertico-mode)
+(vertico-mode 1)
 
 ;; minibuffer
 (setq completion-styles '(orderless))
+
+;; First it checks the category defaults in completion-category-defaults.
+;; Next, it checks if there are any overrides in completion-category-overrides. If there are, it uses them instead of #1.
+;; Then, it merges the styles from #1 or #2 with completion-styles. The category-specific styles in #1 or #2 take precedence over the styles in completion-styles.
+
 (setq completion-category-defaults nil)
 (setq completion-category-overrides
       '((file (styles . (basic partial-completion orderless)))
         (project-file (styles . (basic substring partial-completion orderless)))
         (imenu (styles . (basic substring orderless)))
         (kill-ring (styles . (basic substring orderless)))))
-(setq completion-cycle-threshold 2)
+(setq completion-cycle-threshold nil)
 (setq completion-flex-nospace nil)
 (setq completion-pcm-complete-word-inserts-delimiters nil)
 (setq completion-pcm-word-delimiters "-_./:| ")
@@ -94,12 +101,12 @@
 
   ;;; Following should be used when corfu/vertico is not used:
 (unless (or (featurep 'corfu) (featurep 'vertico))
-
   ;; previous-line-completion, next-line-completion commands
 
-  ;; Up/down when completing in the minibuffer
+  ;; Select completion options with up/down when completing in the minibuffer
   (define-key minibuffer-local-map (kbd "C-p") #'minibuffer-previous-completion)
   (define-key minibuffer-local-map (kbd "C-n") #'minibuffer-next-completion)
+
   ;; Up/down when competing in a normal buffer
   (define-key completion-in-region-mode-map (kbd "C-p") #'minibuffer-previous-completion)
   (define-key completion-in-region-mode-map (kbd "C-n") #'minibuffer-next-completion))
@@ -125,6 +132,7 @@
 ;; hippie-exp
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
 
+;; TODO: pabbrev?
 (setq dabbrev-abbrev-skip-leading-regexp "[$*/=']")
 (setq dabbrev-backward-only nil)
 (setq dabbrev-case-distinction 'case-replace)
