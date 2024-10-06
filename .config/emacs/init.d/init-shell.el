@@ -6,14 +6,14 @@
 ;;; Code:
 
 ;; FIXME: rely on system config, use man command flags instead of env?
+;; TODO: really need to check dir exists?
 (let ((home-man (expand-file-name "~/share/man"))
       (man-path (split-string (or (getenv "MANPATH") "") ":")))
   (when (file-exists-p home-man)
     (add-to-list 'man-path home-man)
     (setenv "MANPATH" (string-join man-path ":"))))
 
-(unless (version<= emacs-version "29")
-  (setq shell-kill-buffer-on-exit t))
+(setq shell-kill-buffer-on-exit t)
 
 (defun my/sh-mode-hook ()
   (set (make-local-variable 'indent-tabs-mode) t)
@@ -73,6 +73,7 @@
 (setq eshell-visual-subcommands '(("git" "log" "diff" "show")))
 (setq eshell-visual-options '(("git" "--help" "--paginate")))
 (setq eshell-hist-ignoredups t)
+(setq eshell-history-append t)
 
 (provide 'init-shell)
 
