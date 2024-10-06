@@ -21,14 +21,77 @@
 
 (define-key project-prefix-map (kbd "t") 'project-show-todos)
 
+(defun list-npm-package-files ()
+  "List of all package.json files within a project."
+  (seq-filter (lambda (filepath)
+                (string-match "package\.json$" filepath))
+              (project-files (project-current))))
+
+(defun %parse-package-names (file)
+  "Parse the names of npm packages."
+  (unless (json-available-p)
+    (error "JSON parsing not available"))
+  (let ((packages nil))
+    (with-temp-buffer
+      (insert-file-contents file)
+      (let* ((json-ht (json-parse-buffer))
+             (dev-dependencies (gethash "devDependencies" json-ht))
+             (dependencies (gethash "dependencies" json-ht)))
+        (when dev-dependencies
+          (maphash (lambda (k v)
+                     (push k packages))
+                   dev-dependencies))
+        (when dependencies
+          (maphash (lambda (k v)
+                     (push k packages))
+                   dependencies))))
+    (delete-dups packages)))
+
+(defun valid-npm-sem-ver-p (version-string)
+  "Return t if given valid NPM semver string."
+  (and (string-match "[\\^~]?[0-9\\.]+" version-string)
+       t))
+
+(defun %update-package-version (file package-name new-version)
+  "Update the PACKAGE-NAME version in FILE to NEW-VERSION."
+  (with-temp-file file
+    (insert-file-contents file)
+    (when-let ((package-end (re-search-forward (format "^\s+\"\\%s\": \"\\([~\\.\\^0-9]+\\)\"" package-name) nil t)))
+      (delete-region (search-backward ":") package-end)
+      (insert (format ": \"%s\"" new-version)))))
+
+(defun project-update-npm-package-version ()
+  "Quickly update the npm package versions inside a project."
+  (interactive)
+  (let* ((package-files (list-npm-package-files))
+         (existing-packages (mapcan #'%parse-package-names package-files))
+         (package-name (completing-read "Give package name to update: " existing-packages))
+         (new-version (read-from-minibuffer "Give new package version to set: ")))
+    (unless (valid-npm-sem-ver-p new-version)
+      (error "invalid version string: %s" new-version))
+    (dolist (file package-files)
+      (%update-package-version file package-name new-version))
+    (message "updated package %s to version %s in project package.json files" package-name new-version)))
+
+(defun project-update-npm-project-version ()
+  "Quickly update the npm project version inside a project."
+  (interactive)
+  (let* ((package-files (list-npm-package-files))
+         (new-version (read-from-minibuffer "Give new project version to set: ")))b
+    (unless (valid-npm-sem-ver-p new-version)
+      (error "invalid version string: %s" new-version))
+    (dolist (file package-files)
+      (%update-package-version file "version" new-version))
+    (message "updated project version to %s in project package.json files" new-version)))
+
 ;; TODO: keybindings:
-;; C-x v t - prefix for tag commands
-;; C-x v b - prefix for branch commands
-;; C-x v b prefix for branch commands: l, c s
-;; M-x project-list-buffers C-x p C-b (change to ibuffer?)
-;; M-x project-kill-buffers C-x p k
-;; C-x v ! -> edit next vc command
-;; C-x v v in diffs, commit only part of changes
+;; {C-x v t} - prefix for tag commands
+;; {C-x v b} - prefix for branch commands
+;; {C-x v b} prefix for branch commands: l, c s
+;; M-x project-list-buffers {C-x p C-b} (change to ibuffer?)
+;; M-x project-kill-buffers {C-x p k}
+;; {C-x v !} -> edit next vc command
+;; {C-x v v} in diffs, commit only part of changes
 ;; M-x vc-pull-push
 ;; M-x vc-prepare-patch
 ;; M-x vc-prepare-patches-separately
@@ -69,6 +132,9 @@
   "Checkout Git remote and set local branch to track it."
   )
 
+;; TODO: add vc-change-log-copy-revision-as-kill command
+;;       bind the command to `w' in vc-change-log
+;;       is this useful for other modes than git?
 (defun vc-git-kill-commit-hash ()
   "Kill commit hash at point to kill-ring for later use."
   (interactive)
@@ -84,20 +150,32 @@
       (forward-char)
       (kill-line))))
 
-;; see:  https://ane.iki.fi/emacs/patches.html
+;; see: https://ane.iki.fi/emacs/patches.html
 (defun vc-git-send-patch ()
   "Prepare git commits to be sent via email using Git CLI tools.
 
 Perhaps useful to set global option: `git config --global
 sendemail.annotate yes'."
   (interactive)
-  (with-editor-async-shell-command "git send-email -1"))
+  (when (executable-find "git")
+    (with-editor-async-shell-command "git send-email -1")))
 
 (defun vc-git-apply-patch (patch project)
   "path to patch and project (default current if in one)"
   (interactive)
-  (shell-command-on-region (point-min) (point-max) "git am"))
+  (when (executable-find "git")
+    (shell-command-on-region (point-min) (point-max) "git am")))
 
+;; project-vc-dir or vc-dir {C-x p v} or {C-x v d}
+;; vc-dir binds:
+;; {z p}, {z s}, {z c} for stashing
+
+;; From a diff buffer {C-x v =}
+;; - drop a hunk: k
+;; - split a hunk: C-c C-s
+;; - commit remaining diff: C-x v v
+;; TODO: how to get diff to update after dropping a hunk: was this solved in emacs-master?
+;;
 (ensure-packages-present 'vc-got)
 
 (when (file-directory-p "~/git/vc-got")
@@ -131,14 +209,14 @@ sendemail.annotate yes'."
 
 ;; or use smerge-ediff to resolve conflicts
 ;; smerge-mode
-(setq smerge-command-prefix (kbd "C-c v"))
+(setq smerge-command-prefix (kbd "C-c v")) ;; XXX: check this
 
 ;; diff-mode
 (setq diff-advance-after-apply-hunk t)
 (setq diff-default-read-only t)
 (setq diff-font-lock-prettify nil)
 (setq diff-font-lock-syntax 'hunk-also)
-(setq diff-refine 'font-lock)
+(setq diff-refine 'font-lock) ; 'navigation
 (setq diff-update-on-the-fly t)
 (setq diff-add-log-use-relative-names t)
 (setq diff-refine-nonmodified t)
@@ -520,6 +598,10 @@ sendemail.annotate yes'."
         (treesit-install-language-grammar grammar)))
     t))
 
+;; TODO: replace with `llm' package from ELPA.
+(ensure-packages-present 'llm)
+(setq llm-warn-on-nonfree nil)
+
 (ensure-packages-present 'gptel)
 (with-eval-after-load 'gptel
   (gptel-make-openai "local-deepcoder"
@@ -531,6 +613,8 @@ sendemail.annotate yes'."
         gptel-backend (gptel-make-gemini "Gemini"
                         :key "YOUR_GEMINI_API_KEY"
                         :stream t)))
+
+(ensure-packages-present 'vcl-mode)
 
 (provide 'init-programming)
 
