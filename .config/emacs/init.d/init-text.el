@@ -5,29 +5,39 @@
 
 ;;; Code:
 
-;; | Key chord           | Description       |
-;; |---------------------+-------------------|
-;; | find-dired          | find + pattern    |
-;; | find-name-dired     | find + name       |
-;; | find-grep-dired     | find + grep       |
-;; | find-lisp-find-dired| use emacs regexp  |
-
 ;; grep
 (setq grep-find-use-xargs 'exec-plus)
-;; https://stegosaurusdormant.com/emacs-ripgrep/
-;; https://stackoverflow.com/questions/45526670/rgrep-in-emacs-to-use-ripgrep
 
-;; (when (executable-find "rg")
-;;   (grep-apply-setting
-;;    'grep-find-command
-;;    '("rg -n -H --no-heading -e '' $(git rev-parse --show-toplevel || pwd)" . 27)))
+;; rg stuff for evaluation
+(when (and nil (executable-find "rg"))
+  (grep-apply-setting
+   'grep-find-template
+   "find <D> <X> -type f <F> -exec rg <C> --no-heading -H  <R> /dev/null {} +")
+  (grep-apply-setting
+   'grep-template
+   "rg --no-heading -H -uu -g <F> <R> <D>")
+  (grep-apply-setting
+   'grep-find-command
+   '("rg -n -H --no-heading -e '' $(git rev-parse --show-toplevel || pwd)" . 27)))
+
+;; * {C-c C-e}: Apply the changes to file buffers.
+;; * {C-c C-u}: All changes are unmarked and ignored.
+;; * {C-c C-d}: Mark as delete to current line (including newline).
+;; * {C-c C-r}: Remove the changes in the region (these changes are not
+;;              applied to the files. Of course, the remaining
+;;              changes can still be applied to the files.)
+;; * {C-c C-p}: Toggle read-only area.
+;; * {C-c C-k}: Discard all changes and exit.
+;; * {C-x C-q}: Exit wgrep mode.
+(ensure-packages-present 'wgrep)
+(setq wgrep-auto-save-buffer t)
+(setq wgrep-change-readonly-file nil)
 
 ;; electric
 (setq electric-pair-preserve-balance t)
 (setq electric-pair-delete-adjacent-pairs t)
 (setq electric-pair-open-newline-between-pairs t)
 (setq electric-pair-skip-whitespace 'nil)
-;;(add-to-list 'electric-pair-pairs '(?\{ . ?\}) t)
 (setq electric-pair-skip-self t)
 
 (add-hook 'after-init-hook 'electric-indent-mode)
@@ -94,9 +104,9 @@
 (add-hook 'pdf-view-mode 'pdf-history-minor-mode)
 
 (setq pdf-view-display-size 'fit-page)
-;;(pdf-tools-install :no-query)
+;;(pdf-tools-install :no-query :skip-deps :no-error)
 
-(setq doc-view-mupdf-use-svg t) ;; 29
+(setq doc-view-mupdf-use-svg t)
 
 (ensure-packages-present 'nov)
 (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
@@ -160,6 +170,8 @@ indents the markup by using nxml's indentation rules."
       (car (file-expand-wildcards
             (concat (getenv "HOME") "/java/plantuml-*.jar"))))
 (add-to-list 'auto-mode-alist '("\\.puml\\'" . plantuml-mode))
+
+(ensure-packages-present 'vundo)
 
 (provide 'init-text)
 
