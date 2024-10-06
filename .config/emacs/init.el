@@ -2,7 +2,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2024-09-13 07:10:51 (tmy)>
+;;; Time-stamp: <2024-10-06 08:14:36 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
 ;;;
@@ -121,6 +121,8 @@
 (unless (string-equal "root" (getenv "USER"))
   (when (and (fboundp 'server-running-p)
              (server-running-p))
+    ;; TODO: Global env here or command specific override?
+    (setenv "EDITOR" (expand-file-name "emacsclient" invocation-directory))
     (server-start)))
 
 (provide 'init)
