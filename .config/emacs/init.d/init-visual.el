@@ -34,9 +34,9 @@
 
 ;; | Key chord | Description                  |
 ;; |-----------+------------------------------|
-;; | M-- M-l   | Change case of preceding word|
-;; | C-M-f/b   | Move by sexp                 |
-;; | C-M-d/u   | Move into/out of lists       |
+;; | { M-- M-l }  | Change case of preceding word|
+;; | { C-M-f/b }  | Move by sexp                 |
+;; | { C-M-d/u }  | Move into/out of lists       |
 (add-hook 'after-init-hook 'auto-compression-mode)
 (global-set-key (kbd "M-u") 'upcase-dwim)
 (global-set-key (kbd "M-l") 'downcase-dwim)

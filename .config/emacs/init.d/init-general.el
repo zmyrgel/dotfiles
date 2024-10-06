@@ -106,6 +106,8 @@
 (define-key ctl-x-x-map "n" #'switch-to-next-buffer)
 
 ;; buffers to registers, C-x r j m
+;; {C-u 99 C-x e} run macro for 99 times
+;; {C-u 0 C-x e} run macro until bell
 (set-register ?m '(buffer . "*Messages*"))
 
 (setq Man-prefer-synchronous-call t)

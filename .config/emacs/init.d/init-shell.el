@@ -54,6 +54,12 @@
     (eshell-send-input)))
 (global-set-key (kbd "C-!") 'eshell-here)
 
+;; smart shell
+(require 'em-smart)
+(setq eshell-where-to-jump 'begin)
+(setq eshell-review-quick-commands nil)
+(setq eshell-smart-space-goes-to-end t)
+
 (setq eshell-cmpl-dir-ignore "\\`\\(\\.\\.?\\|CVS\\|\\.svn\\|\\.git\\)/\\'")
 (setq eshell-save-history-on-exit t)
 (setq eshell-scroll-show-maximum-output t)

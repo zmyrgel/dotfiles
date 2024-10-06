@@ -35,9 +35,7 @@
   (setq wallpaper-command-args '("--maximize" "%f")))
 
 ;; TRAMP stuff
-;; methods for docker, podman, kubernetes
 (setq tramp-use-scp-direct-remote-copying t)
-;; `tramp-revert-buffer-with-sudo'
 (setq tramp-file-name-with-method
       (when-let (become-cmd (or (executable-find "doas")
                                (executable-find "sudo")))
@@ -50,11 +48,11 @@
       (insert-file-contents "/etc/mk.conf" nil)
       (goto-char (point-min))
       (while (not (eobp))
-        (let* ((lb (line-beginning-position))
-               (le (line-end-position))
-               (ln (buffer-substring-no-properties lb le)))
-          (when (string-match "^[A-Z]+" ln)
-            (let ((matches (split-string ln "=" t " ")))
+        (let ((line (buffer-substring-no-properties
+                     (line-beginning-position)
+                     (line-end-position))))
+          (when (string-match "^[A-Z]+" line)
+            (let ((matches (split-string line "=" t " ")))
               (push (cons (car matches)
                           (cadr matches))
                     ports-variables)))

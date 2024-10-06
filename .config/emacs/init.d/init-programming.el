@@ -5,6 +5,11 @@
 
 ;;; Code:
 
+;; Make native compilation silent and prune its cache.
+(when (native-comp-available-p)
+  (setq native-comp-async-report-warnings-errors 'silent)
+  (setq native-compile-prune-cache t))
+
 ;;; project
 
 (setq project-vc-ignores '("target/" "bin/" "obj/"))
@@ -20,6 +25,9 @@
   (project-find-regexp "\\(TODO:\\|HACK:\\|XXX:\\)"))
 
 (define-key project-prefix-map (kbd "t") 'project-show-todos)
+
+(setq project-mode-line t)
+(setq project-file-history-behavior 'relativize)
 
 (defun list-npm-package-files ()
   "List of all package.json files within a project."
@@ -132,23 +140,21 @@
   "Checkout Git remote and set local branch to track it."
   )
 
-;; TODO: add vc-change-log-copy-revision-as-kill command
-;;       bind the command to `w' in vc-change-log
-;;       is this useful for other modes than git?
-(defun vc-git-kill-commit-hash ()
-  "Kill commit hash at point to kill-ring for later use."
+(defun vc-copy-revision-as-kill ()
   (interactive)
-  ;; assume point is either on commit line or we need to back towards
-  ;; commit line to get current revisions hash
-  (let ((commit-re "^commit [a-z0-9]+$"))
-    (save-excursion
-      (unless (bolp)
-        (beginning-of-line))
-      (or (looking-at commit-re)
-          (re-search-backward commit-re))
-      (forward-word)
-      (forward-char)
-      (kill-line))))
+  (let ((revision (cadr (log-view-current-entry))))
+    (kill-new revision)
+    (message "%s" revision)))
+
+(defun my-vc-git-log-view-hook ()
+  (define-key vc-git-log-view-mode-map "w" 'vc-copy-revision-as-kill))
+
+(defun my-vc-got-log-view-hook ()
+  (define-key vc-got-log-view-mode-map "w" 'vc-copy-revision-as-kill))
+
+(add-hook 'vc-git-log-view-mode-hook #'my-vc-git-log-view-hook)
+(add-hook 'vc-got-log-view-mode-hook #'my-vc-got-log-view-hook)
+
 
 ;; see: https://ane.iki.fi/emacs/patches.html
 (defun vc-git-send-patch ()
@@ -363,6 +369,9 @@ sendemail.annotate yes'."
         (add-to-list 'load-path (concat default-directory (car (last log4cl-dirs)) "/elisp"))
         (require 'log4sly nil t)
         (global-log4sly-mode 1)))))
+
+
+(setq sly-mrepl-prevent-duplicate-history 'move)
 
 ;; (ensure-packages-present 'sly-repl-ansi-color)
 ;; (sly-enable-contrib 'sly-repl-ansi-color)
@@ -615,6 +624,11 @@ sendemail.annotate yes'."
                         :stream t)))
 
 (ensure-packages-present 'vcl-mode)
+
+(defun my-sql-mode-hook ()
+  "Functions to run when entering SQL-MODE."
+  (setq-local truncate-lines t))
+(add-hook 'sql-interactive-mode-hook #'my-sql-mode-hook)
 
 (provide 'init-programming)
 

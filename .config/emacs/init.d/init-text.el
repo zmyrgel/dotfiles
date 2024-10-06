@@ -33,6 +33,10 @@
 (setq wgrep-auto-save-buffer t)
 (setq wgrep-change-readonly-file nil)
 
+;; | Key chord           | Description       |
+;; |---------------------+-------------------|
+;; | C-x r t             | string-rectangle  |
+
 ;; electric
 (setq electric-pair-preserve-balance t)
 (setq electric-pair-delete-adjacent-pairs t)
@@ -141,20 +145,13 @@
              "\\.pom\\'"))
   (add-to-list 'auto-mode-alist `(,p . nxml-mode)))
 
-;; TODO: is this needed at all, compare with sgml-pretty-print
-;; TODO: external app to indent?
-(defun bf-pretty-print-xml-region (begin end)
-  "Pretty format XML markup in region. The function inserts linebreaks to
-separate tags that have nothing but whitespace between them. It then
-indents the markup by using nxml's indentation rules."
+(defun my/xml-pretty-print (begin end)
+  "Pretty-print the XML markup in selected region."
   (interactive "r")
-  (save-excursion
-    (nxml-mode)
-    (goto-char begin)
-    (while (search-forward-regexp "\>[ \\t]*\<" nil t)
-      (backward-char) (insert "\n") (setq end (1+ end)))
-    (indent-region begin end))
-  (message "Ah, much better!"))
+  (unless (executable-find "xmlstarlet")
+    (error "failed to find `xmlstarlet' program, please install it."))
+  (shell-command-on-region begin end "xmlstarlet fo -s 2" nil 'no-mark))
+
 
 ;; Use nxml-mode instead of sgml, xml or html mode.
 (mapc
