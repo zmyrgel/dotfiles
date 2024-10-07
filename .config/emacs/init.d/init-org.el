@@ -177,6 +177,30 @@
 
 (ensure-packages-present '(org-roam org-present org-ref))
 
+;; left/right for movement
+;; { C-c C-= } for large txt
+;; { C-c C-- } for small text
+;; { C-c C-q } for quit (which will return you back to vanilla org-mode)
+;; { C-c < } and { C-c > } to jump to first/last slide
+;; { C-c C-r } for buffer read-only
+;; { C-c C-w } for buffer read/write
+;; { C-c C-1 } for one big page showing all slides
+
+(eval-after-load "org-present"
+  '(progn
+     (add-hook 'org-present-mode-hook
+               (lambda ()
+                 (org-present-big)
+                 (org-display-inline-images)
+                 (org-present-hide-cursor)
+                 (org-present-read-only)))
+     (add-hook 'org-present-mode-quit-hook
+               (lambda ()
+                 (org-present-small)
+                 (org-remove-inline-images)
+                 (org-present-show-cursor)
+                 (org-present-read-write)))))
+
 (defun my/org-present-prepare-slide (buffer-name heading)
   ;; Show only top-level headlines
   (org-overview)
