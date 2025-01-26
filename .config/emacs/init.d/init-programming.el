@@ -108,15 +108,25 @@
 (when (eq system-type 'berkeley-unix)
   (setenv "CVSROOT" "anoncvs.eu.openbsd.org:/cvs"))
 ;; config
-(setq vc-git-annotate-switches "-w")
+
 (setq vc-suppress-confirm t)
 (setq vc-command-messages t)
 (setq vc-find-revision-no-save t)
 (setq vc-annotate-display-mode 'fullscale)
 (setq add-log-keep-changes-together t)
+(setq vc-display-status 'no-backend)
+(setq vc-annotate-use-short-revision t)
+
+;; allow reverting changes in vc-dir
+(with-eval-after-load 'vc-dir-mode
+  (define-key vc-dir-mode-map (kbd "k") 'vc-revert))
+
+;;; vc-git
+(setq vc-git-annotate-switches "-w")
 (setq vc-git-diff-switches '("--patch-with-stat"))
 (setq vc-git-revision-complete-only-branches t)
 (setq vc-git-print-log-follow nil)
+(setq vc-git-shortlog-switches nil)
 (setq vc-git-root-log-format
       '("%d %h %ad %an: %s"
         "^\\(?:[*/\\|]+\\)\\(?:[*/\\| ]+\\)?\
@@ -128,21 +138,13 @@
          (3 'change-log-name)
          (4 'change-log-date))))
 
-(setq vc-git-shortlog-switches nil)
-(setq vc-display-status 'no-backend)
-(setq vc-annotate-use-short-revision t)
-
-;; allow reverting changes in vc-dir
-(with-eval-after-load 'vc-dir-mode
-  (define-key vc-dir-mode-map (kbd "k") 'vc-revert))
-
 (defun vc-git-checkout-remote ()
   "Checkout Git remote and set local branch to track it."
   )
 
 (defun vc-copy-revision-as-kill ()
-  (interactive)
-  (let ((revision (cadr (log-view-current-entry))))
+  "Copy the revision string under point to the kill-ring."
+  (when-let ((revision (cadr (log-view-current-entry))))
     (kill-new revision)
     (message "%s" revision)))
 
