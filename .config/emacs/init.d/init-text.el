@@ -148,10 +148,17 @@
 (defun my/xml-pretty-print (begin end)
   "Pretty-print the XML markup in selected region."
   (interactive "r")
-  (unless (executable-find "xmlstarlet")
-    (error "failed to find `xmlstarlet' program, please install it."))
-  (shell-command-on-region begin end "xmlstarlet fo -s 2" nil 'no-mark))
-
+  ;; TODO: doctype causes problem
+  (if-let ((xmlstarlet-cmd (or (and (eq system-type 'berkeley-unix)
+                                    (executable-find "xml"))
+                               (executable-find "xmlstarlet"))))
+      (shell-command-on-region
+       begin
+       end
+       (concat xmlstarlet-cmd " fo -s 2")
+       nil
+       'no-mark)
+    (error "failed to find `xmlstarlet' program, please install it.")))
 
 ;; Use nxml-mode instead of sgml, xml or html mode.
 (mapc
