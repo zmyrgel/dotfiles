@@ -39,4 +39,6 @@
 
 ;; Setup logical pathnames for SBCL sources
 #+sbcl
-(set-sbcl-source-location (merge-pathnames "git/sbcl/" (user-homedir-pathname)))
+(let ((sbcl-src (merge-pathnames "git/sbcl/" (user-homedir-pathname))))
+  (when (probe-file sbcl-src)
+    (set-sbcl-source-location sbcl-src)))
