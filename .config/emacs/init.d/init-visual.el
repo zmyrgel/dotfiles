@@ -164,18 +164,28 @@ different user account. By default the user is set to `root'."
 (setq use-dialog-box nil)
 
 (add-to-list 'initial-frame-alist '(fullscreen . maximized))
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 (add-hook 'help-mode-hook (lambda () (setq truncate-lines t)))
 
 (defvar *my-fixed-font* "Input Mono")
 (defvar *my-variable-font* "Input Serif")
 
-;; Set Default font if present
-(when (find-font (font-spec :name *my-fixed-font*))
-  (set-face-attribute 'default nil :family *my-fixed-font* :height 110)
-  (set-face-attribute 'variable-pitch nil :family *my-variable-font*)
-  (set-face-attribute 'fixed-pitch nil :family *my-fixed-font*)
-  (set-face-attribute 'tooltip nil :family *my-fixed-font*))
+(defun my/set-frame-fonts ()
+  "My hook to setup frame fonts, useful for daemon mode."
+  (let ((my-fixed-font "Input Mono")
+        (my-variable-font "Input Serif"))
+    ;; Set Default font if present
+    (when (find-font (font-spec :name *my-fixed-font*))
+      (set-face-attribute 'default nil :family *my-fixed-font* :height 110)
+      (set-face-attribute 'variable-pitch nil :family *my-variable-font*)
+      (set-face-attribute 'fixed-pitch nil :family *my-fixed-font*)
+      (set-face-attribute 'tooltip nil :family *my-fixed-font*))))
+
+(add-hook 'server-after-make-frame-hook #'my/set-frame-fonts)
+
+(unless (daemonp)
+  (my/set-frame-fonts))
 
 (if (boundp 'use-short-answers)
     (setq use-short-answers t)
