@@ -11,7 +11,11 @@
 (with-eval-after-load 'recentf-mode
   (add-to-list 'recentf-exclude "\\elpa"))
 (setq recentf-save-file (locate-user-emacs-file "recentf"))
-(setq recentf-max-saved-items 50)
+(setq recentf-max-saved-items 300)
+(setq recentf-max-menu-items 15)
+(setq recentf-auto-cleanup (if (daemonp) 300 'never))
+(setq recentf-exclude (list "^/\\(?:ssh\\|su\\|sudo\\)?:"))
+
 (add-hook 'after-init-hook 'recentf-mode)
 
 (setq bookmark-default-file (locate-user-emacs-file "bookmarks"))
