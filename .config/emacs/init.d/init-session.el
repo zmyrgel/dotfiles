@@ -25,7 +25,11 @@
 (setq history-length 50)
 (setq history-delete-duplicates t)
 (setq savehist-save-minibuffer-history t)
-(setq savehist-additional-variables '(search ring regexp-search-ring))
+(setq savehist-additional-variables
+      '(kill-ring
+        register-alist
+        mark-ring global-mark-ring
+        search-ring regexp-search-ring))
 (setq savehist-autosave-interval 60)
 (add-hook 'after-init-hook 'savehist-mode)
 
