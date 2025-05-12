@@ -37,6 +37,14 @@ export GDK_USE_XFT QT_XFT
 GDK_CORE_DEVICE_EVENTS=1
 export GDK_CORE_DEVICE_EVENTS
 
+# Enable acceleration in firefox
+MOZ_ACCELERATED=1
+export MOZ_ACCELERATED
+
+# Enable rust renderer in firefox
+#MOZ_WEBRENDER=1
+#export MOZ_WEBRENDER
+
 # Set my working dir to $HOME
 cd $HOME
 
@@ -94,5 +102,9 @@ then
 fi
 
 # Start WM
-#exec ssh-agent icewm-session 2> ~/.xerrors
-exec ssh-agent stumpwm 2> ~/.xerrors
+if test $(hostname) = "asteroid.bittivirhe.fi"
+then
+	exec ssh-agent stumpwm 2> ~/.xerrors
+else
+	exec ssh-agent icewm-session 2> ~/.xerrors
+fi
