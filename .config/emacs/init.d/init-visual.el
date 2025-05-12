@@ -54,6 +54,17 @@
 (global-set-key (kbd "C-z s") 'eshell)
 (global-set-key (kbd "C-z r") 'rgrep)
 
+(global-set-key (kbd "M-o") 'other-window)
+(global-set-key (kbd "M-j") 'duplicate-dwim)
+(global-set-key (kbd "M-g r") 'recentf)
+(global-set-key (kbd "M-s g") 'grep)
+(global-set-key (kbd "M-s f") 'find-name-dired)
+
+(global-set-key (kbd "C-x w t") 'transpose-window-layout)
+(global-set-key (kbd "C-x w r") 'rotate-windows)
+(global-set-key (kbd "C-x w f h") 'flip-window-layout-horizontally)
+(global-set-key (kbd "C-x w f v") 'flip-window-layout-vertically)
+
 (defun my/backward-kill-word-or-region ()
   "Kill region or word based on selection."
   (interactive)
