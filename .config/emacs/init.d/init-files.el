@@ -24,7 +24,7 @@
 (setq dired-isearch-filenames 'dwim)
 (setq dired-create-destination-dirs 'ask)
 (setq dired-vc-rename-file t)
-(setq dired-movement-style 'cycle)
+(setq dired-movement-style 'bounded)
 ;; {E} 'dired-do-open'
 
 (define-key ctl-x-map (kbd "C-j") 'dired-jump)
