@@ -5,7 +5,7 @@
 
 ;;; Code:
 
-(ensure-packages-present '(terraform-doc terraform-mode keepass-mode))
+(ensure-packages-present '(terraform-doc terraform-mode))
 
 (provide 'init-extras)
 
