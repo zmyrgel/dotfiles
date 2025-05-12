@@ -98,7 +98,9 @@
   (require 'init-programming)
 
   ;; Load optional local startup files
-  (load (locate-user-emacs-file "init-local.el") t t)
+  (add-hook 'after-init-hook
+            (lambda ()
+              (load (expand-file-name "init-local.el" user-emacs-directory) t t)))
 
   ;; load custom settings
   (setq custom-file (locate-user-emacs-file "custom.el"))
