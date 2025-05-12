@@ -76,7 +76,7 @@
 (setq eshell-review-quick-commands t)
 (setq eshell-save-history-on-exit t)
 (setq eshell-scroll-show-maximum-output nil)
-(setq eshell-visual-subcommands '(("git" "log" "diff" "show")))
+(setq eshell-visual-subcommands '(("git" "log" "diff" "show" "branch")))
 (setq eshell-visual-options '(("git" "--help" "--paginate")))
 (setq eshell-hist-ignoredups t)
 (setq eshell-history-append t)
