@@ -205,15 +205,9 @@ sendemail.annotate yes'."
 (setq compilation-ask-about-save nil)
 (setq compilation-always-kill t)
 (setq compilation-window-height 12)
+(setq ansi-color-for-compilation-mode t)
 
-;;  ansi-color
-(add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
-;; :preface
-(autoload 'ansi-color-apply-on-region "ansi-color")
-(defun colorize-compilation-buffer ()
-  (let ((inhibit-read-only t))
-    (ansi-color-apply-on-region (point-min) ;; TODO: or compilation-filter-start?
-                                (point-max))))
+(add-hook 'compilation-filter-hook #'ansi-color-compilation-filter)
 
 ;; or use smerge-ediff to resolve conflicts
 ;; smerge-mode
