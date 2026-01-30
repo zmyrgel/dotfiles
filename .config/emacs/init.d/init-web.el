@@ -162,6 +162,17 @@
 (with-eval-after-load 'restclient
   (define-key restclient-mode-map (kbd "C-c C-f") 'json-mode-beautify))
 
+(with-eval-after-load 'webjump
+  (setq webjump-sites
+        '(("DuckDuckGo" . [simple-query "www.duckduckgo.com" "www.duckduckgo.com/?q=" ""])
+          ("Google" . [simple-query "www.google.com" "www.google.com/search?q=" ""])
+          ("YouTube" . [simple-query "www.youtube.com/feed/subscriptions" "www.youtube.com/rnesults?search_query=" ""])
+          ("ChatGPT" . [simple-query "https://chatgpt.com" "https://chatgpt.com/?q=" ""])
+          ("Wikipedia" . [simple-query "wikipedia.org" "wikipedia.org/wiki/" ""])
+          ("Emacs Wiki" . [simple-query "www.emacswiki.org" "www.emacswiki.org/cgi-bin/wiki/" ""]))))
+
+(global-set-key (kbd "C-x /") 'webjump)
+
 (provide 'init-web)
 
 ;; init-web.el ends here
