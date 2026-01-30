@@ -2,7 +2,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2024-10-06 08:14:36 (tmy)>
+;;; Time-stamp: <2026-01-30 20:51:27 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
 ;;;
@@ -22,7 +22,13 @@
 ;;; - `replace-regexp-as-diff', 'multi-file-replace-regexp-as-diff', 'dired-do-replace-regexp-as-diff'
 ;;; - register-use-preview t
 ;;; - grep-use-headings t
-;;; -
+;;; - { C-x ESC SEC }
+;;; - indent-rigidly { C-x TAB }, indent-code-rigidly
+;;; - org set timer { C-c C-x ; }
+
+;; (setq register-use-preview t)
+
+;; (add-hook 'text-mode (setq-local revert-buffer-function (run-tests)))
 
 ;;; Code:
 
@@ -97,7 +103,7 @@
   (require 'init-files)
   (require 'init-programming)
 
-  ;; Load optional local startup files
+  ;; Load optional local startup file
   (add-hook 'after-init-hook
             (lambda ()
               (load (expand-file-name "init-local.el" user-emacs-directory) t t)))
