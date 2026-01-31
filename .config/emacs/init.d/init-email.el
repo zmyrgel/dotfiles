@@ -83,17 +83,20 @@
   ;; gnus-dired
   (add-hook 'dired-mode-hook 'turn-on-gnus-dired-mode))
 
-;; remember: install xsltproc
-;; remember: download https://atom.geekhood.net/atom2rss.xsl
 (require 'mm-url)
 (defadvice mm-url-insert (after DE-convert-atom-to-rss () )
   "Converts atom to RSS by calling xsltproc."
+  (unless (executable-find "xsltproc")
+    (display-warning 'init-email
+                     (format "Missing `%s' file, remember to download it" atom2rss-file) :warning))
   (when (re-search-forward "xmlns=\"http://www.w3.org/.*/Atom\""
 			   nil t)
     (let ((atom2rss-file (locate-user-emacs-file "atom2rss.xsl")))
-      (if (not (file-exists-p atom2rss-file))
+      (when (not (file-exists-p atom2rss-file))
           (display-warning 'init-email
-                           (format "Missing `%s' file, remember to download it" atom2rss-file) :warning)
+                           (format "Missing `%s' file, downloading it" atom2rss-file) :warning)
+          (require 'url)
+          (url-copy-file "https://atom.geekhood.net/atom2rss.xsl" atom2rss-file))
         (goto-char (point-min))
         (message "Converting Atom to RSS... ")
         (call-process-region (point-min) (point-max)
@@ -101,7 +104,7 @@
 			     t t nil
 			     atom2rss-file "-")
         (goto-char (point-min))
-        (message "Converting Atom to RSS... done")))))
+        (message "Converting Atom to RSS... done"))))
 
 (global-set-key (kbd "C-z m") 'gnus)
 
