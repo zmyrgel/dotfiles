@@ -36,7 +36,7 @@
 ;; time utilities
 (setq time-stamp-active t)
 (setq time-stamp-line-limit 10)
-(setq time-stamp-format "%Y-%02m-%02d %02H:%02M:%02S (%u)")
+(setq time-stamp-format "%Y-%02m-%02d %02H:%02M:%02S (%l)")
 
 (display-time-mode -1)
 (setq display-time-24hr-format t)
