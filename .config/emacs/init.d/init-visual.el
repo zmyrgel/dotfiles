@@ -173,6 +173,18 @@ different user account. By default the user is set to `root'."
 (defvar *my-fixed-font* "Input Mono")
 (defvar *my-variable-font* "Input Serif")
 
+
+(defun zmg/adjust-font-for-screen ()
+  "Adjusts the font height based on the screen resolution."
+  (if (> (x-display-pixel-width) 1600)
+      (set-face-attribute 'default nil :height 130)
+    (set-face-attribute 'default nil :height 110)))
+
+(add-hook 'after-make-frame-functions
+          (lambda (frame)
+            (zmg/adjust-font-for-screen)))
+;;(zmg/adjust-font-for-screen)
+
 (defun my/set-frame-fonts ()
   "My hook to setup frame fonts, useful for daemon mode."
   (let ((my-fixed-font "Input Mono")
