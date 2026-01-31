@@ -2,7 +2,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2026-01-30 20:51:27 (tmy)>
+;;; Time-stamp: <2026-01-31 18:03:15 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
 ;;;
@@ -11,7 +11,6 @@
 ;;; -- flymake--handle-report: Can’t find state for flymake-eslint--checker in ‘flymake--state’
 ;;; - improve init speed, currently 7s.
 ;;; - fix highlight of got diffs in gnus
-;;; - gpttel package for AI
 ;;; - {C-h 4 s} to `help-find-source'
 ;;; - `kill-matching-buffers-no-ask'
 ;;; - recover-file has = to show diff
@@ -36,14 +35,15 @@
 
 (require 'package)
 
-(add-to-list 'package-archives (cons "melpa"
-                                     (format "http%s://melpa.org/packages/"
-                                             (if (gnutls-available-p) "s" ""))))
+(add-to-list 'package-archives
+             (cons "melpa"
+                   (format "http%s://melpa.org/packages/"
+                           (if (gnutls-available-p) "s" ""))))
+
 (setq package-archive-priorities
       '(("gnu" . 2)
         ("nongnu" . 1)))
 
-;; TODO: sync refresh?
 (package-refresh-contents 'async)
 
 (defvar *packages-refreshed* nil)
@@ -75,7 +75,8 @@
      (if (not (require ,package nil 'noerror))
          (display-warning 'zmg/with-package
                           (format "Loading of package `%s' failed" ,package) :error)
-       ,@body)))
+       (with-eval-after-load ,package
+         ,@body))))
 
 (add-hook 'package-menu-mode-hook 'hl-line-mode)
 
@@ -102,6 +103,7 @@
   (require 'init-completion)
   (require 'init-files)
   (require 'init-programming)
+  (require 'init-extras)
 
   ;; Load optional local startup file
   (add-hook 'after-init-hook
