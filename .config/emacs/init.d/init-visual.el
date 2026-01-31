@@ -38,6 +38,7 @@
 ;; | { C-M-f/b }  | Move by sexp                 |
 ;; | { C-M-d/u }  | Move into/out of lists       |
 (add-hook 'after-init-hook 'auto-compression-mode)
+
 (global-set-key (kbd "M-u") 'upcase-dwim)
 (global-set-key (kbd "M-l") 'downcase-dwim)
 (global-set-key (kbd "M-c") 'capitalize-dwim)
@@ -53,6 +54,7 @@
 (global-set-key (kbd "C-x )") 'kmacro-end-or-call-macro)
 (global-set-key (kbd "C-z s") 'eshell)
 (global-set-key (kbd "C-z r") 'rgrep)
+(global-set-key (kbd "C-x C-c") nil) ;; save-buffers-kill-terminal
 
 (global-set-key (kbd "M-o") 'other-window)
 (global-set-key (kbd "M-j") 'duplicate-dwim)
