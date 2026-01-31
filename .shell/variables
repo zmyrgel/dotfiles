@@ -66,4 +66,11 @@ then
 	eval "$(perl -I$HOME/perl5/lib/perl5 -Mlocal::lib)"
 fi
 
+if test -d /opt/rocm/bin
+then
+	PATH=$PATH:/opt/rocm/bin
+	LD_LIBRARY_PATH=/opt/rocm/lib
+fi
+
+export LD_LIBRARY_PATH
 export PATH
