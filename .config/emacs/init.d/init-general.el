@@ -13,7 +13,7 @@
 
 (defun password-lookup (&rest keys)
   "Lookup password from auth-sources filtered by given KEYS."
-  (when-let ((result (apply #'auth-source-search keys)))
+  (when-let* ((result (apply #'auth-source-search keys)))
     (funcall (plist-get (car result) :secret))))
 
 (dolist (p '("~/bin" "~/.local/bin" "~/workspace/bin" "~/opt/bin"))

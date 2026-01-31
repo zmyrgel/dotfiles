@@ -22,7 +22,7 @@
 
   (rcirc-track-minor-mode 1)
 
-  (when-let ((nickserv-pass (password-lookup :host "irc.libera.chat")))
+  (when-let* ((nickserv-pass (password-lookup :host "irc.libera.chat")))
     (setq rcirc-authinfo
           `(("libera" nickserv "zmyrgel" ,nickserv-pass))))
 

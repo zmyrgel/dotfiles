@@ -5,6 +5,7 @@
 
 ;;; Code:
 
+;; Useful key bindings { C-0 w } to copy link
 (add-hook 'dired-mode-hook 'hl-line-mode)
 (add-hook 'dired-mode-hook 'dired-hide-details-mode)
 
@@ -37,8 +38,8 @@
 ;; TRAMP stuff
 (setq tramp-use-scp-direct-remote-copying t)
 (setq tramp-file-name-with-method
-      (when-let (become-cmd (or (executable-find "doas")
-                               (executable-find "sudo")))
+      (when-let* ((become-cmd (or (executable-find "doas")
+                                  (executable-find "sudo"))))
         (substring become-cmd -4)))
 
 (defun parse-openbsd-ports-variables ()

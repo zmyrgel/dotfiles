@@ -64,7 +64,7 @@
   "Update the PACKAGE-NAME version in FILE to NEW-VERSION."
   (with-temp-file file
     (insert-file-contents file)
-    (when-let ((package-end (re-search-forward (format "^\s+\"\\%s\": \"\\([~\\.\\^0-9]+\\)\"" package-name) nil t)))
+    (when-let* ((package-end (re-search-forward (format "^\s+\"\\%s\": \"\\([~\\.\\^0-9]+\\)\"" package-name) nil t)))
       (delete-region (search-backward ":") package-end)
       (insert (format ": \"%s\"" new-version)))))
 
@@ -335,19 +335,19 @@ sendemail.annotate yes'."
                                  (chicken ("csi"))
                                  (abcl ("abcl"))))
 
-(when-let ((local-hyperspec-path
-            (seq-some (lambda (p)
-                        (let ((full-path (expand-file-name p)))
-                          (when (file-directory-p full-path)
-                            full-path)))
-                      '("/usr/local/share/doc/clisp-hyperspec/"
-                        "/usr/share/doc/hyperspec/"
-                        "~/src/lisp/HyperSpec/"))))
+(when-let* ((local-hyperspec-path
+             (seq-some (lambda (p)
+                         (let ((full-path (expand-file-name p)))
+                           (when (file-directory-p full-path)
+                             full-path)))
+                       '("/usr/local/share/doc/clisp-hyperspec/"
+                         "/usr/share/doc/hyperspec/"
+                         "~/src/lisp/HyperSpec/"))))
   (setq common-lisp-hyperspec-root (concat "file://" local-hyperspec-path))
   (setq common-lisp-hyperspepac-symbol-table (concat common-lisp-hyperspec-root "Data/Map_Sym.txt")))
 
 ;; compile and add sly info manual to emacs info-directory alist
-(when-let ((sly-doc-dirs (file-expand-wildcards (concat (locate-user-emacs-file "elpa") "/sly-*/doc"))))
+(when-let* ((sly-doc-dirs (file-expand-wildcards (concat (locate-user-emacs-file "elpa") "/sly-*/doc"))))
   (let ((sly-doc-dir (car sly-doc-dirs)))
     (when (file-directory-p sly-doc-dir)
       ;; if no Info file found, generate it
@@ -360,7 +360,7 @@ sendemail.annotate yes'."
 (let ((ql-software-dir (expand-file-name "~/quicklisp/dists/quicklisp/software/")))
   (when (file-exists-p ql-software-dir)
     (let ((default-directory ql-software-dir))
-      (when-let (log4cl-dirs (file-expand-wildcards "log4cl-*-git"))
+      (when-let* (log4cl-dirs (file-expand-wildcards "log4cl-*-git"))
         (display-warning 'warning "log4cl dirs: %s" log4cl-dirs)
         (add-to-list 'load-path (concat default-directory (car (last log4cl-dirs)) "/elisp"))
         (require 'log4sly nil t)

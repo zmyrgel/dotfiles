@@ -116,7 +116,7 @@
 (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
 (with-eval-after-load 'nov
   (defun my-nov-setup-hook ()
-    (when-let ((font (font-spec :name "ETBembo Roman")))
+    (when-let* ((font (font-spec :name "ETBembo Roman")))
       (face-remap-add-relative 'variable-pitch :family "ETBembo Roman"
                                :height 1.0))
     (set (make-local-variable 'show-trailing-whitespace) nil))
@@ -148,10 +148,9 @@
 (defun my/xml-pretty-print (begin end)
   "Pretty-print the XML markup in selected region."
   (interactive "r")
-  ;; TODO: doctype causes problem
-  (if-let ((xmlstarlet-cmd (or (and (eq system-type 'berkeley-unix)
-                                    (executable-find "xml"))
-                               (executable-find "xmlstarlet"))))
+  (if-let* ((xmlstarlet-cmd (or (and (eq system-type 'berkeley-unix)
+                                     (executable-find "xml"))
+                                (executable-find "xmlstarlet"))))
       (shell-command-on-region
        begin
        end
