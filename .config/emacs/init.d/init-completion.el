@@ -70,6 +70,7 @@
 (setq completion-ignore-case t)
 (setq completion-auto-wrap t)
 (setq completion-auto-help 'visible)  ; 'visible 'always 'lazy t nil
+
 (setq completion-auto-deselect t) ;; check
 ;; (setq completion-auto-select 'second-tab) ;; nil t second-tab ;; check
 
@@ -81,7 +82,7 @@
 " 0 25 (face shadow)))
 
 (setq completions-format 'one-column)
-(setq completion-show-help nil)
+(setq completion-show-help t)
 
 (setq echo-keystrokes 0.5)
 (setq read-answer-short t)
@@ -92,12 +93,14 @@
 (minibuffer-regexp-mode 1)
 (setq minibuffer-beginning-of-buffer-movement t)
 (setq minibuffer-eldef-shorten-default t)
+(setq minibuffer-visible-completions t)
 (setq minibuffer-prompt-properties
       '(read-only t cursor-intangible t face minibuffer-prompt))
-
-(setq minibuffer-visible-completions t) ;; check
-
 (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+
+  ;; Keep minibuffer lines unwrapped, long lines like on M-y will be truncated
+(add-hook 'minibuffer-setup-hook
+          (lambda () (setq truncate-lines t)))
 
   ;;; Following should be used when corfu/vertico is not used:
 (unless (or (featurep 'corfu) (featurep 'vertico))
@@ -115,7 +118,7 @@
 
 ;; show only icomplete in-buffer display and not *Completions* buffer
 ;; (advice-add 'completion-at-point :after #'minibuffer-hide-completions)
-(setq icomplete-in-buffer t)
+;; (setq icomplete-in-buffer t)
 
 ;; completion preview
 ;; (global-completion-preview-mode)
