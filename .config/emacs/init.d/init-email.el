@@ -31,10 +31,6 @@
   (setq message-wide-reply-confirm-recipients t)
   (add-hook 'message-setup-hook 'message-sort-headers)
 
-  ;; use gmail extra labels
-  (setq gnus-extra-headers
-        '(To Newsgroups X-GM-LABELS))
-
   (add-hook 'gnus-started-hook
             (lambda ()
               (add-to-list 'mm-body-charset-encoding-alist '(utf-8 . base64))))
