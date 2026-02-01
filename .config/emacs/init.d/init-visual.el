@@ -121,12 +121,6 @@ different user account. By default the user is set to `root'."
           (buffer-file-name
            (find-alternate-file (funcall create-become-path buffer-file-name))))))
 
-(when (display-graphic-p)
-  (tool-bar-mode -1)
-  (scroll-bar-mode -1)
-  (horizontal-scroll-bar-mode -1))
-(menu-bar-mode -1)
-
 (setq case-fold-search t)
 (setq load-prefer-newer t)
 (setq apropos-do-all t)
