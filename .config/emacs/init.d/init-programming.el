@@ -127,52 +127,6 @@
 (setq vc-git-revision-complete-only-branches t)
 (setq vc-git-print-log-follow nil)
 (setq vc-git-shortlog-switches nil)
-(setq vc-git-root-log-format
-      '("%d %h %ad %an: %s"
-        "^\\(?:[*/\\|]+\\)\\(?:[*/\\| ]+\\)?\
-\\(?2: ([^)]+) \\)?\\(?1:[0-9a-z]+\\) \
-\\(?4:[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\) \
-\\(?3:.*?\\):"
-        ((1 'log-view-message)
-         (2 'change-log-list nil lax)
-         (3 'change-log-name)
-         (4 'change-log-date))))
-
-(defun vc-git-checkout-remote ()
-  "Checkout Git remote and set local branch to track it."
-  )
-
-(defun vc-copy-revision-as-kill ()
-  "Copy the revision string under point to the kill-ring."
-  (when-let ((revision (cadr (log-view-current-entry))))
-    (kill-new revision)
-    (message "%s" revision)))
-
-(defun my-vc-git-log-view-hook ()
-  (define-key vc-git-log-view-mode-map "w" 'vc-copy-revision-as-kill))
-
-(defun my-vc-got-log-view-hook ()
-  (define-key vc-got-log-view-mode-map "w" 'vc-copy-revision-as-kill))
-
-(add-hook 'vc-git-log-view-mode-hook #'my-vc-git-log-view-hook)
-(add-hook 'vc-got-log-view-mode-hook #'my-vc-got-log-view-hook)
-
-
-;; see: https://ane.iki.fi/emacs/patches.html
-(defun vc-git-send-patch ()
-  "Prepare git commits to be sent via email using Git CLI tools.
-
-Perhaps useful to set global option: `git config --global
-sendemail.annotate yes'."
-  (interactive)
-  (when (executable-find "git")
-    (with-editor-async-shell-command "git send-email -1")))
-
-(defun vc-git-apply-patch (patch project)
-  "path to patch and project (default current if in one)"
-  (interactive)
-  (when (executable-find "git")
-    (shell-command-on-region (point-min) (point-max) "git am")))
 
 ;; project-vc-dir or vc-dir {C-x p v} or {C-x v d}
 ;; vc-dir binds:
