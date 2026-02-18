@@ -10,17 +10,20 @@
 (with-eval-after-load 'rcirc
   (setq rcirc-server-alist
 	'(("irc.libera.chat"
-           :channels ("#openbsd" "#lisp")
+           :channels ("#openbsd" "#lisp" "#emacs")
            :port 6697
            :encryption tls)))
   (setq rcirc-default-nick "zmyrgel")
   (setq rcirc-default-user-name "zmyrgel")
   (setq rcirc-default-full-name "Curious Minds Want To Know")
 
-  (setq rcirc-omit-responses '("JOIN" "PART" "QUIT" "NICK" "AWAY"))
-  (rcirc-omit-mode 1)
+  (defun my/rcirc-startup ()
+    ;;(rcirc-omit-mode 1)
+    (rcirc-track-minor-mode 1))
 
-  (rcirc-track-minor-mode 1)
+  (setq rcirc-omit-responses '("JOIN" "PART" "QUIT" "NICK" "AWAY"))
+
+  (add-hook 'rcirc-mode-hook #'my/rcirc-startup)
 
   (when-let* ((nickserv-pass (password-lookup :host "irc.libera.chat")))
     (setq rcirc-authinfo
