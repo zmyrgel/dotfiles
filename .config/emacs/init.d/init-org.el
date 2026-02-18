@@ -41,7 +41,7 @@
   (setq org-special-ctrl-k t)
   (setq org-hide-emphasis-markers nil)
   (setq org-hide-leading-stars nil)
-  (setq org-catch-invisible-edits 'show)
+  (setq org-fold-catch-invisible-edits 'show)
   (setq org-return-follows-link nil)
   (setq org-loop-over-headlines-in-active-region 'start-level)
   (setq org-imenu-depth 3)
@@ -200,15 +200,15 @@
               (org-present-show-cursor)
               (org-present-read-write))))
 
-(defun my/org-present-prepare-slide (buffer-name heading)
+(defun my/org-present-prepare-slide (_buffer-name _heading)
   ;; Show only top-level headlines
   (org-overview)
 
   ;; Unfold the current entry
-  (org-show-entry)
+  (org-fold-show-entry)
 
   ;; Show only direct subheadings of the slide but don't expand them
-  (org-show-children))
+  (org-fold-show-children))
 
 (defun my/org-present-start ()
   ;; Tweak font sizes

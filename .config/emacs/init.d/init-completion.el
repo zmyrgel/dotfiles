@@ -92,7 +92,7 @@
 (minibuffer-electric-default-mode 1)
 (minibuffer-regexp-mode 1)
 (setq minibuffer-beginning-of-buffer-movement t)
-(setq minibuffer-eldef-shorten-default t)
+(setq minibuffer-default-prompt-format " [%s]")
 (setq minibuffer-visible-completions t)
 (setq minibuffer-prompt-properties
       '(read-only t cursor-intangible t face minibuffer-prompt))

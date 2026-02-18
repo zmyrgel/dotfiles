@@ -46,11 +46,11 @@
              (dev-dependencies (gethash "devDependencies" json-ht))
              (dependencies (gethash "dependencies" json-ht)))
         (when dev-dependencies
-          (maphash (lambda (k v)
+          (maphash (lambda (k _v)
                      (push k packages))
                    dev-dependencies))
         (when dependencies
-          (maphash (lambda (k v)
+          (maphash (lambda (k _v)
                      (push k packages))
                    dependencies))))
     (delete-dups packages)))
@@ -85,7 +85,7 @@
   "Quickly update the npm project version inside a project."
   (interactive)
   (let* ((package-files (list-npm-package-files))
-         (new-version (read-from-minibuffer "Give new project version to set: ")))b
+         (new-version (read-from-minibuffer "Give new project version to set: ")))
     (unless (valid-npm-sem-ver-p new-version)
       (error "invalid version string: %s" new-version))
     (dolist (file package-files)
@@ -242,26 +242,27 @@ sendemail.annotate yes'."
 ;; prog-mode
 (defun my/prog-mode-hook ()
   "Hook to run when entering generic prog-mode."
-  (set (make-local-variable 'which-func-unknown) "TOP LEVEL")
-  (set (make-local-variable 'whitespace-line-column) 80)
-  (set (make-local-variable 'whitespace-style) '(face lines-tail))
+  (setq-local which-func-unknown "TOP LEVEL")
+  (setq-local whitespace-line-column 80)
+  (setq-local whitespace-style '(face lines-tail))
   (font-lock-add-keywords nil '(("\\<\\(FIXME\\|TODO\\|XXX+\\|BUG\\):"
                                  1 font-lock-warning-face prepend))))
 (add-hook 'prog-mode-hook 'electric-pair-mode)
 (add-hook 'prog-mode-hook 'whitespace-mode)
 (add-hook 'prog-mode-hook 'my/prog-mode-hook)
 
-;; enable which-func on programming modes NOTE: enable which-func only
-;; on prog-mode instead of globally. This is to avoid having it enabled in diff-mode,
-;; which causes cpu use due to looping in git remote call
+;; enable which-func on programming modes
+;; NOTE: enable which-func only on prog-mode instead of globally.
+;; This is to avoid having it enabled in diff-mode, which causes cpu use
+;; due to looping in git remote call
 (setq which-func-modes '(prog-mode))
 (which-function-mode)
 
 (ensure-packages-present 'magit)
 (setq magit-repository-directories
       '(("~/git" . 1)
-        ("~/quicklisp/local-projects" . 1)))
-;; XXX: Symbol's value as variable is void: project-switch-commands
+        ("~/quicklisp/local-projects" . 1)
+        ("~/common-lisp" . 1)))
 (add-to-list 'project-switch-commands '(magit-project-status "Magit" ?m))
 (global-set-key (kbd "C-c g") 'magit-status)
 
@@ -279,9 +280,6 @@ sendemail.annotate yes'."
   (define-key eglot-mode-map (kbd "C-c a") 'eglot-code-actions)
   (define-key eglot-mode-map (kbd "C-c z") 'eglot-format)
   (define-key eglot-mode-map (kbd "C-c r") 'eglot-rename))
-
-;; TODO: check this, should speed up eglot use
-(fset #'jsonrpc--log-event #'ignore)
 
 ;; flymake
 (with-eval-after-load 'flymake
@@ -311,16 +309,16 @@ sendemail.annotate yes'."
   (add-hook 'go-mode-hook 'go-eldoc-setup))
 
 ;;; Ruby
-;;(add-to-list 'major-mode-remap-alist '(ruby-mode . ruby-ts-mode))
-(dolist (m '(("\\.\\(?:gemspec\\|irbrc\\|gemrc\\|rake\\|rb\\|ru\\|thor\\)\\'" . ruby-mode)
-             ("\\(Capfile\\|Gemfile\\(?:\\.[a-zA-Z0-9._-]+\\)?\\|[rR]akefile\\)\\'"  . ruby-mode)))
+(add-to-list 'major-mode-remap-alist '(ruby-mode . ruby-ts-mode))
+(dolist (m '(("\\.\\(?:gemspec\\|irbrc\\|gemrc\\|rake\\|rb\\|ru\\|thor\\)\\'" . ruby-ts-mode)
+             ("\\(Capfile\\|Gemfile\\(?:\\.[a-zA-Z0-9._-]+\\)?\\|[rR]akefile\\)\\'"  . ruby-ts-mode)))
   (add-to-list 'magic-mode-alist m))
 
-(defun my/ruby-mode-hook ()
+(defun my/ruby-ts-mode-hook ()
   (setq ruby-deep-arglist t)
   (setq ruby-deep-indent-paren nil)
   (setq c-tab-always-indent nil))
-(add-hook 'ruby-mode-hook 'my/ruby-mode-hook)
+(add-hook 'ruby-mode-hook 'my/ruby-ts-mode-hook)
 
 ;;; Lisp programming
 (global-eldoc-mode 1)
@@ -350,27 +348,35 @@ sendemail.annotate yes'."
 (when-let* ((sly-doc-dirs (file-expand-wildcards (concat (locate-user-emacs-file "elpa") "/sly-*/doc"))))
   (let ((sly-doc-dir (car sly-doc-dirs)))
     (when (file-directory-p sly-doc-dir)
-      ;; if no Info file found, generate it
-      (unless (file-exists-p (concat sly-doc-dir "/sly.info"))
-        (let ((default-directory (car sly-doc-dirs)))
-          (async-shell-command "make sly.info")))
+      (let ((default-directory (car sly-doc-dirs))
+              (makeinfo-cmd (or (executable-find "gmakeinfo")
+                                (executable-find "makeinfo")))
+              (texi2pdf-cmd (executable-find "texi2pdf")))
+        ;; if no Info file found, generate it
+          (when (and makeinfo-cmd
+                     (not (file-exists-p (concat sly-doc-dir "/sly.info"))))
+            (async-shell-command (concat makeinfo-cmd " sly.texi")))
+          ;; if no refcard is found, generate it
+          (when (and texi2pdf-cmd
+                     (not (file-exists-p (concat sly-doc-dir "/sly-refcard.pdf"))))
+            (async-shell-command (concat texi2pdf-cmd " sly-refcard.tex"))))
       (add-to-list 'Info-directory-list (car sly-doc-dirs)))))
 
 ;; if we have log4cl dist use it to set global logging
 (let ((ql-software-dir (expand-file-name "~/quicklisp/dists/quicklisp/software/")))
   (when (file-exists-p ql-software-dir)
     (let ((default-directory ql-software-dir))
-      (when-let* (log4cl-dirs (file-expand-wildcards "log4cl-*-git"))
+      (when-let* ((log4cl-dirs (file-expand-wildcards "log4cl-*-git")))
         (display-warning 'warning "log4cl dirs: %s" log4cl-dirs)
         (add-to-list 'load-path (concat default-directory (car (last log4cl-dirs)) "/elisp"))
         (require 'log4sly nil t)
         (global-log4sly-mode 1)))))
 
-
 (setq sly-mrepl-prevent-duplicate-history 'move)
 
-;; (ensure-packages-present 'sly-repl-ansi-color)
-;; (sly-enable-contrib 'sly-repl-ansi-color)
+(ensure-packages-present 'sly-repl-ansi-color)
+;;(sly-enable-contrib 'sly-repl-ansi-color)
+(push 'sly-repl-ansi-color sly-contribs)
 
 (ensure-packages-present 'quack)
 (setq quack-default-program "csi")
@@ -432,17 +438,24 @@ sendemail.annotate yes'."
 
 ;;;; PHP programming
 
-(ensure-packages-present 'php-mode)
-(add-to-list 'magic-mode-alist '("\\.php[345]?\\'\\|\\.phtml\\'" . php-mode))
-(with-eval-after-load 'php-mode
-  (defun my/php-mode-hook ()
-    (setq php-site-url "http://fi2.php.net/")
-    (php-enable-symfony2-coding-style)
-    (define-abbrev php-mode-abbrev-table "ex" "extends")
+(defun php-symbol-lookup ()
+    (interactive)
+    ;; Poll user for symbol to look up
+    (let ((url-format "https://www.php.net/manual/en/function.%s.php"))
+      (with-temp-buffer
+        (insert (read-from-minibuffer "Function to lookup: "))
+        (goto-char (point-min))
+        (replace-regexp "_" "-")
+        (eww (format url-format (buffer-string))))))
+
+(with-eval-after-load 'php-ts-mode
+
+  (defun my/php-ts-mode-hook ()
+    (setq php-ts-mode-indent-style 'symfony) ;; was 'psr2
     (setq indent-tabs-mode nil)
-    (setq tab-width 4)
-    (setq c-basic-offset 4))
-  (add-hook 'php-mode-hook 'my/php-mode-hook))
+    (setq php-ts-mode-indent-offset 4))
+
+  (add-hook 'php-ts-mode-hook 'my/php-ts-mode-hook))
 
 ;;;; C programming
 
@@ -535,7 +548,6 @@ sendemail.annotate yes'."
 (add-hook 'web-mode-hook 'my/web-mode-hook)
 (add-hook 'web-mode-hook 'flymake-eslint-enable)
 
-(ensure-packages-present 'typescript-mode)
 (with-eval-after-load 'typescript-ts-mode
   (add-hook 'typescript-ts-mode-hook 'eglot-ensure)
   (add-hook 'typescript-ts-mode-hook 'flymake-eslint-enable)
@@ -602,22 +614,6 @@ sendemail.annotate yes'."
       (unless (treesit-language-available-p grammar)
         (treesit-install-language-grammar grammar)))
     t))
-
-;; TODO: replace with `llm' package from ELPA.
-(ensure-packages-present 'llm)
-(setq llm-warn-on-nonfree nil)
-
-(ensure-packages-present 'gptel)
-(with-eval-after-load 'gptel
-  (gptel-make-openai "local-deepcoder"
-    :stream t
-    :protocol "http"
-    :host "localhost:8080"
-    :models '("coder"))
-  (setq gptel-model "gemini-pro"
-        gptel-backend (gptel-make-gemini "Gemini"
-                        :key "YOUR_GEMINI_API_KEY"
-                        :stream t)))
 
 (ensure-packages-present 'vcl-mode)
 

@@ -14,7 +14,7 @@
 (setq dired-recursive-deletes 'always)
 (setq dired-isearch-filenames t)
 (setq dired-omit-verbose nil)
-(setq dired-omit-lines dired-re-no-dot)
+(setq dired-omit-lines directory-files-no-dot-files-regexp)
 (setq dired-ls-F-marks-symlinks t)
 (setq dired-omit-files "^#\\|\\.$\\|~$\\|^RCS$\\|,v$")
 (setq dired-guess-shell-alist-user

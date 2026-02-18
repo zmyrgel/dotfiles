@@ -16,9 +16,9 @@
 (setq shell-kill-buffer-on-exit t)
 
 (defun my/sh-mode-hook ()
-  (set (make-local-variable 'indent-tabs-mode) t)
-  ;; ensure this matches tab-width
-  (set (make-local-variable 'sh-basic-offset) 8))
+  (setq-local indent-tabs-mode t)
+  (setq-local sh-basic-offset 8))
+
 (add-hook 'sh-mode-hook 'my/sh-mode-hook)
 
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
@@ -30,11 +30,12 @@
 (setq comint-input-ignoredups t)
 (setq comint-completion-addsuffix t)
 (setq comint-prompt-read-only t)
-(add-hook 'comint-mode-hook #'(lambda ()
-                                (define-key comint-mode-map [remap kill-region]
-                                  'comint-kill-region)
-                                (define-key comint-mode-map [remap kill-whole-line]
-                                  'comint-kill-whole-line)))
+(add-hook 'comint-mode-hook
+          (lambda ()
+            (define-key comint-mode-map [remap kill-region]
+                        'comint-kill-region)
+            (define-key comint-mode-map [remap kill-whole-line]
+                        'comint-kill-whole-line)))
 
 (defun eshell-here ()
   "Opens up a new shell in the directory associated with the
