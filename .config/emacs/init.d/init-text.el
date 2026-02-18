@@ -8,6 +8,9 @@
 ;; grep
 (setq grep-find-use-xargs 'exec-plus)
 
+(setq grep-find-ignored-directories
+      '("SCCS" "RCS" "CVS" "MCVS" ".src" ".svn" ".git" ".hg" ".bzr" "_MTN" "_darcs" "{arch}" "node_modules" "build" "dist"))
+
 ;; rg stuff for evaluation
 (when (and nil (executable-find "rg"))
   (grep-apply-setting
