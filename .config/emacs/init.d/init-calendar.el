@@ -30,8 +30,11 @@
 (setq diary-show-holidays-flag t)
 (setq diary-file "~/Documents/diary")
 
-(setq calendar-latitude 60.29414
-      calendar-longitude 25.04099)
+(setq calendar-time-display-form
+      '(24-hours ":" minutes
+                 (if time-zone " (") time-zone (if time-zone ")")))
+(setq calendar-latitude 60.333847)
+(setq calendar-longitude 25.027310)
 
 ;; time utilities
 (setq time-stamp-active t)
