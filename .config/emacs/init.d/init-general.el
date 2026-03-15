@@ -21,10 +21,10 @@
 
 (add-hook 'after-init-hook 'delete-selection-mode)
 
-(ensure-packages-present 'diminish)
-(diminish 'eldoc-mode)
-(diminish 'whitespace-mode)
-(diminish 'subword-mode)
+(setq mode-line-collapse-minor-modes
+      '(abbrev-mode flyspell-mode flyspell-prog-mode eldoc-mode
+                    subword-mode auto-revert-mode whitespace-mode
+                    completion-preview-mode))
 
 ;; | Key chord | Description                  |
 ;; |-----------+------------------------------|
@@ -98,6 +98,7 @@
 (setq ibuffer-default-sorting-mode 'major-mode)
 (setq ibuffer-expert t)
 (setq ibuffer-shrink-to-minimum-size t)
+(setq ibuffer-human-readable-size t)
 (add-hook 'ibuffer-mode-hook 'ibuffer-auto-mode)
 
 ;; buffer switching
