@@ -6,16 +6,15 @@
 ;;; Code:
 
 (setq save-place-file (locate-user-emacs-file "places"))
-(save-place-mode 1)
+(add-hook 'after-init-hook 'save-place-mode)
 
-(with-eval-after-load 'recentf-mode
-  (add-to-list 'recentf-exclude "\\elpa"))
 (setq recentf-save-file (locate-user-emacs-file "recentf"))
 (setq recentf-max-saved-items 300)
 (setq recentf-max-menu-items 15)
 (setq recentf-auto-cleanup (if (daemonp) 300 'never))
-(setq recentf-exclude (list "^/\\(?:ssh\\|su\\|sudo\\)?:"))
-
+(setq recentf-exclude (list "^/\\(?:ssh\\|su\\|sudo\\)?:"
+                            (locate-user-emacs-file "elpa")
+                            (expand-file-name "~/quicklisp/dists")))
 (add-hook 'after-init-hook 'recentf-mode)
 
 (setq bookmark-default-file (locate-user-emacs-file "bookmarks"))
@@ -42,11 +41,22 @@
 (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
 (setq view-read-only t)
 (setq large-file-warning-threshold 50000000) ;; 50mb
-(setq backup-directory-alist `((".*" . ,temporary-file-directory)))
+
 (setq make-backup-files t)
+(setq backup-directory-alist `((".*" . ,temporary-file-directory)))
 (setq backup-by-copying t)
+
+;; todo: revert-without-query regexp
+;; todo: small-temporary-file-directory ? use tmpfs ?
+
 (setq mode-require-final-newline t)
 (setq require-final-newline t)
+
+(setq initial-buffer-choice 'remember-notes
+      remember-data-file "~/Documents/remember-notes"
+      remember-notes-initial-major-mode 'org-mode
+      remember-notes-auto-save-visited-file-name t
+      remember-in-new-frame t)
 
 (provide 'init-session)
 
