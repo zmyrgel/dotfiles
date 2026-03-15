@@ -107,7 +107,6 @@
 
 (when (eq system-type 'berkeley-unix)
   (setenv "CVSROOT" "anoncvs.eu.openbsd.org:/cvs"))
-;; config
 
 (setq vc-suppress-confirm t)
 (setq vc-command-messages t)
@@ -127,33 +126,33 @@
 (setq vc-git-revision-complete-only-branches t)
 (setq vc-git-print-log-follow nil)
 (setq vc-git-shortlog-switches nil)
+(setq vc-git-show-stash 0)
+
+;;; vc-got
+(let ((vc-got-repo-dir (expand-file-name "~/git/vc-got")))
+  (if (file-directory-p vc-got-repo-dir)
+      (progn (add-to-list 'load-path vc-got-repo-dir)
+             (add-to-list 'vc-handled-backends 'Got)
+             (add-to-list 'vc-directory-exclusion-list ".got"))
+    (ensure-packages-present 'vc-got)))
 
 ;; project-vc-dir or vc-dir {C-x p v} or {C-x v d}
 ;; vc-dir binds:
 ;; {z p}, {z s}, {z c} for stashing
 
-;; From a diff buffer {C-x v =}
+;; From a diff-mode  {C-x v =}
 ;; - drop a hunk: k
+;; - reverse direction: {C-c C-r}
+;; - apply hunk {C-c C-a}
 ;; - split a hunk: C-c C-s
 ;; - commit remaining diff: C-x v v
 ;; TODO: how to get diff to update after dropping a hunk: was this solved in emacs-master?
-;;
-(ensure-packages-present 'vc-got)
-
-(when (file-directory-p "~/git/vc-got")
-  (add-to-list 'load-path "~/git/vc-got"))
-(add-to-list 'vc-handled-backends 'Got)
-(add-to-list 'vc-directory-exclusion-list ".got")
 
 ;;; xref
 ;; M-x xref-query-replace-in-results
 ;; M-x xref-find-references-and-replace
 
-;; bug-reference
-(add-hook 'prog-mode-hook 'bug-reference-prog-mode)
-(add-hook 'text-mode-hook 'bug-reference-mode)
-
-;; compile
+;;; compile
 (setq compilation-save-buffers-predicate nil)
 (setq compilation-scroll-output 'first-error)
 (setq compilation-ask-about-save nil)
@@ -163,11 +162,12 @@
 
 (add-hook 'compilation-filter-hook #'ansi-color-compilation-filter)
 
+;;; smerge-mode
 ;; or use smerge-ediff to resolve conflicts
-;; smerge-mode
 (setq smerge-command-prefix (kbd "C-c v")) ;; XXX: check this
 
-;; diff-mode
+;;; diff
+;; {C-c RET a} 'diff-apply-buffer'
 (setq diff-advance-after-apply-hunk t)
 (setq diff-default-read-only t)
 (setq diff-font-lock-prettify nil)
@@ -177,12 +177,9 @@
 (setq diff-add-log-use-relative-names t)
 (setq diff-refine-nonmodified t)
 (setq diff-ignore-whitespace-switches "-b")
-;; {C-c RET a} 'diff-apply-buffer'
-
-;; diff
 (setq diff-switches '("-u"))
 
-;; ediff
+;;; ediff
 (setq ediff-window-setup-function 'ediff-setup-windows-plain)
 (setq ediff-split-window-function 'split-window-horizontally)
 (setq ediff-diff-options "-w")
@@ -190,19 +187,17 @@
 (setq ediff-make-buffers-readonly-at-startup nil)
 (add-hook 'ediff-after-quit-hook-internal-hook 'winner-undo)
 
-;; subword
-(add-hook 'prog-mode-hook 'subword-mode)
-
-;; prog-mode
+;;; prog-mode
 (defun my/prog-mode-hook ()
   "Hook to run when entering generic prog-mode."
   (setq-local which-func-unknown "TOP LEVEL")
   (setq-local whitespace-line-column 80)
-  (setq-local whitespace-style '(face lines-tail))
+  (setq-local whitespace-style '(face lines-tail trailing))
   (font-lock-add-keywords nil '(("\\<\\(FIXME\\|TODO\\|XXX+\\|BUG\\):"
                                  1 font-lock-warning-face prepend))))
 (add-hook 'prog-mode-hook 'electric-pair-mode)
 (add-hook 'prog-mode-hook 'whitespace-mode)
+(add-hook 'prog-mode-hook 'subword-mode)
 (add-hook 'prog-mode-hook 'my/prog-mode-hook)
 
 ;; enable which-func on programming modes
@@ -226,14 +221,19 @@
   (require 'magit-gitflow nil t)
   (add-hook 'magit-mode-hook 'turn-on-magit-gitflow))
 
-(ensure-packages-present 'eglot)
 (with-eval-after-load 'eglot
   (setq eglot-autoshutdown t)
   (setq eglot-extend-to-xref t)
-  (define-key eglot-mode-map (kbd "C-c h") 'eglot-help-at-point)
-  (define-key eglot-mode-map (kbd "C-c a") 'eglot-code-actions)
-  (define-key eglot-mode-map (kbd "C-c z") 'eglot-format)
-  (define-key eglot-mode-map (kbd "C-c r") 'eglot-rename))
+  (define-key eglot-mode-map (kbd "C-c e h") 'eglot-help-at-point)
+  (define-key eglot-mode-map (kbd "C-c e a") 'eglot-code-actions)
+  (define-key eglot-mode-map (kbd "C-c e f") 'eglot-format)
+  (define-key eglot-mode-map (kbd "C-c e r") 'eglot-rename))
+
+(add-hook 'eglot-managed-mode-hook
+          (lambda ()
+            (add-hook 'before-save-hook #'eglot-format-buffer nil t)))
+
+;; todo: editorconfig
 
 ;; flymake
 (with-eval-after-load 'flymake
@@ -302,34 +302,23 @@
 (when-let* ((sly-doc-dirs (file-expand-wildcards (concat (locate-user-emacs-file "elpa") "/sly-*/doc"))))
   (let ((sly-doc-dir (car sly-doc-dirs)))
     (when (file-directory-p sly-doc-dir)
-      (let ((default-directory (car sly-doc-dirs))
-              (makeinfo-cmd (or (executable-find "gmakeinfo")
-                                (executable-find "makeinfo")))
-              (texi2pdf-cmd (executable-find "texi2pdf")))
-        ;; if no Info file found, generate it
-          (when (and makeinfo-cmd
-                     (not (file-exists-p (concat sly-doc-dir "/sly.info"))))
-            (async-shell-command (concat makeinfo-cmd " sly.texi")))
-          ;; if no refcard is found, generate it
-          (when (and texi2pdf-cmd
-                     (not (file-exists-p (concat sly-doc-dir "/sly-refcard.pdf"))))
-            (async-shell-command (concat texi2pdf-cmd " sly-refcard.tex"))))
-      (add-to-list 'Info-directory-list (car sly-doc-dirs)))))
+      ;; if no Info file found, generate it
+      (unless (file-exists-p (concat sly-doc-dir "/sly.info"))
+        (let ((default-directory sly-doc-dir))
+          (async-shell-command "make sly.info")))
+      (add-to-list 'Info-directory-list sly-doc-dir))))
 
 ;; if we have log4cl dist use it to set global logging
-(let ((ql-software-dir (expand-file-name "~/quicklisp/dists/quicklisp/software/")))
-  (when (file-exists-p ql-software-dir)
-    (let ((default-directory ql-software-dir))
-      (when-let* ((log4cl-dirs (file-expand-wildcards "log4cl-*-git")))
-        (display-warning 'warning "log4cl dirs: %s" log4cl-dirs)
-        (add-to-list 'load-path (concat default-directory (car (last log4cl-dirs)) "/elisp"))
-        (require 'log4sly nil t)
-        (global-log4sly-mode 1)))))
+(when-let* ((log4cl-dirs
+             (mapcar #'expand-file-name
+                     (file-expand-wildcards "~/quicklisp/dists/quicklisp/software/log4cl-*-git"))))
+  (add-to-list 'load-path (concat (car (last log4cl-dirs)) "/elisp"))
+  (require 'log4sly nil t)
+  (global-log4sly-mode 1))
 
 (setq sly-mrepl-prevent-duplicate-history 'move)
 
 (ensure-packages-present 'sly-repl-ansi-color)
-;;(sly-enable-contrib 'sly-repl-ansi-color)
 (push 'sly-repl-ansi-color sly-contribs)
 
 (ensure-packages-present 'quack)
@@ -459,27 +448,6 @@
     (setq cperl-invalid-face 'default))
   (add-hook 'cperl-mode-hook 'my/cperl-mode-hook))
 
-;; (zmg/package-install 'elpy)
-;; ;; init
-;; (advice-add 'python-mode :before 'elpy-enable)
-
-;; (setq elpy-rpc-python-command "python3")
-;; ;; Use IPython for REPL
-;; (setq python-shell-interpreter "jupyter"
-;;       python-shell-interpreter-args "console --simple-prompt"
-;;       python-shell-prompt-detect-failure-warning nil)
-;; (add-to-list 'python-shell-completion-native-disabled-interpreters
-;;              "jupyter"))
-
-;; (zmg/package-install 'py-autopep8)
-;; (add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
-
-;; integrate with jupyter
-
-;; (zmg/package-install 'ein)
-;; (setq ein:jupyter-server-command "jupyter-notebook")
-;; (setq ein:jupyter-server-use-subcommand nil)
-
 (ensure-packages-present 'web-mode)
 (dolist (m '(("\\.jsp\\'" . web-mode)
              ("\\.ap[cp]x\\'" . web-mode)
@@ -497,7 +465,7 @@
   (setq web-mode-code-indent-offset 4)
   (when (and (member (file-name-extension buffer-file-name) '("jsx"))
              (require 'eglot nil 'noerror))
-      (eglot-ensure)))
+    (eglot-ensure)))
 
 (add-hook 'web-mode-hook 'my/web-mode-hook)
 (add-hook 'web-mode-hook 'flymake-eslint-enable)
@@ -521,7 +489,7 @@
 (ensure-packages-present 'ts-comint)
 (add-hook 'typescript-ts-mode-hook
           (lambda ()
-            (setq typescript-ts-mode-indent-offset 4)
+            (setopt typescript-ts-indent-offset 4)
             (local-set-key (kbd "C-x C-e") 'ts-send-last-sexp)
             (local-set-key (kbd "C-M-x") 'ts-send-last-sexp-and-go)
             (local-set-key (kbd "C-c b") 'ts-send-buffer)
