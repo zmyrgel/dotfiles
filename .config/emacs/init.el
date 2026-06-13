@@ -2,7 +2,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2026-01-31 18:03:15 (tmy)>
+;;; Time-stamp: <2026-06-13 09:24:12 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
 ;;;
@@ -89,7 +89,8 @@
 ;; and load them
 (add-to-list 'load-path (locate-user-emacs-file "init.d") t)
 
-;; Reduce startup time by ~0.2s reducing the frequency of gc
+;; Reduce startup time by ~0.2s reducing the frequency of garbage
+;; collection during the initialization.
 (let ((gc-cons-threshold (* 50 1000 1000)))
   (require 'init-general)
   (require 'init-text)
@@ -103,6 +104,7 @@
   (require 'init-completion)
   (require 'init-files)
   (require 'init-programming)
+  (require 'init-openbsd)
   (require 'init-extras)
 
   ;; Load optional local startup file
