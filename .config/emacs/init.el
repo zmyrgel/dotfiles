@@ -2,7 +2,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2026-06-13 09:24:12 (tmy)>
+;;; Time-stamp: <2026-06-14 13:22:00 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
 ;;;
@@ -28,6 +28,7 @@
 ;; (setq register-use-preview t)
 
 ;; (add-hook 'text-mode (setq-local revert-buffer-function (run-tests)))
+;;; - C-a to toggle between bol and back-to-indentation
 
 ;;; Code:
 
@@ -105,6 +106,7 @@
   (require 'init-files)
   (require 'init-programming)
   (require 'init-openbsd)
+  (require 'init-ai)
   (require 'init-extras)
 
   ;; Load optional local startup file
@@ -134,7 +136,9 @@
   (when (and (fboundp 'server-running-p)
              (server-running-p))
     ;; TODO: Global env here or command specific override?
-    (setenv "EDITOR" (expand-file-name "emacsclient" invocation-directory))
+    ;; NOTE: causes magit to execute emacsclient etc.
+    ;;(setenv "EDITOR" (expand-file-name "emacsclient" invocation-directory))
+
     (server-start)))
 
 (provide 'init)
