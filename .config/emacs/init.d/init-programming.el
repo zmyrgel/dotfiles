@@ -10,6 +10,16 @@
   (setq native-comp-async-report-warnings-errors 'silent)
   (setq native-compile-prune-cache t))
 
+;;; treesit
+(when (featurep 'treesit)
+  (setopt treesit-enabled-modes t)
+  (setopt treesit-auto-install-grammar 'always)
+
+  ;; color all the things
+  (setopt treesit-font-lock-level 4)
+  ;; refresh font lock on buffers
+  (treesit-font-lock-recompute-features))
+
 ;;; project
 
 (setq project-vc-ignores '("target/" "bin/" "obj/"))
@@ -191,12 +201,15 @@
 (defun my/prog-mode-hook ()
   "Hook to run when entering generic prog-mode."
   (setq-local which-func-unknown "TOP LEVEL")
-  (setq-local whitespace-line-column 80)
-  (setq-local whitespace-style '(face lines-tail trailing))
   (font-lock-add-keywords nil '(("\\<\\(FIXME\\|TODO\\|XXX+\\|BUG\\):"
                                  1 font-lock-warning-face prepend))))
+
+(setopt whitespace-line-column 80)
+(setopt whitespace-style '(face lines-tail trailing))
+(setopt whitespace-global-modes t)
+(global-whitespace-mode)
+
 (add-hook 'prog-mode-hook 'electric-pair-mode)
-(add-hook 'prog-mode-hook 'whitespace-mode)
 (add-hook 'prog-mode-hook 'subword-mode)
 (add-hook 'prog-mode-hook 'my/prog-mode-hook)
 
@@ -263,7 +276,6 @@
   (add-hook 'go-mode-hook 'go-eldoc-setup))
 
 ;;; Ruby
-(add-to-list 'major-mode-remap-alist '(ruby-mode . ruby-ts-mode))
 (dolist (m '(("\\.\\(?:gemspec\\|irbrc\\|gemrc\\|rake\\|rb\\|ru\\|thor\\)\\'" . ruby-ts-mode)
              ("\\(Capfile\\|Gemfile\\(?:\\.[a-zA-Z0-9._-]+\\)?\\|[rR]akefile\\)\\'"  . ruby-ts-mode)))
   (add-to-list 'magic-mode-alist m))
@@ -333,46 +345,13 @@
 (setq quack-smart-open-paren-p t)
 (setq quack-switch-to-scheme-method 'other-window)
 
-(when (and (not (getenv "GERBIL_HOME"))
-           (file-exists-p "/usr/local/gerbil"))
-  (setenv "GERBIL_HOME" "/usr/local/gerbil")
-  (defvar gerbil-home (getenv "GERBIL_HOME"))
-  (prepend-to-exec-path "/usr/local/gerbil/bin")
-
-  (autoload 'gerbil-mode
-    (concat gerbil-home "/etc/gerbil-mode.el") "Gerbil editing mode." t)
-
-  (add-to-list 'auto-mode-alist '("\\.ss\\'"  . gerbil-mode))
-  (add-to-list 'auto-mode-alist '("\\.pkg\\'"  . gerbil-mode))
-
-  (let ((m comint-mode-map))
-    (define-key m (kbd "C-S-n") 'comint-next-input)
-    (define-key m (kbd "C-S-p") 'comint-previous-input)
-    (define-key m (kbd "C-S-l") 'clear-comint-buffer))
-
-  (with-eval-after-load 'gerbil-mode
-    (setq scheme-program-name (concat gerbil "/bin/gxi"))
-    (when (require 'gambit nil t)
-      (setq scheme-program-name (concat gerbil-home "/bin/gxi"))
-      (add-hook 'inferior-scheme-mode-hook 'gambit-inferior-mode)))
-
-  (let ((tags (locate-dominating-file default-directory "TAGS")))
-    (when tags (visit-tags-table tags)))
-  (let ((gerbil-tags (concat gerbil-home "/src/TAGS")))
-    (when (file-exists-p gerbil-tags)
-      (visit-tags-table gerbil-tags)))
-
-  (defun clear-comint-buffer ()
-    (interactive)
-    (with-current-buffer "*scheme*"
-      (let ((comint-buffer-maximum-size 0))
-        (comint-truncate-buffer)))))
-
 (ensure-packages-present '(clojure-mode cider))
-(add-to-list 'magic-mode-alist '("\\.clj$" . clojure-mode))
 
-(setq cider-lein-parameters "repl :headless :host localhost")
-(setq nrepl-hide-special-buffers t)
+;; (add-to-list 'major-mode-remap-alist '(clojure-mode--mode . ruby-ts-mode))
+;; (add-to-list 'magic-mode-alist '("\\.clj$" . clojure-mode))
+
+;; (setq cider-lein-parameters "repl :headless :host localhost")
+;; (setq nrepl-hide-special-buffers t)
 
 (ensure-packages-present 'geiser)
 (when (eq system-type 'berkeley-unix)
@@ -427,9 +406,7 @@
           whitespace-style '(face lines-tail))))
 
 ;;; Perl
-(if (version<= emacs-version "29")
-    (defalias 'perl-mode 'cperl-mode)
-  (add-to-list 'major-mode-remap-alist '(perl-mode . cperl-mode)))
+(add-to-list 'major-mode-remap-alist '(perl-mode . cperl-mode))
 
 (defvar cperl-font-lock)
 (defvar cperl-info-on-command-no-prompt)
@@ -477,12 +454,6 @@
   (add-hook 'tsx-ts-mode-hook 'flymake-eslint-enable)
   (setq whitespace-line-column 120))
 
-(when (treesit-available-p)
-  (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
-  (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
-  (add-to-list 'auto-mode-alist '("\\.json\\'" . json-ts-mode))
-  (add-to-list 'auto-mode-alist '("\\.js\\'" . json-ts-mode)))
-
 (ensure-packages-present 'prettier)
 (add-hook 'typescript-ts-hook #'prettier-mode)
 
@@ -495,47 +466,6 @@
             (local-set-key (kbd "C-c b") 'ts-send-buffer)
             (local-set-key (kbd "C-c C-b") 'ts-send-buffer-and-go)
             (local-set-key (kbd "C-c l") 'ts-load-file-and-go)))
-
-;;; treesit
-(when (featurep 'treesit)
-  (setq treesit-language-source-alist
-        '((clojure "https://github.com/sogaiu/tree-sitter-clojure")
-          (elisp "https://github.com/Wilfred/tree-sitter-elisp")
-          (markdown "https://github.com/ikatyang/tree-sitter-markdown")
-          (css . ("https://github.com/tree-sitter/tree-sitter-css" ))
-          (html . ("https://github.com/tree-sitter/tree-sitter-html" ))
-          (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript" ))
-          (json . ("https://github.com/tree-sitter/tree-sitter-json" ))
-          (python . ("https://github.com/tree-sitter/tree-sitter-python"))
-          (php . ("https://github.com/tree-sitter/tree-sitter-php" "master" "php/src" ))
-          (toml "https://github.com/tree-sitter/tree-sitter-toml" )
-          (tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src"))
-          (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
-          (yaml . ("https://github.com/ikatyang/tree-sitter-yaml"))))
-
-  ;; color all the things
-  (setq treesit-font-lock-level 4)
-  ;; refresh font lock on buffers
-  (treesit-font-lock-recompute-features)
-
-  ;; Setup tree-sitter modes over the default ones.
-  (dolist (m '((python-mode . python-ts-mode)
-               (css-mode . css-ts-mode)
-               (typescript-mode . typescript-ts-mode)
-               (js2-mode . js-ts-mode)
-               (bash-mode . bash-ts-mode)
-               (css-mode . css-ts-mode)
-               (json-mode . json-ts-mode)
-               (js-json-mode . json-ts-mode)))
-    (add-to-list 'major-mode-remap-alist m))
-
-  (defun install-treesit-grammars ()
-    "Install all Tree-sitter grammars which are not present on current system."
-    (interactive)
-    (dolist (grammar (mapcar #'car treesit-language-source-alist))
-      (unless (treesit-language-available-p grammar)
-        (treesit-install-language-grammar grammar)))
-    t))
 
 (ensure-packages-present 'vcl-mode)
 
