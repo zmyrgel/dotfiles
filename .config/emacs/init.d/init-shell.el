@@ -81,6 +81,7 @@
 (setq eshell-visual-options '(("git" "--help" "--paginate")))
 (setq eshell-hist-ignoredups t)
 (setq eshell-history-append t)
+(setq eshell-history-isearch 'dwim)
 
 (provide 'init-shell)
 
