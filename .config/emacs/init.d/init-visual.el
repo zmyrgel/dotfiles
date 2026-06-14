@@ -54,7 +54,6 @@
 (global-set-key (kbd "C-x )") 'kmacro-end-or-call-macro)
 (global-set-key (kbd "C-z s") 'eshell)
 (global-set-key (kbd "C-z r") 'rgrep)
-(global-set-key (kbd "C-x C-c") nil) ;; save-buffers-kill-terminal
 
 (global-set-key (kbd "M-o") 'other-window)
 (global-set-key (kbd "M-j") 'duplicate-dwim)
