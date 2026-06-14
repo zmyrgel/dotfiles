@@ -52,8 +52,7 @@
 (setq mode-require-final-newline t)
 (setq require-final-newline t)
 
-(setq initial-buffer-choice 'remember-notes
-      remember-data-file "~/Documents/remember-notes"
+(setq remember-data-file "~/Documents/notes"
       remember-notes-initial-major-mode 'org-mode
       remember-notes-auto-save-visited-file-name t
       remember-in-new-frame t)
