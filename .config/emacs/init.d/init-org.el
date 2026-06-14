@@ -11,7 +11,7 @@
   (setq org-directory "~/Documents/OrgFiles")
   (setq org-default-notes-file (concat org-directory "/notes.org"))
   (setq org-agenda-files (list org-directory))
-  (setq org-agenda-file-regexp "\\(school\\|todo\\|work\\)\\.org")
+  (setq org-agenda-file-regexp "\\`[^.].*\\.org\\'")
   (setq org-outline-path-complete-in-steps nil)
   (setq org-insert-mode-line-in-empty-file t)
   (setq org-enforce-todo-checkbox-dependencies t)
@@ -30,7 +30,7 @@
   (setq org-tag-alist ;; use these or set file tags?
 	'(("work" . ?w)
           ("emacs" . ?e)
-          ("study" . ?s)
+          ("research" . ?r)
           ("mail" . ?m)))
   (setq org-confirm-babel-evaluate t)
   (setq org-log-done 'note)
@@ -85,13 +85,13 @@
     (setq org-capture-templates
 	  `(("t" "Todo" entry (file+headline "todo.org" "Tasks")
              ,todo-template)
-            ("s" "Study" entry (file+headline "study.org" "Study stuff")
+            ("s" "Study" entry (file+headline "research.org" "Research subjects")
              ,todo-template)
             ("w" "Work tasks" entry (file+headline "work.org" "Work tasks")
              ,todo-template)
-            ("n" "Notes" entry (file+datetree "notes.org")
+            ("n" "Notes" entry (file+olp+datetree "notes.org" "Misc Notes")
              "* %?\nEntered on %U\n  %i\n  %a")
-            ("j" "Journal" entry (file+datetree "journal.org")
+            ("j" "Journal" entry (file+olp+datetree "journal.org" "Journal Entries")
              "* %?\nEntered on %U\n  %i\n  %a"))))
 
   (setq org-capture-templates-contexts
