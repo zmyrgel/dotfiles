@@ -19,7 +19,7 @@
 ;; `completion-at-point' is often bound to M-TAB.
 (setq tab-always-indent 'complete)
 
-;; minibuffer
+;;; minibuffer
 ;;(setq completion-styles '(basic partial-completion emacs22))
 (add-to-list 'completion-styles 'flex t)
 
