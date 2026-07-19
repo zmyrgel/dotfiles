@@ -9,12 +9,17 @@
 
 (setq font-lock-maximum-decoration t)
 
+(setq window-combination-resize t)
+
 (setq show-paren-style 'parenthesis)
 (setq show-paren-when-point-in-periphery t)
 (setq show-paren-when-point-inside-paren nil)
 (add-hook 'after-init-hook 'show-paren-mode)
 
 (blink-cursor-mode -1)
+
+;; help
+(setq help-window-select t)
 
 ;; | Key chord | Description                  |
 ;; |-----------+------------------------------|
@@ -25,10 +30,19 @@
 ;; | C-x 4 0   | Kill buffer and window       |
 ;; | C-x 4 p   | Run project cmd in window    |
 
-;;  :commands winner-undo
 (global-set-key (kbd "C-c w") 'winner-undo)
 (global-set-key (kbd "C-c W") 'winner-redo)
 (winner-mode)
+
+(defun toggle-delete-other-windows ()
+  "Delete other windows in frame if any, or restore previous window config."
+  (interactive)
+  (if (and winner-mode
+           (equal (selected-window) (next-window)))
+      (winner-undo)
+    (delete-other-windows)))
+
+(global-set-key (kbd "C-x 1") #'toggle-delete-other-windows)
 
 ;; default emacs configurations
 
@@ -39,12 +53,14 @@
 ;; | { C-M-d/u }  | Move into/out of lists       |
 (add-hook 'after-init-hook 'auto-compression-mode)
 
+(setq kill-region-dwim 'emacs-word)
+
 (global-set-key (kbd "M-u") 'upcase-dwim)
 (global-set-key (kbd "M-l") 'downcase-dwim)
 (global-set-key (kbd "M-c") 'capitalize-dwim)
 (global-set-key (kbd "C-h h") nil)
 (global-set-key (kbd "M-SPC") 'cycle-spacing)
-(global-set-key (kbd "C-w") 'my/backward-kill-word-or-region)
+;(global-set-key (kbd "C-w") 'my/backward-kill-word-or-region)
 (global-set-key (kbd "C-c C-j") 'join-line)
 (global-set-key (kbd "M-z") 'zap-up-to-char)
 (global-set-key (kbd "C-x M-k") 'kill-buffer-other-window)
@@ -61,10 +77,10 @@
 (global-set-key (kbd "M-s g") 'grep)
 (global-set-key (kbd "M-s f") 'find-name-dired)
 
-(global-set-key (kbd "C-x w t") 'transpose-window-layout)
+(global-set-key (kbd "C-x w t") 'window-layout-transpose)
 (global-set-key (kbd "C-x w r") 'rotate-windows)
-(global-set-key (kbd "C-x w f h") 'flip-window-layout-horizontally)
-(global-set-key (kbd "C-x w f v") 'flip-window-layout-vertically)
+(global-set-key (kbd "C-x w f h") 'window-layout-flip-leftright)
+(global-set-key (kbd "C-x w f v") 'window-layout-flip-topdown)
 
 (defun my/backward-kill-word-or-region ()
   "Kill region or word based on selection."
@@ -85,48 +101,13 @@
   (kill-buffer (current-buffer))
   (other-window 1))
 
-(defun become (&optional user)
-  "Use TRAMP to open the current file or directory buffer with
-different user account. By default the user is set to `root'."
-  (interactive (list (if current-prefix-arg
-                         (completing-read "User: " (system-users))
-                       "root")))
-  (let ((create-become-path
-         (lambda (path)
-           (let* ((remote-path (file-remote-p path))
-                  (cmd (or (executable-find "doas" remote-path)
-                           (executable-find "sudo" remote-path)))
-                  (become-cmd (substring cmd -4))
-                  (become-user (if user user "root")))
-             (if (not remote-path)
-                 (concat "/" become-cmd ":" become-user "@localhost:" path)
-               (let ((file-parts (tramp-dissect-file-name path)))
-                 (concat "/"
-                         (tramp-file-name-method file-parts)
-                         ":"
-                         (tramp-file-name-user file-parts)
-                         "@"
-                         (tramp-file-name-host file-parts)
-                         "|"
-                         become-cmd
-                         ":"
-                         become-user
-                         "@"
-                         (tramp-file-name-host file-parts)
-                         ":"
-                         (tramp-file-name-localname file-parts))))))))
-    (cond ((eq major-mode 'dired-mode)
-           (dired (funcall create-become-path default-directory)))
-          (buffer-file-name
-           (find-alternate-file (funcall create-become-path buffer-file-name))))))
-
 (setq case-fold-search t)
 (setq load-prefer-newer t)
 (setq apropos-do-all t)
 (setq ad-redefinition-action 'accept)
 
-;; XXX: does this help with LSP stuff?
-(setq read-process-output-max (* 1024 1024)) ; 1mb
+;; bump this a bit from default 64kb
+(setq read-process-output-max 524288) ; 512kb
 
 (setq-default show-trailing-whitespace nil)
 (setq-default require-final-newline t)
@@ -137,6 +118,7 @@ different user account. By default the user is set to `root'."
 (setq-default tab-always-indent 'complete)
 (setq-default bidi-paragraph-direction 'left-to-right)
 
+(setq redisplay-skip-fontification-on-input t)
 (setq bidi-inhibit-bpa t)
 (setq sentence-end-double-space nil)
 (setq sentence-end-without-period nil)
@@ -165,7 +147,6 @@ different user account. By default the user is set to `root'."
 
 (defvar *my-fixed-font* "Input Mono")
 (defvar *my-variable-font* "Input Serif")
-
 
 (defun zmg/adjust-font-for-screen ()
   "Adjusts the font height based on the screen resolution."
@@ -217,12 +198,12 @@ different user account. By default the user is set to `root'."
 (setq kill-do-not-save-duplicates t)
 (setq backward-delete-char-untabify-method nil)
 (setq yank-pop-change-selection t)
-(setq save-interprogram-paste-before-kill nil)
+(setq save-interprogram-paste-before-kill t)
 (add-hook 'after-init-hook 'size-indication-mode)
 (add-hook 'after-init-hook 'line-number-mode)
 (add-hook 'after-init-hook 'column-number-mode)
 (add-hook 'text-mode-hook 'auto-fill-mode)
-(add-hook 'before-save-hook 'delete-trailing-whitespace)
+(add-hook 'before-save-hook 'whitespace-cleanup)
 
 (ensure-packages-present 'easy-kill)
 (global-set-key [remap kill-ring-save] #'easy-kill)
@@ -243,7 +224,7 @@ different user account. By default the user is set to `root'."
         (agenda-date . (variable-pitch regular 1.3))
         (t . (regular 1.15))))
 
-(load-theme 'modus-vivendi t)
+(load-theme 'modus-operandi t)
 
 (setq image-use-external-converter t)
 

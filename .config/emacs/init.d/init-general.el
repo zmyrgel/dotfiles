@@ -8,7 +8,7 @@
 (defun prepend-to-exec-path (path)
   "Add given PATH to beginning of exec-path if it exists."
   (let ((full-path (expand-file-name path)))
-    (when (file-exists-p full-path)
+    (when (file-directory-p full-path)
       (add-to-list 'exec-path full-path))))
 
 (defun password-lookup (&rest keys)
@@ -19,6 +19,7 @@
 (dolist (p '("~/bin" "~/.local/bin" "~/workspace/bin" "~/opt/bin"))
   (prepend-to-exec-path p))
 
+;; XXX: does not work in 31.1?
 (add-hook 'after-init-hook 'delete-selection-mode)
 
 (setq mode-line-collapse-minor-modes
@@ -81,6 +82,11 @@
 (setq set-mark-command-repeat-pop t)
 (repeat-mode 1)
 
+;; bump undo limits a bit
+(setq undo-limit (* 13 160000))
+(setq undo-strong-limit (* 13 240000))
+(setq undo-outer-limit (* 13 24000000))
+
 ;;; ------------------------------
 ;;; Buffer management
 ;;; ------------------------------
@@ -101,10 +107,18 @@
 (setq ibuffer-human-readable-size t)
 (add-hook 'ibuffer-mode-hook 'ibuffer-auto-mode)
 
+;; Buffer-menu
+(setq Buffer-menu-group-by '(Buffer-menu-group-by-root))
+
 ;; buffer switching
 (setq switch-to-prev-buffer-skip-regexp nil)
 (define-key ctl-x-x-map "p" #'switch-to-prev-buffer)
 (define-key ctl-x-x-map "n" #'switch-to-next-buffer)
+
+;; delete pair
+(setopt delete-pair-blink-delay 0)
+(setopt delete-pair-push-mark t)
+(global-set-key (kbd "M-s d") #'delete-pair)
 
 ;; buffers to registers, C-x r j m
 ;; {C-u 99 C-x e} run macro for 99 times
@@ -113,6 +127,27 @@
 
 (setq Man-prefer-synchronous-call t)
 (setq Man-support-remote-systems t)
+
+(setq remember-data-file (expand-file-name "~/Documents/notes")
+      remember-notes-initial-major-mode 'org-mode
+      remember-notes-auto-save-visited-file-name t)
+
+;;; PROCED
+(use-package proced
+  :ensure nil
+  :defer t
+  :custom
+  (proced-enable-color-flag t)
+  (proced-tree-flag t)
+  (proced-auto-update-flag 'visible)
+  (proced-auto-update-interval 1)
+  (proced-descent t)
+  (proced-filter 'user) ;; We can change interactively with `s'
+  :config
+  (add-hook 'proced-mode-hook
+            (lambda ()
+              (proced-toggle-auto-update 1))))
+
 
 (provide 'init-general)
 

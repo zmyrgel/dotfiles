@@ -45,6 +45,12 @@
                 (string-match "package\.json$" filepath))
               (project-files (project-current))))
 
+(defun list-api-doc-files ()
+  "List of all package.json files within a project."
+  (seq-filter (lambda (filepath)
+                (string-match "openapi\.yaml$" filepath))
+              (project-files (project-current))))
+
 (defun %parse-package-names (file)
   "Parse the names of npm packages."
   (unless (json-available-p)
@@ -102,18 +108,32 @@
       (%update-package-version file "version" new-version))
     (message "updated project version to %s in project package.json files" new-version)))
 
-;; TODO: keybindings:
-;; {C-x v t} - prefix for tag commands
-;; {C-x v b} - prefix for branch commands
-;; {C-x v b} prefix for branch commands: l, c s
-;; M-x project-list-buffers {C-x p C-b} (change to ibuffer?)
-;; M-x project-kill-buffers {C-x p k}
-;; {C-x v !} -> edit next vc command
-;; {C-x v v} in diffs, commit only part of changes
-;; M-x vc-pull-push
-;; M-x vc-prepare-patch
-;; M-x vc-prepare-patches-separately
-;; M-x vc-default-patch-adressee
+(defun project-update-project-api-version ()
+  "Quickly update the project version inside API-docs of an project."
+  (interactive)
+  (let* ((files (list-api-doc-files))
+         (new-version (read-from-minibuffer "Give new project version to set: ")))
+    (unless (valid-npm-sem-ver-p new-version)
+      (error "invalid version string: %s" new-version))
+    (dolist (file files)
+      (%update-package-version file "version" new-version))
+    (message "updated project version to %s in project openapi.yaml files" new-version)))
+
+;;; vc
+
+(setq vc-use-incoming-outgoing-prefixes t)
+(setq vc-dir-show-outgoing-count t) ;; default
+
+;; (setq vc-async-checkin t) ;; check this
+;; (setq vc-display-failed-async-commands t)
+
+;; 'vc-rename-file' is now bound to 'C-x v R'.
+
+;; TODO: add vc-got
+;; *** 'C-u C-x v +' and 'C-u C-x v P' for Git have an input history.
+;; This was already in place for Mercurial.
+
+(add-hook 'log-edit-hook #'log-edit-maybe-show-diff)
 
 (when (eq system-type 'berkeley-unix)
   (setenv "CVSROOT" "anoncvs.eu.openbsd.org:/cvs"))
@@ -126,11 +146,15 @@
 (setq vc-display-status 'no-backend)
 (setq vc-annotate-use-short-revision t)
 
+;; (setq vc-dir-auto-hide-up-to-date 'revert) t nil
+(setq vc-dir-save-some-buffers-on-revert t)
+
 ;; allow reverting changes in vc-dir
 (with-eval-after-load 'vc-dir-mode
   (define-key vc-dir-mode-map (kbd "k") 'vc-revert))
 
 ;;; vc-git
+(setq vc-git-show-stash 0) ;; hide stash by default
 (setq vc-git-annotate-switches "-w")
 (setq vc-git-diff-switches '("--patch-with-stat"))
 (setq vc-git-revision-complete-only-branches t)
@@ -141,10 +165,10 @@
 ;;; vc-got
 (let ((vc-got-repo-dir (expand-file-name "~/git/vc-got")))
   (if (file-directory-p vc-got-repo-dir)
-      (progn (add-to-list 'load-path vc-got-repo-dir)
-             (add-to-list 'vc-handled-backends 'Got)
-             (add-to-list 'vc-directory-exclusion-list ".got"))
-    (ensure-packages-present 'vc-got)))
+      (add-to-list 'load-path vc-got-repo-dir)
+    (ensure-packages-present 'vc-got))
+  (add-to-list 'vc-handled-backends 'Got)
+  (add-to-list 'vc-directory-exclusion-list ".got"))
 
 ;; project-vc-dir or vc-dir {C-x p v} or {C-x v d}
 ;; vc-dir binds:
@@ -169,8 +193,14 @@
 (setq compilation-always-kill t)
 (setq compilation-window-height 12)
 (setq ansi-color-for-compilation-mode t)
-
 (add-hook 'compilation-filter-hook #'ansi-color-compilation-filter)
+
+;; Add biome lint support
+(add-to-list 'compilation-error-regexp-alist-alist
+             '(biome
+               "^\\(\\(?:[[:alpha:]]:\\)?[^:\n]+\\):\\([0-9]+\\):\\([0-9]+\\)\\(?:[[:space:]]+.*\\)?$"
+               1 2 3))
+(add-to-list 'compilation-error-regexp-alist 'biome)
 
 ;;; smerge-mode
 ;; or use smerge-ediff to resolve conflicts
@@ -189,6 +219,10 @@
 (setq diff-ignore-whitespace-switches "-b")
 (setq diff-switches '("-u"))
 
+;; 'diff-revert-and-kill-hunk' bound to 'u' and 'C-c M-u'.
+;; 'v' is now bound to 'vc-next-action' in read-only Diff mode buffers.
+;; 's' is now bound to 'diff-split-hunk' in read-only Diff mode buffers.
+
 ;;; ediff
 (setq ediff-window-setup-function 'ediff-setup-windows-plain)
 (setq ediff-split-window-function 'split-window-horizontally)
@@ -204,12 +238,6 @@
   (font-lock-add-keywords nil '(("\\<\\(FIXME\\|TODO\\|XXX+\\|BUG\\):"
                                  1 font-lock-warning-face prepend))))
 
-(setopt whitespace-line-column 80)
-(setopt whitespace-style '(face lines-tail trailing))
-(setopt whitespace-global-modes t)
-(global-whitespace-mode)
-
-(add-hook 'prog-mode-hook 'electric-pair-mode)
 (add-hook 'prog-mode-hook 'subword-mode)
 (add-hook 'prog-mode-hook 'my/prog-mode-hook)
 
@@ -226,10 +254,16 @@
         ("~/quicklisp/local-projects" . 1)
         ("~/common-lisp" . 1)))
 (add-to-list 'project-switch-commands '(magit-project-status "Magit" ?m))
+;; Or use C-RET when in magit diff to go to actual file
+(setq magit-diff-visit-prefer-worktree t)
+
+;; use magit recommended key bindings
 (global-set-key (kbd "C-c g") 'magit-status)
+(global-set-key (kbd "C-c f") 'magit-file-dispatch)
+(global-set-key (kbd "C-c F") 'magit-dispatch)
 
 ;; magit-gitflow
-(when (string= (system-name) "ws-1127")
+(when (is-work-laptop-p)
   (ensure-packages-present 'magit-gitflow)
   (require 'magit-gitflow nil t)
   (add-hook 'magit-mode-hook 'turn-on-magit-gitflow))
@@ -237,16 +271,42 @@
 (with-eval-after-load 'eglot
   (setq eglot-autoshutdown t)
   (setq eglot-extend-to-xref t)
+  (setq eglot-events-buffer-size 0)
+  (setq eglot-events-buffer-config '(:size 0 :format full))
+  (setq eglot-prefer-plaintext t)
+  (setq jsonrpc-event-hook nil)
+  ;; Check these:
+  ;;(setq eglot-report-progress nil)
+  ;;(setq eglot-code-action-indications nil) ;; emacs31
   (define-key eglot-mode-map (kbd "C-c e h") 'eglot-help-at-point)
   (define-key eglot-mode-map (kbd "C-c e a") 'eglot-code-actions)
+  (define-key eglot-mode-map (kbd "C-c e o") 'eglot-action-organize-imports)
   (define-key eglot-mode-map (kbd "C-c e f") 'eglot-format)
   (define-key eglot-mode-map (kbd "C-c e r") 'eglot-rename))
 
-(add-hook 'eglot-managed-mode-hook
-          (lambda ()
-            (add-hook 'before-save-hook #'eglot-format-buffer nil t)))
+;; (add-hook 'eglot-managed-mode-hook
+;;           (lambda ()
+;;             (add-hook 'before-save-hook #'eglot-format-buffer nil t)))
 
-;; todo: editorconfig
+;;; editorconfig
+;;; TODO:
+
+;; Java: checkout lombok annotations
+;; JAVA_TOOL_OPTIONS="-javaagent:<lombok>"
+
+; ;(shell-command "cd ~/git/Salli; mvn dependency:list")
+
+(defun list-lombok-jars ()
+  "List the lombok files in current project."
+  (interactive)
+  ;; ensure we are in correct work dir
+  (with-temp-buffer
+    (shell-command "env -i mvn dependency:list" t)
+    (keep-lines "module lombok")
+    (search-forward "jar") ;; TODO: fail if not found
+    (forward-char)
+    (zap-to-char 1 ":")
+    (concat "lombok-" (yank-pop) ".jar")))
 
 ;; flymake
 (with-eval-after-load 'flymake
@@ -261,19 +321,19 @@
 
 ;;; Go programming
 (setenv "GOPATH" (expand-file-name "workspace" "~"))
-(add-hook 'before-save-hook 'gofmt-before-save)
-(add-hook 'go-mode-hook 'eglot-ensure)
 
-(ensure-packages-present '(go-mode go-eldoc))
-(with-eval-after-load 'go-mode
-  (let ((m go-mode-map))
-    (define-key m (kbd "M-.") 'godef-jump)
-    (define-key m (kbd "C-c C-r") 'go-remove-unused-imports)
-    (define-key m (kbd "C-c g i") 'go-goto-imports)
-    (define-key m (kbd "C-c C-k") 'godoc))
+;; (add-hook 'before-save-hook 'gofmt-before-save)
+;; (add-hook 'go-mode-hook 'eglot-ensure)
+;; (ensure-packages-present '(go-mode go-eldoc))
+;; (with-eval-after-load 'go-mode
+;;   (let ((m go-mode-map))
+;;     (define-key m (kbd "M-.") 'godef-jump)
+;;     (define-key m (kbd "C-c C-r") 'go-remove-unused-imports)
+;;     (define-key m (kbd "C-c g i") 'go-goto-imports)
+;;     (define-key m (kbd "C-c C-k") 'godoc))
 
-  (require 'go-eldoc nil t)
-  (add-hook 'go-mode-hook 'go-eldoc-setup))
+  ;; (require 'go-eldoc nil t)
+  ;; (add-hook 'go-mode-hook 'go-eldoc-setup))
 
 ;;; Ruby
 (dolist (m '(("\\.\\(?:gemspec\\|irbrc\\|gemrc\\|rake\\|rb\\|ru\\|thor\\)\\'" . ruby-ts-mode)
@@ -288,10 +348,16 @@
 
 ;;; Lisp programming
 (global-eldoc-mode 1)
-(setq eldoc-echo-area-use-multiline-p nil) ;; test t, 'truncate-sym-name-if-fit
+(setq eldoc-help-at-pt t)
+(setq eldoc-echo-area-use-multiline-p 'truncate-sym-name-if-fit)
 (setq eldoc-idle-delay 0.1) ;; default 0.5
 
-(ensure-packages-present 'sly)
+;; TODO: disable whitespace-mode in *sly-description* buffer
+(unless (package-installed-p 'sly)
+  (package-vc-install
+   '(sly :vc-backend Git
+         :url "https://github.com/joaotavora/sly.git"
+         :doc "doc/sly.texi")))
 
 (setq sly-lisp-implementations '((sbcl ("sbcl" "--dynamic-space-size" "2048"))
                                  (ecl ("ecl"))
@@ -310,15 +376,18 @@
   (setq common-lisp-hyperspec-root (concat "file://" local-hyperspec-path))
   (setq common-lisp-hyperspepac-symbol-table (concat common-lisp-hyperspec-root "Data/Map_Sym.txt")))
 
+;; TODO: is this needed with package-vc-install?
 ;; compile and add sly info manual to emacs info-directory alist
-(when-let* ((sly-doc-dirs (file-expand-wildcards (concat (locate-user-emacs-file "elpa") "/sly-*/doc"))))
-  (let ((sly-doc-dir (car sly-doc-dirs)))
-    (when (file-directory-p sly-doc-dir)
-      ;; if no Info file found, generate it
-      (unless (file-exists-p (concat sly-doc-dir "/sly.info"))
-        (let ((default-directory sly-doc-dir))
-          (async-shell-command "make sly.info")))
-      (add-to-list 'Info-directory-list sly-doc-dir))))
+;; (when-let* ((sly-doc-dirs (file-expand-wildcards (concat (locate-user-emacs-file "elpa") "/sly-*/doc"))))
+;;   (let ((sly-doc-dir (car sly-doc-dirs)))
+;;     (when (file-directory-p sly-doc-dir)
+;;       ;; if no Info file found, generate it
+;;       (unless (file-exists-p (concat sly-doc-dir "/sly.info"))
+;;         (let ((default-directory sly-doc-dir))
+;;           (if (eq system-type 'berkeley-unix)
+;;               (async-shell-command "gmakeinfo sly.texi")
+;;             (async-shell-command "make sly.info")))))
+;;       (add-to-list 'Info-directory-list sly-doc-dir)))
 
 ;; if we have log4cl dist use it to set global logging
 (when-let* ((log4cl-dirs
@@ -332,6 +401,11 @@
 
 (ensure-packages-present 'sly-repl-ansi-color)
 (push 'sly-repl-ansi-color sly-contribs)
+
+(add-to-list 'sly-contribs 'sly-asdf 'append)
+(add-to-list 'sly-contribs 'sly-quicklisp 'append)
+(add-to-list 'sly-contribs 'sly-macrostep 'append)
+(add-to-list 'sly-contribs 'sly-repl-ansi-color 'append)
 
 (ensure-packages-present 'quack)
 (setq quack-default-program "csi")
@@ -458,14 +532,29 @@
 (add-hook 'typescript-ts-hook #'prettier-mode)
 
 (ensure-packages-present 'ts-comint)
-(add-hook 'typescript-ts-mode-hook
-          (lambda ()
-            (setopt typescript-ts-indent-offset 4)
-            (local-set-key (kbd "C-x C-e") 'ts-send-last-sexp)
-            (local-set-key (kbd "C-M-x") 'ts-send-last-sexp-and-go)
-            (local-set-key (kbd "C-c b") 'ts-send-buffer)
-            (local-set-key (kbd "C-c C-b") 'ts-send-buffer-and-go)
-            (local-set-key (kbd "C-c l") 'ts-load-file-and-go)))
+
+;; TODO: use biome!
+(defun my/use-project-eslint ()
+  (let* ((root (locate-dominating-file
+                (or (buffer-file-name) default-directory)
+                "node_modules"))
+         (eslint
+          (and root
+               (expand-file-name "node_modules/.bin/eslint"
+                                 root))))
+    (when (and eslint (file-executable-p eslint))
+      (setq-local flymake-eslint-executable-name eslint))))
+
+(defun my-typescript-hook ()
+  "My shared options for Typescript(-ts)?-mode"
+  (setq-local typescript-ts-indent-offset 4)
+  (local-set-key (kbd "C-x C-e") 'ts-send-last-sexp)
+  (local-set-key (kbd "C-M-x") 'ts-send-last-sexp-and-go)
+  (local-set-key (kbd "C-c b") 'ts-send-buffer)
+  (local-set-key (kbd "C-c C-b") 'ts-send-buffer-and-go)
+  (local-set-key (kbd "C-c l") 'ts-load-file-and-go))
+
+(add-hook 'typescript-ts-mode-hook #'my-typescript-hook)
 
 (ensure-packages-present 'vcl-mode)
 

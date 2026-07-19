@@ -2,7 +2,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2026-06-14 13:22:00 (tmy)>
+;;; Time-stamp: <2026-07-18 10:11:29 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
 ;;;
@@ -23,16 +23,29 @@
 ;;; - grep-use-headings t
 ;;; - { C-x ESC SEC }
 ;;; - indent-rigidly { C-x TAB }, indent-code-rigidly
-;;; - org set timer { C-c C-x ; }
+;;; (setopt project-vc-extra-root-markers '(".projectile" ".git")) ;; .asd?
+;;; project-specific history: use-package xref-project-history?
+;;; ff-find-other-file / find-sibling-file
 
-;; (setq register-use-preview t)
+;;; (setq register-use-preview t)
 
 ;; (add-hook 'text-mode (setq-local revert-buffer-function (run-tests)))
 ;;; - C-a to toggle between bol and back-to-indentation
+;;; - fails when no notwork
+;;; - FIX: kill-this-buffer must be bound to an event with parameters
+;;; - fn how-many to get regexp match count
+;;; - https://writequit.org/articles/working-with-logs-in-emacs.html#filtering-logs
+;;; - add defun to send buffer contents to termbin.com $ cat my_file.log | nc termbin.com 9999
+;;; - https://writequit.org/eos/eos.html
+;;; - see: https://svn.red-bean.com/repos/kfogel/trunk/.emacs
+;;; -- at least pöhinää -> bs generator
+;;; - https://github.com/radian-software/apheleia
+;;; - use one file with outline mode?
+;;; - https://www.reddit.com/r/emacs/comments/1fwqz07/any_tips_about_improving_spell_checking/
+;;; - https://rants.org/
+;;; - unbind save-buffers-kill-terminal
 
 ;;; Code:
-
-(defconst local-elisp-dir (locate-user-emacs-file "elisp"))
 
 (require 'package)
 
@@ -48,6 +61,19 @@
 (package-refresh-contents 'async)
 
 (defvar *packages-refreshed* nil)
+
+(setq package-review-policy t
+      package-review-diff-command '("git" "diff" "--no-index"
+                                    "--color=never" "--diff-filter=d"))
+
+;; TODO: check this
+(setq tls-program
+      ;; Defaults:
+      ;; '("gnutls-cli --insecure -p %p %h"
+      ;;   "gnutls-cli --insecure -p %p %h --protocols ssl3"
+      ;;   "openssl s_client -connect %h:%p -no_ssl2 -ign_eof")
+      '(;;"gnutls-cli -p %p %h"
+        "openssl s_client -connect %h:%p -no_ssl2 -no_ssl3 -ign_eof"))
 
 ;; commands:
 ;; package-update, package-update-all
@@ -75,20 +101,22 @@
        (package-install ,package))
      (if (not (require ,package nil 'noerror))
          (display-warning 'zmg/with-package
-                          (format "Loading of package `%s' failed" ,package) :error)
+                          (format "Loading of package `%s' failed" ,package)
+                          :error)
        (with-eval-after-load ,package
          ,@body))))
 
 (add-hook 'package-menu-mode-hook 'hl-line-mode)
 
-;; add local elisp files to load path
-(unless (file-directory-p local-elisp-dir)
-  (make-directory local-elisp-dir))
-(add-to-list 'load-path local-elisp-dir nil)
-
 ;; append rest of emacs init files to load path
 ;; and load them
-(add-to-list 'load-path (locate-user-emacs-file "init.d") t)
+(add-to-list 'load-path
+             (expand-file-name (locate-user-emacs-file "init.d")) t)
+
+(defun is-work-laptop-p ()
+  "Predicate to check if running on work laptop."
+  (string= (car (split-string (system-name) "\\."))
+           "ws-1127"))
 
 ;; Reduce startup time by ~0.2s reducing the frequency of garbage
 ;; collection during the initialization.
@@ -112,7 +140,10 @@
   ;; Load optional local startup file
   (add-hook 'after-init-hook
             (lambda ()
-              (load (expand-file-name "init-local.el" user-emacs-directory) t t)))
+              (load
+               (expand-file-name (concat "init-"
+                                         (car (split-string (system-name) "\\.")))
+                                 user-emacs-directory) t t)))
 
   ;; load custom settings
   (setq custom-file (locate-user-emacs-file "custom.el"))
@@ -132,14 +163,16 @@
                      gcs-done)))
 
 ;; Only start server mode for non-admin accounts
-(unless (string-equal "root" (getenv "USER"))
-  (when (and (fboundp 'server-running-p)
-             (server-running-p))
-    ;; TODO: Global env here or command specific override?
-    ;; NOTE: causes magit to execute emacsclient etc.
-    ;;(setenv "EDITOR" (expand-file-name "emacsclient" invocation-directory))
-
-    (server-start)))
+(unless (and (string-equal "root" (getenv "USER"))
+             server-process)
+  ;; TODO: Global env here or command specific override?
+  (setenv "EDITOR" (expand-file-name "emacsclient" invocation-directory))
+  (let ((run-dir (expand-file-name "run" user-emacs-directory)))
+    (unless (file-directory-p run-dir)
+      (mkdir run-dir)
+      (chmod run-dir #o700))
+    (setq server-socket-dir run-dir))
+  (server-start))
 
 (provide 'init)
 

@@ -6,11 +6,13 @@
 
 ;;; Code:
 
+(setq telnet-program "nc")
+
 ;; rcirc
 (with-eval-after-load 'rcirc
   (setq rcirc-server-alist
 	'(("irc.libera.chat"
-           :channels ("#openbsd" "#lisp" "#emacs")
+           :channels ("#openbsd" "#lisp" "#emacs" "#gameoftrees")
            :port 6697
            :encryption tls)))
   (setq rcirc-default-nick "zmyrgel")
@@ -175,6 +177,9 @@
           ("Emacs Wiki" . [simple-query "www.emacswiki.org" "www.emacswiki.org/cgi-bin/wiki/" ""]))))
 
 (global-set-key (kbd "C-x /") 'webjump)
+
+(add-to-list 'browse-url-transform-alist
+             '("www.google.com" . "www.duckduckgo.com"))
 
 (provide 'init-web)
 

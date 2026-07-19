@@ -20,25 +20,29 @@
 (setq tab-always-indent 'complete)
 
 ;;; minibuffer
-;;(setq completion-styles '(basic partial-completion emacs22))
-(add-to-list 'completion-styles 'flex t)
+(setq completion-styles '(basic partial-completion flex))
+(setq completion-category-overrides
+      '((file (styles . (basic partial-completion flex)))
+        (project-file (styles . (basic substring partial-completion flex)))
+        (imenu (styles . (basic substring flex)))
+        (kill-ring (styles . (basic substring flex)))))
 
 (setq completion-auto-deselect t)
-(setq completion-auto-help 'visible)  ; 'visible 'always 'lazy t nil
-(setq completion-auto-select 'second-tab) ;; nil t second-tab ;; check
+(setq completion-auto-help 'visible)
+(setq completion-auto-select 'second-tab)
 (setq completion-auto-wrap t)
 (setq completion-cycle-threshold nil)
-(setq completion-eager-display 'auto) ; 'auto
-(setq completion-eager-update 'auto) ; 'auto
+(setq completion-eager-display 'auto)
+(setq completion-eager-update 'auto)
 (setq completion-flex-nospace nil)
 (setq completion-ignore-case t)
-(setq completion-pcm-complete-word-inserts-delimiters t)
+(setq completion-pcm-complete-word-inserts-delimiters nil)
 (setq completion-pcm-leading-wildcard t)
 (setq completion-pcm-word-delimiters "-_./:| ")
 (setq completion-show-help nil)
 
 (setq completions-format 'one-column)
-(setq completions-max-height 20) ; nil
+(setq completions-max-height 20)
 (setq completions-detailed t)
 (setq completions-group t)
 (setq completions-group-sort 'alphabetical)
@@ -66,8 +70,8 @@
 (add-hook 'minibuffer-setup-hook
           (lambda () (setq truncate-lines t)))
 
-;; previous-line-completion, next-line-completion commands
-;; Select completion options with up/down when completing in the minibuffer
+;; Select completion options with up/down when completing in the
+;; minibuffer or normal buffer
 (define-key minibuffer-local-map (kbd "C-p") #'minibuffer-previous-completion)
 (define-key minibuffer-local-map (kbd "C-n") #'minibuffer-next-completion)
 
@@ -75,7 +79,7 @@
 (define-key completion-in-region-mode-map (kbd "C-p") #'minibuffer-previous-completion)
 (define-key completion-in-region-mode-map (kbd "C-n") #'minibuffer-next-completion)
 
-;; icomplete
+;;; icomplete
 
 ;;(icomplete-vertical-mode -1)
 ;; Do not show completions buffer when also showing in-buffer options
@@ -83,7 +87,7 @@
 ;; show only icomplete in-buffer display and not *Completions* buffer
 ;;(setq icomplete-in-buffer nil) ;; t
 
-;; completion preview
+;;; completion preview
 (global-completion-preview-mode)
 (setq completion-preview-exact-match-only nil)
 (setq completion-preview-minimum-symbol-length 3)

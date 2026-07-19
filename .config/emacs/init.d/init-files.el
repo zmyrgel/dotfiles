@@ -5,6 +5,9 @@
 
 ;;; Code:
 
+;; ffap
+(setq ffap-machine-p-known 'reject)
+
 ;; Useful key bindings { C-0 w } to copy link
 (add-hook 'dired-mode-hook 'hl-line-mode)
 (add-hook 'dired-mode-hook 'dired-hide-details-mode)
@@ -36,6 +39,7 @@
   (setq wallpaper-command-args '("--maximize" "%f")))
 
 ;; TRAMP stuff
+;; { C-x x @ for tramp-revert-buffer-with-sudo }
 (setq tramp-use-scp-direct-remote-copying t)
 (setq tramp-file-name-with-method
       (when-let* ((become-cmd (or (executable-find "doas")

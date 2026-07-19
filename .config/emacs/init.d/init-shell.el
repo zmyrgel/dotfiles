@@ -9,7 +9,7 @@
 ;; TODO: really need to check dir exists?
 (let ((home-man (expand-file-name "~/share/man"))
       (man-path (split-string (or (getenv "MANPATH") "") ":")))
-  (when (file-exists-p home-man)
+  (when (file-directory-p home-man)
     (add-to-list 'man-path home-man)
     (setenv "MANPATH" (string-join man-path ":"))))
 
@@ -82,6 +82,11 @@
 (setq eshell-hist-ignoredups t)
 (setq eshell-history-append t)
 (setq eshell-history-isearch 'dwim)
+
+(defun eshell/x ()
+  "Closes the Emacs Shell session and gets rid of the window as well."
+  (delete-window)
+  (eshell/exit))
 
 (provide 'init-shell)
 

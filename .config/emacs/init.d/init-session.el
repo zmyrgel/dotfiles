@@ -5,8 +5,15 @@
 
 ;;; Code:
 
+(defun my/recenter-buffer ()
+  "Recenter the view on buffer."
+  (when buffer-file-name
+    (ignore-errors (recenter))))
+
 (setq save-place-file (locate-user-emacs-file "places"))
+(setq save-place-limit 600)
 (add-hook 'after-init-hook 'save-place-mode)
+(add-hook 'save-place-after-find-file-hook #'my/recenter-buffer)
 
 (setq recentf-save-file (locate-user-emacs-file "recentf"))
 (setq recentf-max-saved-items 300)
@@ -20,9 +27,15 @@
 (setq bookmark-default-file (locate-user-emacs-file "bookmarks"))
 (setq bookmark-save-flag 1)
 
-(setq savehist-file (locate-user-emacs-file "savehist"))
-(setq history-length 50)
+(setq history-length 100)
 (setq history-delete-duplicates t)
+
+(defun my/strip-kill-ring ()
+  "Strip all but strings from kill-ring."
+  (mapcar #'substring-no-properties
+          (cl-remove-if-not #'stringp kill-ring)))
+
+(setq savehist-file (locate-user-emacs-file "savehist"))
 (setq savehist-save-minibuffer-history t)
 (setq savehist-additional-variables
       '(kill-ring
@@ -31,6 +44,7 @@
         search-ring regexp-search-ring))
 (setq savehist-autosave-interval 60)
 (add-hook 'after-init-hook 'savehist-mode)
+(add-hook 'savehist-save-hook #'my/strip-kill-ring)
 
 (add-hook 'kill-emacs-hook 'write-abbrev-file)
 (setq abbrev-file-name (locate-user-emacs-file "abbrev_defs"))
@@ -38,7 +52,7 @@
 (when (file-exists-p abbrev-file-name)
   (quietly-read-abbrev-file))
 
-(add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
+(add-hook 'after-save-hook #'executable-make-buffer-file-executable-if-script-p)
 (setq view-read-only t)
 (setq large-file-warning-threshold 50000000) ;; 50mb
 
@@ -51,11 +65,6 @@
 
 (setq mode-require-final-newline t)
 (setq require-final-newline t)
-
-(setq remember-data-file "~/Documents/notes"
-      remember-notes-initial-major-mode 'org-mode
-      remember-notes-auto-save-visited-file-name t
-      remember-in-new-frame t)
 
 (provide 'init-session)
 

@@ -2,6 +2,7 @@
 ;;;
 ;;; Commentary:
 ;;; - Org-mode related options
+;;; - check: https://macowners.club/posts/personal-touch-org-agenda/
 
 ;;; Code:
 

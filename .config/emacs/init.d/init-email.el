@@ -8,11 +8,12 @@
 (setq user-full-name "Timo Myyrä")
 
 ;; smtpmail
-(setq smtpmail-default-smtp-server "smtp.fastmail.com")
-(setq smtpmail-smtp-server         "smtp.fastmail.com")
-(setq smtpmail-local-domain        "bittivirhe.fi")
-(setq smtpmail-smtp-service        465)
-(setq smtpmail-stream-type         'ssl)
+(unless (is-work-laptop-p)
+  (setq smtpmail-default-smtp-server "smtp.fastmail.com")
+  (setq smtpmail-smtp-server         "smtp.fastmail.com")
+  (setq smtpmail-local-domain        "bittivirhe.fi")
+  (setq smtpmail-smtp-service        465)
+  (setq smtpmail-stream-type         'ssl))
 
 (setq message-send-mail-function 'smtpmail-send-it)
 (setq send-mail-function 'smtpmail-send-it)

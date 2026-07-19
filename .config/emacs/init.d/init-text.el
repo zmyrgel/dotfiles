@@ -5,14 +5,24 @@
 
 ;;; Code:
 
+;; whitespace mode
+(setopt whitespace-line-column 80)
+(setopt whitespace-style '(face lines-tail trailing))
+(setopt whitespace-global-modes '(not agent-shell-mode magit-status-mode magit-diff-mode))
+(global-whitespace-mode)
+
 ;; grep
 (setq grep-find-use-xargs 'exec-plus)
 
+;; find-dired results with human readable sizes
+;; (find-ls-option '("-exec ls -ldh {} +" . "-ldh"))
 (setq grep-find-ignored-directories
-      '("SCCS" "RCS" "CVS" "MCVS" ".src" ".svn" ".git" ".hg" ".bzr" "_MTN" "_darcs" "{arch}" "node_modules" "build" "dist"))
+      '("SCCS" "RCS" "CVS" "MCVS" ".src" ".svn" ".git" ".hg" ".bzr"
+        "_MTN" "_darcs" "{arch}" "node_modules" "build" "dist"))
 
 ;; rg stuff for evaluation
 (when (and nil (executable-find "rg"))
+  (setq xref-search-program 'ripgrep)
   (grep-apply-setting
    'grep-find-template
    "find <D> <X> -type f <F> -exec rg <C> --no-heading -H  <R> /dev/null {} +")
@@ -21,32 +31,25 @@
    "rg --no-heading -H -uu -g <F> <R> <D>")
   (grep-apply-setting
    'grep-find-command
-   '("rg -n -H --no-heading -e '' $(git rev-parse --show-toplevel || pwd)" . 27)))
+   '("rg -n -H --no-heading -e '' $(git rev-parse --show-toplevel || pwd)" . 27))
+  (grep-apply-setting
+   'grep-command
+   "rg -nS --no-heading ")
+  (setq xref-search-program 'ripgrep))
 
-;; * {C-c C-e}: Apply the changes to file buffers.
-;; * {C-c C-u}: All changes are unmarked and ignored.
-;; * {C-c C-d}: Mark as delete to current line (including newline).
-;; * {C-c C-r}: Remove the changes in the region (these changes are not
-;;              applied to the files. Of course, the remaining
-;;              changes can still be applied to the files.)
-;; * {C-c C-p}: Toggle read-only area.
-;; * {C-c C-k}: Discard all changes and exit.
-;; * {C-x C-q}: Exit wgrep mode.
-(ensure-packages-present 'wgrep)
-(setq wgrep-auto-save-buffer t)
-(setq wgrep-change-readonly-file nil)
+;; TODO: This needed?
+;; (add-to-list 'grep-find-ignored-directories "node_modules")
+;; (add-to-list 'grep-find-ignored-directories "build")
+;; (add-to-list 'grep-find-ignored-directories "dist")
+
 
 ;; | Key chord           | Description       |
 ;; |---------------------+-------------------|
 ;; | C-x r t             | string-rectangle  |
 
 ;; electric
-(setq electric-pair-preserve-balance t)
-(setq electric-pair-delete-adjacent-pairs t)
-(setq electric-pair-open-newline-between-pairs t)
-(setq electric-pair-skip-whitespace 'nil)
-(setq electric-pair-skip-self t)
-
+(setq electric-pair-skip-whitespace 'chomp)
+(add-hook 'after-init-hook 'electric-pair-mode)
 (add-hook 'after-init-hook 'electric-indent-mode)
 
 ;; use print helper
@@ -90,7 +93,7 @@
         (output-pdf "pdf-tools")
         (output-html "xdg-open")))
 (setq TeX-view-program-list '(("pdf-tools" "TeX-pdf-tools-sync-view")))
-
+(setq TeX-command-extra-options "-shell-escape -8bit")
 (setq TeX-auto-save t)
 (setq TeX-parse-self t)
 (setq TeX-insert-braces nil)
@@ -114,6 +117,7 @@
 ;;(pdf-tools-install :no-query :skip-deps :no-error)
 
 (setq doc-view-mupdf-use-svg t)
+(setq doc-view-resolution 120)
 
 (ensure-packages-present 'nov)
 (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
@@ -127,15 +131,7 @@
 
 (ensure-packages-present 'x509-mode)
 
-(ensure-packages-present 'markdown-mode)
-(setq markdown-command "multimarkdown") ;; init
-(add-to-list 'auto-mode-alist '("README\\.md\\'" . gfm-mode))
-(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
-(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
-
-(ensure-packages-present 'yaml-mode)
-(add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-mode))
-(add-to-list 'magic-mode-alist '("---" . yaml-mode))
+(add-to-list 'magic-mode-alist '("---" . yaml-ts-mode))
 
 ;; Any file start with xml will be treat as nxml-mode
 (add-to-list 'magic-mode-alist '("<\\?xml" . nxml-mode))
@@ -151,6 +147,7 @@
 (defun my/xml-pretty-print (begin end)
   "Pretty-print the XML markup in selected region."
   (interactive "r")
+  ;; TODO: doctype causes problem
   (if-let* ((xmlstarlet-cmd (or (and (eq system-type 'berkeley-unix)
                                      (executable-find "xml"))
                                 (executable-find "xmlstarlet"))))
@@ -178,6 +175,13 @@
 (add-to-list 'auto-mode-alist '("\\.puml\\'" . plantuml-mode))
 
 (ensure-packages-present 'vundo)
+
+(defun pulse-line ()
+  "Pulse the current line."
+  (interactive)
+  (pulse-momentary-highlight-one-line))
+
+;;(add-hook 'window-state-change-hook #'pulse-line)
 
 (provide 'init-text)
 
