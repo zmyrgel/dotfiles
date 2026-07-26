@@ -132,21 +132,15 @@
       remember-notes-initial-major-mode 'org-mode
       remember-notes-auto-save-visited-file-name t)
 
-;;; PROCED
-(use-package proced
-  :ensure nil
-  :defer t
-  :custom
-  (proced-enable-color-flag t)
-  (proced-tree-flag t)
-  (proced-auto-update-flag 'visible)
-  (proced-auto-update-interval 1)
-  (proced-descent t)
-  (proced-filter 'user) ;; We can change interactively with `s'
-  :config
-  (add-hook 'proced-mode-hook
-            (lambda ()
-              (proced-toggle-auto-update 1))))
+;;; proced
+(setq proced-enable-color-flag t)
+(setq proced-tree-flag t)
+(setq proced-auto-update-flag 'visible)
+(setq proced-auto-update-interval 1)
+(setq proced-descent t)
+(setq proced-filter 'user)
+
+(add-hook 'proced-mode-hook 'proced-toggle-auto-update)
 
 
 (provide 'init-general)
