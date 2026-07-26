@@ -160,7 +160,6 @@
 (setq vc-git-revision-complete-only-branches t)
 (setq vc-git-print-log-follow nil)
 (setq vc-git-shortlog-switches nil)
-(setq vc-git-show-stash 0)
 
 ;;; vc-got
 (let ((vc-got-repo-dir (expand-file-name "~/got/vc-got")))
@@ -313,11 +312,11 @@
   (define-key flymake-mode-map (kbd "M-n") 'flymake-goto-next-error)
   (define-key flymake-mode-map (kbd "M-p") 'flymake-goto-prev-error))
 
-(ensure-packages-present 'flymake-eslint)
-(setq flymake-eslint-executable-name "eslint")
-(setq flymake-eslint-executable-args nil)
-(setq flymake-eslint-show-rule-name t)
-(setq flymake-eslint-defer-binary-check t)
+;; (ensure-packages-present 'flymake-eslint)
+;; (setq flymake-eslint-executable-name "eslint")
+;; (setq flymake-eslint-executable-args nil)
+;; (setq flymake-eslint-show-rule-name t)
+;; (setq flymake-eslint-defer-binary-check t)
 
 ;;; Go programming
 (setenv "GOPATH" (expand-file-name "workspace" "~"))
@@ -364,6 +363,7 @@
                                  (clisp ("clisp" "-ansi"))
                                  (chicken ("csi"))
                                  (abcl ("abcl"))))
+(setq sly-default-lisp 'sbcl)
 
 (when-let* ((local-hyperspec-path
              (seq-some (lambda (p)
@@ -398,14 +398,18 @@
   (global-log4sly-mode 1))
 
 (setq sly-mrepl-prevent-duplicate-history 'move)
+;;(setq sly-command-switch-to-existing-lisp )
 
 (ensure-packages-present 'sly-repl-ansi-color)
-(push 'sly-repl-ansi-color sly-contribs)
+(ensure-packages-present 'sly-asdf)
+(ensure-packages-present 'sly-macrostep)
+(ensure-packages-present 'sly-quicklisp)
 
-(add-to-list 'sly-contribs 'sly-asdf 'append)
-(add-to-list 'sly-contribs 'sly-quicklisp 'append)
-(add-to-list 'sly-contribs 'sly-macrostep 'append)
-(add-to-list 'sly-contribs 'sly-repl-ansi-color 'append)
+(sly-setup '(sly-fancy
+             sly-quicklisp
+             sly-macrostep
+             sly-repl-ansi-color
+             sly-asdf))
 
 (ensure-packages-present 'quack)
 (setq quack-default-program "csi")
