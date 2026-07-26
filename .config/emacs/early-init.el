@@ -24,8 +24,6 @@
 
 ;;; Commentary:
 
-;; See my dotfiles: https://github.com/zmyrgel/dotfiles
-
 ;;; Code:
 
 (when (display-graphic-p)
@@ -56,11 +54,13 @@
       file-name-handler-alist nil
       vc-handled-backends nil)
 
-(add-hook 'emacs-startup-hook
-          (lambda ()
-            (setq gc-cons-threshold orig--gc-cons-threshold
-                  file-name-handler-alist orig--file-name-handler-alist
-                  vc-handled-backends orig--vc-handled-backends)))
+(defun my/restore-overrides ()
+  "Restore temporarily overwritten variables."
+  (setq gc-cons-threshold orig--gc-cons-threshold
+        file-name-handler-alist orig--file-name-handler-alist
+        vc-handled-backends orig--vc-handled-backends))
+
+(add-hook 'emacs-startup-hook 'my/restore-overrides t)
 
 (provide 'early-init)
 ;;; early-init.el ends here
