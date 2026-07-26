@@ -91,7 +91,7 @@
 (global-completion-preview-mode)
 (setq completion-preview-exact-match-only nil)
 (setq completion-preview-minimum-symbol-length 3)
-(setq completion-preview-idle-delay nil)
+(setq completion-preview-idle-delay 0.3)
 
 ;; imenu: M-g i
 (setq imenu-auto-rescan t)
