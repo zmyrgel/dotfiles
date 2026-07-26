@@ -2,7 +2,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2026-07-18 10:11:29 (tmy)>
+;;; Time-stamp: <2026-07-26 20:16:35 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
 ;;;
@@ -26,6 +26,7 @@
 ;;; (setopt project-vc-extra-root-markers '(".projectile" ".git")) ;; .asd?
 ;;; project-specific history: use-package xref-project-history?
 ;;; ff-find-other-file / find-sibling-file
+;;; BUG: rcirc has extra whitespace after JOIN entries
 
 ;;; (setq register-use-preview t)
 
@@ -118,6 +119,12 @@
   (string= (car (split-string (system-name) "\\."))
            "ws-1127"))
 
+(defun my/load-local-init ()
+  "Load the local init file."
+  (load (expand-file-name (concat "init-"
+                                  (car (split-string (system-name) "\\.")))
+                          user-emacs-directory) t t))
+
 ;; Reduce startup time by ~0.2s reducing the frequency of garbage
 ;; collection during the initialization.
 (let ((gc-cons-threshold (* 50 1000 1000)))
@@ -138,12 +145,7 @@
   (require 'init-extras)
 
   ;; Load optional local startup file
-  (add-hook 'after-init-hook
-            (lambda ()
-              (load
-               (expand-file-name (concat "init-"
-                                         (car (split-string (system-name) "\\.")))
-                                 user-emacs-directory) t t)))
+  (add-hook 'after-init-hook 'my/load-local-init t)
 
   ;; load custom settings
   (setq custom-file (locate-user-emacs-file "custom.el"))
@@ -152,15 +154,16 @@
 ;;; ------------------------------
 ;;; Finalizers
 ;;; ------------------------------
+(defun my/log-start-gc ()
+  "Notify how long the start up took."
+  (message "Emacs ready in %s with %d garbage collections."
+           (format "%.2f seconds"
+                   (float-time
+                    (time-subtract after-init-time before-init-time)))
+           gcs-done))
 
 ;; Use a hook so the message doesn't get clobbered by other messages.
-(add-hook 'emacs-startup-hook
-          (lambda ()
-            (message "Emacs ready in %s with %d garbage collections."
-                     (format "%.2f seconds"
-                             (float-time
-                              (time-subtract after-init-time before-init-time)))
-                     gcs-done)))
+(add-hook 'emacs-startup-hook 'my/log-start-gc)
 
 ;; Only start server mode for non-admin accounts
 (unless (and (string-equal "root" (getenv "USER"))
