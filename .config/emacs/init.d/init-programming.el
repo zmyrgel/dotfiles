@@ -163,7 +163,7 @@
 (setq vc-git-show-stash 0)
 
 ;;; vc-got
-(let ((vc-got-repo-dir (expand-file-name "~/git/vc-got")))
+(let ((vc-got-repo-dir (expand-file-name "~/got/vc-got")))
   (if (file-directory-p vc-got-repo-dir)
       (add-to-list 'load-path vc-got-repo-dir)
     (ensure-packages-present 'vc-got))
