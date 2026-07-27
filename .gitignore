@@ -1,3 +1,5 @@
+#*#
+.#*
 *~
 *.old
 .config/emacs/%backup%~
@@ -53,3 +55,8 @@
 .config/emacs/var
 .config/emacs/eudc-options
 .config/emacs/org-roam.db
+.agent-shell/
+.config/emacs/tree-sitter/
+.config/emacs/agent/
+.config/emacs/eca/
+.config/emacs/shadows
