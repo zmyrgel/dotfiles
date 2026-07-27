@@ -1,24 +1,24 @@
 # Variables -*- mode: sh; coding: utf-8-unix; -*-
 
-HISTSIZE=1000
+HISTSIZE=2000
 PAGER=less
-LESS="-i -M -q -S -Sm -F -g --no-init"
+LESS="-R -M -I -X -F -i"
 CVS_RSH=ssh
 
 export HISTSIZE HISTFILE PAGER LESS CVS_RSH
 
-if [ -x $(which emacsclient) ]
+if command -v emacsclient >/dev/null 2>&1
 then
-	VISUAL='emacsclient -a ""'
-elif [ -x $(which mg) ]
+	VISUAL='emacsclient'
+elif command -v mg >/dev/null 2>&1
 then
 	VISUAL='mg'
 fi
 
-ALTERNATE_EDITOR="$VISUAL"
-EDITOR="$VISUAL"
-VISUAL="$VISUAL"
-FCEDIT="$VISUAL"
+ALTERNATE_EDITOR="${VISUAL:-vi}"
+EDITOR="${VISUAL:-vi}"
+VISUAL="${VISUAL:-vi}"
+FCEDIT="${VISUAL:-vi}"
 export ALTERNATE_EDITOR EDITOR VISUAL FCEDIT
 
 ### PATH ###
