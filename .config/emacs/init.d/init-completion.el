@@ -92,14 +92,16 @@
 (setq completion-preview-exact-match-only nil)
 (setq completion-preview-minimum-symbol-length 3)
 (setq completion-preview-idle-delay 0.3)
+(define-key completion-preview-active-mode-map (kbd "M-n") #'completion-preview-next-candidate)
+(define-key completion-preview-active-mode-map (kbd "M-p") #'completion-preview-prev-candidate)
 
-;; imenu: M-g i
+;;; imenu: M-g i
 (setq imenu-auto-rescan t)
 (setq imenu-max-item-length 100)
 (setq imenu-space-replacement ".")
 (setq imenu-level-separator ":")
 
-;; hippie-exp
+;;; hippie-exp
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
 
 (setq dabbrev-abbrev-skip-leading-regexp "[$*/=']")

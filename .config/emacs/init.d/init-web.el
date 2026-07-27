@@ -18,18 +18,19 @@
   (setq rcirc-default-nick "zmyrgel")
   (setq rcirc-default-user-name "zmyrgel")
   (setq rcirc-default-full-name "Curious Minds Want To Know")
-
-  (defun my/rcirc-startup ()
-    ;;(rcirc-omit-mode 1)
-    (rcirc-track-minor-mode 1))
-
   (setq rcirc-omit-responses '("JOIN" "PART" "QUIT" "NICK" "AWAY"))
 
-  (add-hook 'rcirc-mode-hook #'my/rcirc-startup)
+  ;; {C-c C-SPC} to switch to urgent buffer
+  (defun my/rcirc-setup ()
+    (setq-local scroll-conservatively 8192))
 
-  (when-let* ((nickserv-pass (password-lookup :host "irc.libera.chat")))
-    (setq rcirc-authinfo
-          `(("libera" nickserv "zmyrgel" ,nickserv-pass))))
+  (add-hook 'rcirc-mode-hook #'my/rcirc-setup)
+  (add-hook 'rcirc-mode-hook #'flyspell-mode)
+  (add-hook 'rcirc-mode-hook #'rcirc-track-minor-mode)
+  (add-hook 'rcirc-mode-hook #'rcirc-omit-mode)
+
+  (setq rcirc-authinfo
+        '(("irc.libera.chat" nickserv "zmyrgel" :auth-source)))
 
   (setq rcirc-time-format "%Y-%m-%d %H:%M ")
   (setq rcirc-log-time-format "%Y-%m-%d %H:%M "))
@@ -80,6 +81,11 @@
   (setq erc-truncate-buffer-on-save t)
   (defvar erc-insert-post-hook nil))
 
+;;;
+;;; FTP
+;;;
+(setq ange-ftp-netrc-filename "~/.authinfo.gpg")
+
 ;;; ------------------------------
 ;;; Web Browsing settings
 ;;; ------------------------------
@@ -100,7 +106,7 @@
   (setq elfeed-show-unique-buffers t)
 
   (setq elfeed-feeds
-	'("http://nullprogram.com/feed/"
+        '("http://nullprogram.com/feed/"
           "http://planet.emacsen.org/atom.xml"
           "https://news.ycombinator.com/rss"
           "http://www.tedunangst.com/flak/rss"
@@ -120,14 +126,8 @@
           ("https://planet.lisp.org/rss20.xml" lisp)
           "https://lobste.rs/t/emacs.lisp.security.ask.ai.openbsd.programming.rss")))
 
-;; | M-s M-w | eww-search-words       |
-;;  eww
-;; :commands (eww
-;;            eww-browse-url
-;;            eww-search-words
-;;            eww-open-in-new-buffer
-;;            eww-open-file)
-
+;;;  eww
+;;; { M-s M-w } eww-search-words
 (with-eval-after-load 'eww
   (setq eww-restore-desktop nil)
   (setq eww-desktop-remove-duplicates t)
@@ -135,11 +135,11 @@
   (setq eww-search-prefix "https://duckduckgo.com/html/?q=")
   (setq eww-download-directory (expand-file-name "Downloads" "~"))
   (setq eww-suggest-uris
-	'(eww-links-at-point thing-at-point-url-at-point))
+        '(eww-links-at-point thing-at-point-url-at-point))
   (setq eww-bookmarks-directory (locate-user-emacs-file "eww-bookmarks"))
   (setq eww-history-limit 150)
   (setq eww-use-external-browser-for-content-type
-	"\\`\\(video/\\|audio/\\|application/ogg\\|pdf\\)")
+        "\\`\\(video/\\|audio/\\|application/ogg\\|pdf\\)")
   (setq eww-browse-url-new-window-is-tab nil)
   (setq eww-form-checkbox-selected-symbol "[X]")
   (setq eww-form-checkbox-symbol "[ ]")
@@ -161,7 +161,7 @@
   )
 
 (ensure-packages-present 'restclient)
-  (add-to-list 'auto-mode-alist '("\\.http\\'" . restclient-mode))
+(add-to-list 'auto-mode-alist '("\\.http\\'" . restclient-mode))
 ;;TODO: change to only apply json formatting when the content-type is
 ;;application/json
 (with-eval-after-load 'restclient

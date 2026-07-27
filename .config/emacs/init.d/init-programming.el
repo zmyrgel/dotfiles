@@ -145,6 +145,7 @@
 (setq add-log-keep-changes-together t)
 (setq vc-display-status 'no-backend)
 (setq vc-annotate-use-short-revision t)
+(setq vc-dir-show-key-binding-hints t) ; 32
 
 ;; (setq vc-dir-auto-hide-up-to-date 'revert) t nil
 (setq vc-dir-save-some-buffers-on-revert t)

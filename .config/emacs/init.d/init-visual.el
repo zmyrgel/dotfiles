@@ -21,6 +21,10 @@
 ;; help
 (setq help-window-select t)
 
+;; hide minor mode bindings by default to focus on major ones.
+(setq describe-bindings-outline-rules
+      '((match-regexp . "Key translations\\|Minor Mode Bindings")))
+
 ;; | Key chord | Description                  |
 ;; |-----------+------------------------------|
 ;; | C-x 4 C-f | Find-file other-window       |
@@ -145,39 +149,33 @@
 
 (add-hook 'help-mode-hook (lambda () (setq truncate-lines t)))
 
-(defvar *my-fixed-font* "Input Mono")
+(defvar *my-fixed-font* "Julia Mono")
 (defvar *my-variable-font* "Input Serif")
 
-(defun zmg/adjust-font-for-screen ()
+(defun my/adjust-font-for-screen (frame)
   "Adjusts the font height based on the screen resolution."
   (if (> (x-display-pixel-width) 1600)
-      (set-face-attribute 'default nil :height 130)
-    (set-face-attribute 'default nil :height 110)))
+      (set-face-attribute 'default frame :height 130)
+    (set-face-attribute 'default frame :height 110)))
 
-(add-hook 'after-make-frame-functions
-          (lambda (frame)
-            (zmg/adjust-font-for-screen)))
-;;(zmg/adjust-font-for-screen)
+(add-hook 'after-make-frame-functions 'my/adjust-font-for-screen)
 
 (defun my/set-frame-fonts ()
   "My hook to setup frame fonts, useful for daemon mode."
-  (let ((my-fixed-font "Input Mono")
-        (my-variable-font "Input Serif"))
-    ;; Set Default font if present
-    (when (find-font (font-spec :name *my-fixed-font*))
-      (set-face-attribute 'default nil :family *my-fixed-font* :height 110)
-      (set-face-attribute 'variable-pitch nil :family *my-variable-font*)
-      (set-face-attribute 'fixed-pitch nil :family *my-fixed-font*)
-      (set-face-attribute 'tooltip nil :family *my-fixed-font*))))
+  ;; Set Default font if present
+  (when (find-font (font-spec :name *my-fixed-font*))
+    (set-face-attribute 'default nil :family *my-fixed-font*)
+    (set-face-attribute 'fixed-pitch nil :family *my-fixed-font*)
+    (set-face-attribute 'tooltip nil :family *my-fixed-font*))
+  (when (find-font (font-spec :name *my-variable-font*))
+    (set-face-attribute 'variable-pitch nil :family *my-variable-font*)))
 
 (add-hook 'server-after-make-frame-hook #'my/set-frame-fonts)
 
 (unless (daemonp)
   (my/set-frame-fonts))
 
-(if (boundp 'use-short-answers)
-    (setq use-short-answers t)
-  (defalias 'yes-or-no-p 'y-or-n-p))
+(setq use-short-answers t)
 
 ;; Don't prompt if killing buffer with process attached
 (setq kill-buffer-query-functions
@@ -209,21 +207,9 @@
 (global-set-key [remap kill-ring-save] #'easy-kill)
 (global-set-key [remap mark-sexp] #'easy-mark)
 
-;; theme settings
+;;; theme settings
 
-(setq modus-themes-custom-auto-reload nil
-      modus-themes-to-toggle '(modus-operandi modus-vivendi)
-      modus-themes-mixed-fonts t
-      modus-themes-variable-pitch-ui t
-      modus-themes-italic-constructs t
-      modus-themes-bold-constructs nil
-      modus-themes-completions '((t . (extrabold)))
-      modus-themes-prompts '(extrabold)
-      modus-themes-headings
-      '((agenda-structure . (variable-pitch light 2.2))
-        (agenda-date . (variable-pitch regular 1.3))
-        (t . (regular 1.15))))
-
+(setq modus-themes-disable-other-themes t)
 (load-theme 'modus-operandi t)
 
 (setq image-use-external-converter t)

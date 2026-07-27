@@ -31,8 +31,20 @@
 (setq dired-movement-style 'bounded)
 ;; {E} 'dired-do-open'
 
+;; Assemble a list of files you want to operate on with either find-dired, find-name-dired or find-grep-dired.
+;; Mark all files in the resulting Dired buffer using t.
+;; Use Q to start a query-replace-regexp session on the marked files.
+;; To accept all replacements in each file, hit !.
+
+;; TODO: how to sync these to other dired etc.?
+;; TODO: add toggle option, default to human readable
+(setq find-ls-option '("-exec ls -ldh {} +" . "-ldh"))
+;;(setq find-ls-option '("-ls" . "-dilsb"))
+
 (define-key ctl-x-map (kbd "C-j") 'dired-jump)
 (define-key ctl-x-4-map (kbd "C-j") 'dired-jump-other-window)
+
+;; shell-command-guess-functions
 
 (when (executable-find "xwallpaper")
   (setq wallpaper-command "xwallpaper")

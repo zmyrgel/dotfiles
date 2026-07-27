@@ -42,10 +42,7 @@
 ;; (add-to-list 'grep-find-ignored-directories "build")
 ;; (add-to-list 'grep-find-ignored-directories "dist")
 
-
-;; | Key chord           | Description       |
-;; |---------------------+-------------------|
-;; | C-x r t             | string-rectangle  |
+;; | {C-x r t} string-rectangle
 
 ;; electric
 (setq electric-pair-skip-whitespace 'chomp)
@@ -67,11 +64,13 @@
 (setq ispell-dictionary "american")
 (setq flyspell-check-changes t)
 (add-hook 'text-mode-hook 'flyspell-mode)
+(when (executable-find "enchant-2")
+  (setq ispell-really-enchant t))
 
-;; | Key chord      | Description     |
-;; |----------------+-----------------|
-;; | { C-c [ }      | add cite        |
-;; | { C-c = }      | show toc        |
+;; | Key chord    | Description     |
+;; |--------------+-----------------|
+;; | { C-c [ }    | add cite        |
+;; | { C-c = }    | show toc        |
 
 (ensure-packages-present 'auctex)
 (load "auctex.el" nil t t)
@@ -159,6 +158,13 @@
        'no-mark)
     (error "failed to find `xmlstarlet' program, please install it.")))
 
+(setq nxml-slash-auto-complete-flag t)
+
+(add-to-list rng-schema-locating-files "~/xml-schemas")
+
+;; { C-c C-s C-w } show current schema
+;; { C-c C-s C-f } find schema for file
+
 ;; Use nxml-mode instead of sgml, xml or html mode.
 (mapc
  (lambda (pair)
@@ -182,6 +188,13 @@
   (pulse-momentary-highlight-one-line))
 
 ;;(add-hook 'window-state-change-hook #'pulse-line)
+
+(ensure-packages-present 'bibliothek)
+(setq bibliothek-path '("~/Documents"))
+(setq bibliothek-recursive t)
+
+;;; CONF
+(add-to-list 'auto-mode-alist '("\\.env\\'" . conf-mode)))
 
 (provide 'init-text)
 

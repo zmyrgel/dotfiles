@@ -2,7 +2,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2026-07-26 20:16:35 (tmy)>
+;;; Time-stamp: <2026-07-27 15:30:19 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
 ;;;
@@ -27,7 +27,8 @@
 ;;; project-specific history: use-package xref-project-history?
 ;;; ff-find-other-file / find-sibling-file
 ;;; BUG: rcirc has extra whitespace after JOIN entries
-
+;;; - org set timer { C-c C-x ; }
+;;; M-x copyright-update
 ;;; (setq register-use-preview t)
 
 ;; (add-hook 'text-mode (setq-local revert-buffer-function (run-tests)))
@@ -45,6 +46,9 @@
 ;;; - https://www.reddit.com/r/emacs/comments/1fwqz07/any_tips_about_improving_spell_checking/
 ;;; - https://rants.org/
 ;;; - unbind save-buffers-kill-terminal
+
+;;; kill-region-dwim 'emacs-word
+;;; setopt for setq == only user settable
 
 ;;; Code:
 
