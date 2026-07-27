@@ -37,7 +37,7 @@
   (unless (is-work-laptop-p)
     (setq agent-shell-mistral-authentication (agent-shell-mistral-make-authentication
                                               :api-key (lambda ()
-                                                         (auth-source-pick-first-password :machine "api-key.mistral.com"))))
+                                                         (auth-source-pick-first-password :host "api-key.mistral.com"))))
     (setq agent-shell-preferred-agent-config (agent-shell-mistral-make-config)))
 
   ;; Setup MCP servers to share between agents
@@ -45,7 +45,7 @@
         `(((name . "context7")
            (type . "http")
            (headers . (((name . "CONTEXT7_API_KEY")
-                        (value . ,(password-lookup :host "context7.com")))))
+                        (value . ,(password-lookup :host "mcp.context7.com")))))
            (url . "https://mcp.context7.com/mcp"))))
   )
 
