@@ -2,7 +2,7 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2026-07-27 15:30:19 (tmy)>
+;;; Time-stamp: <2026-07-27 21:53:38 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
 ;;;
@@ -169,9 +169,9 @@
 ;; Use a hook so the message doesn't get clobbered by other messages.
 (add-hook 'emacs-startup-hook 'my/log-start-gc)
 
-;; Only start server mode for non-admin accounts
-(unless (and (string-equal "root" (getenv "USER"))
-             server-process)
+;; Ensure we have server running for non-root users.
+(require 'server)
+(unless (string-equal "root" (getenv "USER"))
   ;; TODO: Global env here or command specific override?
   (setenv "EDITOR" (expand-file-name "emacsclient" invocation-directory))
   (let ((run-dir (expand-file-name "run" user-emacs-directory)))
@@ -179,7 +179,8 @@
       (mkdir run-dir)
       (chmod run-dir #o700))
     (setq server-socket-dir run-dir))
-  (server-start))
+  (unless (server-running-p)
+    (server-start)))
 
 (provide 'init)
 
