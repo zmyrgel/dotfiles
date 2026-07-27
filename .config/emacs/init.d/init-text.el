@@ -160,7 +160,7 @@
 
 (setq nxml-slash-auto-complete-flag t)
 
-(add-to-list rng-schema-locating-files "~/xml-schemas")
+;;(add-to-list rng-schema-locating-files "~/xml-schemas")
 
 ;; { C-c C-s C-w } show current schema
 ;; { C-c C-s C-f } find schema for file
@@ -194,7 +194,7 @@
 (setq bibliothek-recursive t)
 
 ;;; CONF
-(add-to-list 'auto-mode-alist '("\\.env\\'" . conf-mode)))
+(add-to-list 'auto-mode-alist '("\\.env\\'" . conf-mode))
 
 (provide 'init-text)
 
