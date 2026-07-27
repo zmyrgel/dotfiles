@@ -38,11 +38,9 @@
 
 (setq inhibit-compacting-font-caches t)
 
-;; Resizing the Emacs frame can be a terribly expensive part of changing the
-;; font. By inhibiting this, we easily halve startup times with fonts that are
-;; larger than the system default.
-(setq frame-inhibit-implied-resize t
-      frame-resize-pixelwise t)
+;; Start initial and default frame maximized
+(add-to-list 'initial-frame-alist '(fullscreen . maximized))
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 ;; Temporarily increase the gc threshold and remove time-consuming file
 ;; handlers for the startup.
