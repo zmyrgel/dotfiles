@@ -144,9 +144,6 @@
 (setq use-file-dialog nil)
 (setq use-dialog-box nil)
 
-(add-to-list 'initial-frame-alist '(fullscreen . maximized))
-(add-to-list 'default-frame-alist '(fullscreen . maximized))
-
 (add-hook 'help-mode-hook (lambda () (setq truncate-lines t)))
 
 (defvar *my-fixed-font* "Julia Mono")
