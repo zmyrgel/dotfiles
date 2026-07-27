@@ -26,6 +26,8 @@
 
 (in-package :stumpwm)
 
+(require :asdf)
+
 #-quicklisp
 (let ((quicklisp-init (merge-pathnames "quicklisp/setup.lisp"
                                        (user-homedir-pathname))))
@@ -274,33 +276,33 @@ mode-line"
         (make-instance 'xft:font :family "InputMono Medium" :subfamily "Regular" :size 6 :antialias t))
   (set-font *font*))
 
-#-openbsd
-(with-module "swm-ssh"
-  (setq swm-ssh:*swm-ssh-default-term* *xterm*)
-  (define-key *root-map* (kbd "C-a") "swm-ssh-menu"))
+;;#-openbsd
+;;(with-module "swm-ssh"
+;;  (setq swm-ssh:*swm-ssh-default-term* *xterm*)
+;;  (define-key *root-map* (kbd "C-a") "swm-ssh-menu"))
 
-#-openbsd
-(with-module "clipboard-history"
-  (define-key *root-map* (kbd "C-y") "show-clipboard-history")
-  ;; start the polling timer process
-  (clipboard-history:start-clipboard-manager))
+;;#-openbsd
+;;(with-module "clipboard-history"
+;;  (define-key *root-map* (kbd "C-y") "show-clipboard-history")
+;;  ;; start the polling timer process
+;;  (clipboard-history:start-clipboard-manager))
 
 ;; (with-module "kbd-layouts"
 ;;   (setf kbd-layouts:*caps-lock-behavior* :ctrl)
 ;;   (keyboard-layout-list "us" "dvorak -variant phonetic")
 ;;   )
 
-(with-module "stumpwm-themes"
-  (stumpwm-themes:define-theme "Modus Vivendi"
-      (set-bg-color "#000000")
-    (set-fg-color "#ffffff")
-    (set-border-color "#000000")
-    (set-focus-color "#000000")
-    (set-unfocus-color "#d0bc00")
-    (setf *mode-line-background-color* "#1c1c1c"
-          *mode-line-foreground-color* "#4e4e4e")
-    (setf *colors* '("#000000" "#ff5f59" "#44bc44" "#d0bc00"
-                     "#2fafff" "#feacd0" "#00d3d0" "#ffffff"))))
+;;(with-module "stumpwm-themes"
+;;  (stumpwm-themes:define-theme "Modus Vivendi"
+;;      (set-bg-color "#000000")
+;;    (set-fg-color "#ffffff")
+;;    (set-border-color "#000000")
+;;    (set-focus-color "#000000")
+;;    (set-unfocus-color "#d0bc00")
+;;    (setf *mode-line-background-color* "#1c1c1c"
+;;          *mode-line-foreground-color* "#4e4e4e")
+;;    (setf *colors* '("#000000" "#ff5f59" "#44bc44" "#d0bc00"
+;;                     "#2fafff" "#feacd0" "#00d3d0" "#ffffff"))))
 
 ;; checkout: lookup
 ;; ---------------------------------------
