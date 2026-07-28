@@ -100,7 +100,7 @@
 (setq uniquify-ignore-buffers-re "^\\*")
 
 ;; ibuffer
-(global-set-key (kbd "C-x C-b") 'ibuffer)
+(keymap-global-set "C-x C-b" 'ibuffer)
 (setq ibuffer-default-sorting-mode 'major-mode)
 (setq ibuffer-expert t)
 (setq ibuffer-shrink-to-minimum-size t)
@@ -118,7 +118,7 @@
 ;; delete pair
 (setopt delete-pair-blink-delay 0)
 (setopt delete-pair-push-mark t)
-(global-set-key (kbd "M-s d") #'delete-pair)
+(keymap-global-set "M-s d" #'delete-pair)
 
 ;; buffers to registers, C-x r j m
 ;; {C-u 99 C-x e} run macro for 99 times

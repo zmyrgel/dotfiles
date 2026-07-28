@@ -80,7 +80,7 @@
   ;; gnus-dired
   (add-hook 'dired-mode-hook 'turn-on-gnus-dired-mode))
 
-(global-set-key (kbd "C-z m") 'gnus)
+(keymap-global-set "C-z m" 'gnus)
 
 (provide 'init-email)
 

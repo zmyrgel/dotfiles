@@ -53,7 +53,7 @@
     (rename-buffer (concat "*eshell: " name "*"))
     (insert (concat "ls"))
     (eshell-send-input)))
-(global-set-key (kbd "C-!") 'eshell-here)
+(keymap-global-set "C-!" 'eshell-here)
 
 ;; smart shell
 (require 'em-smart)

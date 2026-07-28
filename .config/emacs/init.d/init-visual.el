@@ -34,8 +34,8 @@
 ;; | C-x 4 0   | Kill buffer and window       |
 ;; | C-x 4 p   | Run project cmd in window    |
 
-(global-set-key (kbd "C-c w") 'winner-undo)
-(global-set-key (kbd "C-c W") 'winner-redo)
+(keymap-global-set "C-c w" 'winner-undo)
+(keymap-global-set "C-c W" 'winner-redo)
 (winner-mode)
 
 (defun toggle-delete-other-windows ()
@@ -46,7 +46,7 @@
       (winner-undo)
     (delete-other-windows)))
 
-(global-set-key (kbd "C-x 1") #'toggle-delete-other-windows)
+(keymap-global-set "C-x 1" #'toggle-delete-other-windows)
 
 ;; default emacs configurations
 
@@ -59,32 +59,32 @@
 
 (setq kill-region-dwim 'emacs-word)
 
-(global-set-key (kbd "M-u") 'upcase-dwim)
-(global-set-key (kbd "M-l") 'downcase-dwim)
-(global-set-key (kbd "M-c") 'capitalize-dwim)
-(global-set-key (kbd "C-h h") nil)
-(global-set-key (kbd "M-SPC") 'cycle-spacing)
-;(global-set-key (kbd "C-w") 'my/backward-kill-word-or-region)
-(global-set-key (kbd "C-c C-j") 'join-line)
-(global-set-key (kbd "M-z") 'zap-up-to-char)
-(global-set-key (kbd "C-x M-k") 'kill-buffer-other-window)
-(global-set-key (kbd "C-x C-z") nil)
-(global-set-key (kbd "C-z") nil)
-(global-set-key (kbd "C-x (") 'kmacro-start-macro-or-insert-counter)
-(global-set-key (kbd "C-x )") 'kmacro-end-or-call-macro)
-(global-set-key (kbd "C-z s") 'eshell)
-(global-set-key (kbd "C-z r") 'rgrep)
+(keymap-global-set "M-u" 'upcase-dwim)
+(keymap-global-set "M-l" 'downcase-dwim)
+(keymap-global-set "M-c" 'capitalize-dwim)
+(keymap-global-set "C-h h" nil)
+(keymap-global-set "M-SPC" 'cycle-spacing)
+;(keymap-global-set "C-w" 'my/backward-kill-word-or-region)
+(keymap-global-set "C-c C-j" 'join-line)
+(keymap-global-set "M-z" 'zap-up-to-char)
+(keymap-global-set "C-x M-k" 'kill-buffer-other-window)
+(keymap-global-set "C-x C-z" nil)
+(keymap-global-set "C-z" nil)
+(keymap-global-set "C-x (" 'kmacro-start-macro-or-insert-counter)
+(keymap-global-set "C-x )" 'kmacro-end-or-call-macro)
+(keymap-global-set "C-z s" 'eshell)
+(keymap-global-set "C-z r" 'rgrep)
 
-(global-set-key (kbd "M-o") 'other-window)
-(global-set-key (kbd "M-j") 'duplicate-dwim)
-(global-set-key (kbd "M-g r") 'recentf)
-(global-set-key (kbd "M-s g") 'grep)
-(global-set-key (kbd "M-s f") 'find-name-dired)
+(keymap-global-set "M-o" 'other-window)
+(keymap-global-set "M-j" 'duplicate-dwim)
+(keymap-global-set "M-g r" 'recentf)
+(keymap-global-set "M-s g" 'grep)
+(keymap-global-set "M-s f" 'find-name-dired)
 
-(global-set-key (kbd "C-x w t") 'window-layout-transpose)
-(global-set-key (kbd "C-x w r") 'rotate-windows)
-(global-set-key (kbd "C-x w f h") 'window-layout-flip-leftright)
-(global-set-key (kbd "C-x w f v") 'window-layout-flip-topdown)
+(keymap-global-set "C-x w t" 'window-layout-transpose)
+(keymap-global-set "C-x w r" 'rotate-windows)
+(keymap-global-set "C-x w f h" 'window-layout-flip-leftright)
+(keymap-global-set "C-x w f v" 'window-layout-flip-topdown)
 
 (defun my/backward-kill-word-or-region ()
   "Kill region or word based on selection."
@@ -201,8 +201,8 @@
 (add-hook 'before-save-hook 'whitespace-cleanup)
 
 (ensure-packages-present 'easy-kill)
-(global-set-key [remap kill-ring-save] #'easy-kill)
-(global-set-key [remap mark-sexp] #'easy-mark)
+(define-key global-map [remap kill-ring-save] #'easy-kill)
+(define-key global-map [remap mark-sexp] #'easy-mark)
 
 ;;; theme settings
 

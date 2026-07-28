@@ -176,7 +176,7 @@
           ("Wikipedia" . [simple-query "wikipedia.org" "wikipedia.org/wiki/" ""])
           ("Emacs Wiki" . [simple-query "www.emacswiki.org" "www.emacswiki.org/cgi-bin/wiki/" ""]))))
 
-(global-set-key (kbd "C-x /") 'webjump)
+(keymap-global-set "C-x /" 'webjump)
 
 (add-to-list 'browse-url-transform-alist
              '("www.google.com" . "www.duckduckgo.com"))

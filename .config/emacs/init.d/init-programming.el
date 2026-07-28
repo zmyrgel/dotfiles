@@ -258,9 +258,9 @@
 (setq magit-diff-visit-prefer-worktree t)
 
 ;; use magit recommended key bindings
-(global-set-key (kbd "C-c g") 'magit-status)
-(global-set-key (kbd "C-c f") 'magit-file-dispatch)
-(global-set-key (kbd "C-c F") 'magit-dispatch)
+(keymap-global-set "C-c g" 'magit-status)
+(keymap-global-set "C-c f" 'magit-file-dispatch)
+(keymap-global-set "C-c F" 'magit-dispatch)
 
 ;; magit-gitflow
 (when (is-work-laptop-p)

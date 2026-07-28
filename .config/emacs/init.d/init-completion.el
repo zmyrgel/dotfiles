@@ -102,7 +102,7 @@
 (setq imenu-level-separator ":")
 
 ;;; hippie-exp
-(global-set-key [remap dabbrev-expand] 'hippie-expand)
+(define-key global-map [remap dabbrev-expand] 'hippie-expand)
 
 (setq dabbrev-abbrev-skip-leading-regexp "[$*/=']")
 (setq dabbrev-backward-only nil)
