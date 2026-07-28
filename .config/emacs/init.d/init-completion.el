@@ -69,20 +69,20 @@
 
 ;; Select completion options with up/down when completing in the
 ;; minibuffer or normal buffer
-(define-key minibuffer-local-map (kbd "C-p") #'minibuffer-previous-completion)
-(define-key minibuffer-local-map (kbd "C-n") #'minibuffer-next-completion)
+(keymap-set minibuffer-local-map "C-p" #'minibuffer-previous-completion)
+(keymap-set minibuffer-local-map "C-n" #'minibuffer-next-completion)
 
 ;; Up/down when competing in a normal buffer
-(define-key completion-in-region-mode-map (kbd "C-p") #'minibuffer-previous-completion)
-(define-key completion-in-region-mode-map (kbd "C-n") #'minibuffer-next-completion)
+(keymap-set completion-in-region-mode-map "C-p" #'minibuffer-previous-completion)
+(keymap-set completion-in-region-mode-map "C-n" #'minibuffer-next-completion)
 
 ;;; completion preview
 (global-completion-preview-mode)
 (setopt completion-preview-exact-match-only nil)
 (setopt completion-preview-minimum-symbol-length 3)
 (setopt completion-preview-idle-delay 0.3)
-(define-key completion-preview-active-mode-map (kbd "M-n") #'completion-preview-next-candidate)
-(define-key completion-preview-active-mode-map (kbd "M-p") #'completion-preview-prev-candidate)
+(keymap-set completion-preview-active-mode-map "M-n" #'completion-preview-next-candidate)
+(keymap-set completion-preview-active-mode-map "M-p" #'completion-preview-prev-candidate)
 
 ;;; imenu: M-g i
 (setopt imenu-auto-rescan t)

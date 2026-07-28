@@ -107,8 +107,8 @@
 
 ;; buffer switching
 (setopt switch-to-prev-buffer-skip-regexp nil)
-(define-key ctl-x-x-map "p" #'switch-to-prev-buffer)
-(define-key ctl-x-x-map "n" #'switch-to-next-buffer)
+(keymap-set ctl-x-x-map "p" #'switch-to-prev-buffer)
+(keymap-set ctl-x-x-map "n" #'switch-to-next-buffer)
 
 ;; delete pair
 (setopt delete-pair-blink-delay 0)

@@ -55,7 +55,7 @@
   (add-hook 'org-mode-hook 'visual-line-mode)
   (add-hook 'message-mode-hook 'turn-on-orgtbl)
 
-  (define-key org-mode-map (kbd "C-M-i") 'completion-at-point)
+  (keymap-set org-mode-map "C-M-i" 'completion-at-point)
 
   ;; Use fixed-pitch font to keep tables aligned
   (defun set-buffer-variable-pitch ()
@@ -73,8 +73,8 @@
 
   ;;  ol
   (setopt org-link-keep-stored-after-insertion t)
-  (define-key org-mode-map (kbd "C-c L") 'org-toggle-link-display)
-  (define-key org-mode-map (kbd "C-c C-y") 'org-insert-last-stored-link)
+  (keymap-set org-mode-map "C-c L" 'org-toggle-link-display)
+  (keymap-set org-mode-map "C-c C-y" 'org-insert-last-stored-link)
 
   ;;  org-capture
   (let ((todo-template (concat "* TODO %^{Title}\n"

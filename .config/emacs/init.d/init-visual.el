@@ -72,14 +72,10 @@
 (keymap-global-set "C-x )" 'kmacro-end-or-call-macro)
 
 (let ((map (make-sparse-keymap)))
-  (define-key map (kbd "s") #'eshell)
-  (define-key map (kbd "r") #'rgrep)
-  (define-key map (kbd "m") #'gnus)
+  (keymap-set map "s" #'eshell)
+  (keymap-set map "r" #'rgrep)
+  (keymap-set map "m" #'gnus)
   (keymap-global-set "C-z" map))
-
-;; (keymap-global-set "C-z s" 'eshell)
-;; (keymap-global-set "C-z r" 'rgrep)
-;; (keymap-global-set "C-z m" 'gnus)
 
 (keymap-global-set "M-o" 'other-window)
 (keymap-global-set "M-j" 'duplicate-dwim)

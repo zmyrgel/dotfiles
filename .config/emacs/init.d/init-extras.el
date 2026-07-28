@@ -52,7 +52,7 @@
 ;;TODO: change to only apply json formatting when the content-type is
 ;;application/json
 (with-eval-after-load 'restclient
-  (define-key restclient-mode-map (kbd "C-c C-f") 'json-mode-beautify))
+  (keymap-set restclient-mode-map "C-c C-f" 'json-mode-beautify))
 
 (ensure-packages-present 'vcl-mode)
 

@@ -223,10 +223,10 @@
 ;; (ensure-packages-present '(go-mode go-eldoc))
 ;; (with-eval-after-load 'go-mode
 ;;   (let ((m go-mode-map))
-;;     (define-key m (kbd "M-.") 'godef-jump)
-;;     (define-key m (kbd "C-c C-r") 'go-remove-unused-imports)
-;;     (define-key m (kbd "C-c g i") 'go-goto-imports)
-;;     (define-key m (kbd "C-c C-k") 'godoc))
+;;     (keymap-set m "M-." 'godef-jump)
+;;     (keymap-set m "C-c C-r" 'go-remove-unused-imports)
+;;     (keymap-set m "C-c g i" 'go-goto-imports)
+;;     (keymap-set m "C-c C-k" 'godoc))
 
   ;; (require 'go-eldoc nil t)
   ;; (add-hook 'go-mode-hook 'go-eldoc-setup))
@@ -246,10 +246,10 @@
 
 (with-eval-after-load 'cc-mode
   (let ((m c-mode-map))
-    (define-key m (kbd "C-h M") 'man-follow)
-    (define-key m (kbd "C-c C-d") 'gdb)
-    (define-key m (kbd "C-m") 'c-context-line-break)
-    (define-key m (kbd "C-c o") 'ff-find-other-file))
+    (keymap-set m "C-h M" 'man-follow)
+    (keymap-set m "C-c C-d" 'gdb)
+    (keymap-set m "C-m" 'c-context-line-break)
+    (keymap-set m "C-c o" 'ff-find-other-file))
 
   (add-hook 'c-mode-common-hook 'which-function-mode)
   (add-hook 'c-mode-common-hook 'cwarn-mode)
