@@ -5,18 +5,18 @@
 
 ;;; Code:
 
-(use-package agent-shell
-  :ensure t
-  :bind (("C-c ." . agent-shell))
-  :config
-  (when (is-work-laptop-p)
-    (setq agent-shell-openai-authentication
+(ensure-packages-present 'agent-shell)
+
+(keymap-global-set "C-c ." 'agent-shell)
+
+(when (is-work-laptop-p)
+  (setopt agent-shell-openai-authentication
           (agent-shell-openai-make-authentication
            :api-key (lambda ()
                       (password-lookup :host "api.openai.com"))))
-    (setq agent-shell-preferred-agent-config
+  (setopt agent-shell-preferred-agent-config
           (agent-shell-openai-make-codex-config))
-    (setq agent-shell-clipboard-image-handlers
+  (setopt agent-shell-clipboard-image-handlers
           (list
            (list (cons :command "xclip")
                  (cons :save (lambda (file-path)
@@ -34,20 +34,19 @@
                                      (error "Command xclip failed with exit code %d" exit-code))
                                    (write-region (point-min) (point-max) file-path nil 'silent)))))))))
 
-  (unless (is-work-laptop-p)
-    (setq agent-shell-mistral-authentication (agent-shell-mistral-make-authentication
+(unless (is-work-laptop-p)
+  (setopt agent-shell-mistral-authentication (agent-shell-mistral-make-authentication
                                               :api-key (lambda ()
                                                          (auth-source-pick-first-password :host "api-key.mistral.com"))))
-    (setq agent-shell-preferred-agent-config (agent-shell-mistral-make-config)))
+  (setopt agent-shell-preferred-agent-config (agent-shell-mistral-make-config)))
 
-  ;; Setup MCP servers to share between agents
-  (setq agent-shell-mcp-servers
+;; Setup MCP servers to share between agents
+(setopt agent-shell-mcp-servers
         `(((name . "context7")
            (type . "http")
            (headers . (((name . "CONTEXT7_API_KEY")
                         (value . ,(password-lookup :host "mcp.context7.com")))))
            (url . "https://mcp.context7.com/mcp"))))
-  )
 
 (provide 'init-ai)
 

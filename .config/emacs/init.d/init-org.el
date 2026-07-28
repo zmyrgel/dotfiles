@@ -6,46 +6,46 @@
 
 ;;; Code:
 
-(setq org-list-allow-alphabetical t)
+(setopt org-list-allow-alphabetical t)
 
 (with-eval-after-load 'org
-  (setq org-directory "~/Documents/OrgFiles")
-  (setq org-default-notes-file (concat org-directory "/notes.org"))
-  (setq org-agenda-files (list org-directory))
-  (setq org-agenda-file-regexp "\\`[^.].*\\.org\\'")
-  (setq org-outline-path-complete-in-steps nil)
-  (setq org-insert-mode-line-in-empty-file t)
-  (setq org-enforce-todo-checkbox-dependencies t)
-  (setq org-enforce-todo-dependencies t)
-  (setq org-log-done 'note)
-  (setq org-startup-indented t)
-  (setq org-todo-keywords '((sequence "TODO(t)" "WIP(w!)" "|" "DONE(d@!)")
-                            (sequence "|" "CANCELED(c@/!)")
-                            (sequence "STALLED(s@/!)" "|")
-                            (sequence "PENDING(p@/!)" "|")))
-  (setq org-fontify-quote-and-verse-blocks t)
-  (setq org-track-ordered-property-with-tag t)
-  (setq org-highest-priority ?A)
-  (setq org-lowest-priority ?C)
-  (setq org-default-priority ?B)
-  (setq org-tag-alist ;; use these or set file tags?
-	'(("work" . ?w)
-          ("emacs" . ?e)
-          ("research" . ?r)
-          ("mail" . ?m)))
-  (setq org-confirm-babel-evaluate t)
-  (setq org-log-done 'note)
-  (setq org-log-note-clock-out t)
-  (setq org-read-date-prefer-future t)
-  (setq org-adapt-indentation nil)
-  (setq org-special-ctrl-a/e t)
-  (setq org-special-ctrl-k t)
-  (setq org-hide-emphasis-markers nil)
-  (setq org-hide-leading-stars nil)
-  (setq org-fold-catch-invisible-edits 'show)
-  (setq org-return-follows-link nil)
-  (setq org-loop-over-headlines-in-active-region 'start-level)
-  (setq org-imenu-depth 3)
+  (setopt org-directory "~/Documents/OrgFiles")
+  (setopt org-default-notes-file (concat org-directory "/notes.org"))
+  (setopt org-agenda-files (list org-directory))
+  (setopt org-agenda-file-regexp "\\`[^.].*\\.org\\'")
+  (setopt org-outline-path-complete-in-steps nil)
+  (setopt org-insert-mode-line-in-empty-file t)
+  (setopt org-enforce-todo-checkbox-dependencies t)
+  (setopt org-enforce-todo-dependencies t)
+  (setopt org-log-done 'note)
+  (setopt org-startup-indented t)
+  (setopt org-todo-keywords '((sequence "TODO(t)" "WIP(w!)" "|" "DONE(d@!)")
+                              (sequence "|" "CANCELED(c@/!)")
+                              (sequence "STALLED(s@/!)" "|")
+                              (sequence "PENDING(p@/!)" "|")))
+  (setopt org-fontify-quote-and-verse-blocks t)
+  (setopt org-track-ordered-property-with-tag t)
+  (setopt org-highest-priority ?A)
+  (setopt org-lowest-priority ?C)
+  (setopt org-default-priority ?B)
+  (setopt org-tag-alist ;; use these or set file tags?
+          '(("work" . ?w)
+            ("emacs" . ?e)
+            ("research" . ?r)
+            ("mail" . ?m)))
+  (setopt org-confirm-babel-evaluate t)
+  (setopt org-log-done 'note)
+  (setopt org-log-note-clock-out t)
+  (setopt org-read-date-prefer-future t)
+  (setopt org-adapt-indentation nil)
+  (setopt org-special-ctrl-a/e t)
+  (setopt org-special-ctrl-k t)
+  (setopt org-hide-emphasis-markers nil)
+  (setopt org-hide-leading-stars nil)
+  (setopt org-fold-catch-invisible-edits 'show)
+  (setopt org-return-follows-link nil)
+  (setopt org-loop-over-headlines-in-active-region 'start-level)
+  (setopt org-imenu-depth 3)
   ;; allow shell execution
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -61,7 +61,7 @@
   (defun set-buffer-variable-pitch ()
     (interactive)
     (variable-pitch-mode t)
-    (setq line-spacing 3)
+    (setq-local line-spacing 3)
     (set-face-attribute 'org-table nil :inherit 'fixed-pitch)
     (set-face-attribute 'org-code nil :inherit 'fixed-pitch)
     (set-face-attribute 'org-block nil :inherit 'fixed-pitch))
@@ -72,7 +72,7 @@
   (add-hook 'Info-mode-hook 'set-buffer-variable-pitch)
 
   ;;  ol
-  (setq org-link-keep-stored-after-insertion t)
+  (setopt org-link-keep-stored-after-insertion t)
   (define-key org-mode-map (kbd "C-c L") 'org-toggle-link-display)
   (define-key org-mode-map (kbd "C-c C-y") 'org-insert-last-stored-link)
 
@@ -83,71 +83,71 @@
                                ":END:\n\n"
                                "%i%l")))
     ;; "* TODO %?\n  %i\n  %a"
-    (setq org-capture-templates
-	  `(("t" "Todo" entry (file+headline "todo.org" "Tasks")
-             ,todo-template)
-            ("s" "Study" entry (file+headline "research.org" "Research subjects")
-             ,todo-template)
-            ("w" "Work tasks" entry (file+headline "work.org" "Work tasks")
-             ,todo-template)
-            ("n" "Notes" entry (file+olp+datetree "notes.org" "Misc Notes")
-             "* %?\nEntered on %U\n  %i\n  %a")
-            ("j" "Journal" entry (file+olp+datetree "journal.org" "Journal Entries")
-             "* %?\nEntered on %U\n  %i\n  %a"))))
+    (setopt org-capture-templates
+            `(("t" "Todo" entry (file+headline "todo.org" "Tasks")
+               ,todo-template)
+              ("s" "Study" entry (file+headline "research.org" "Research subjects")
+               ,todo-template)
+              ("w" "Work tasks" entry (file+headline "work.org" "Work tasks")
+               ,todo-template)
+              ("n" "Notes" entry (file+olp+datetree "notes.org" "Misc Notes")
+               "* %?\nEntered on %U\n  %i\n  %a")
+              ("j" "Journal" entry (file+olp+datetree "journal.org" "Journal Entries")
+               "* %?\nEntered on %U\n  %i\n  %a"))))
 
-  (setq org-capture-templates-contexts
-	'(("r" ((in-mode . "gnus-article-mode")
-		(in-mode . "gnus-summary-mode")))))
+  (setopt org-capture-templates-contexts
+          '(("r" ((in-mode . "gnus-article-mode")
+                  (in-mode . "gnus-summary-mode")))))
 
   ;; org-agenda
-  (setq org-agenda-span 'week)
-  (setq org-agenda-start-on-weekday 1)  ; Monday
-  (setq org-agenda-confirm-kill t)
-  (setq org-agenda-show-all-dates t)
-  (setq org-agenda-show-outline-path nil)
-  (setq org-agenda-window-setup 'current-window)
-  (setq org-agenda-custom-commands-contexts nil)
-  (setq org-agenda-insert-diary-strategy 'date-tree)
-  (setq org-agenda-insert-diary-extract-time t)
-  (setq org-agenda-include-diary t)
-  (setq org-agenda-follow-indirect t)
-  (setq org-agenda-dim-blocked-tasks t)
-  (setq org-agenda-todo-list-sublevels t)
-  (setq org-agenda-include-deadlines t)
-  (setq org-deadline-warning-days 7)
-  (setq org-agenda-skip-scheduled-if-done t)
-  (setq org-agenda-skip-scheduled-if-deadline-is-shown t)
-  (setq org-agenda-skip-timestamp-if-deadline-is-shown t)
-  (setq org-agenda-skip-deadline-prewarning-if-scheduled 1)
-  (setq org-agenda-time-leading-zero t)
-  (setq org-agenda-timegrid-use-ampm nil)
+  (setopt org-agenda-span 'week)
+  (setopt org-agenda-start-on-weekday 1)  ; Monday
+  (setopt org-agenda-confirm-kill t)
+  (setopt org-agenda-show-all-dates t)
+  (setopt org-agenda-show-outline-path nil)
+  (setopt org-agenda-window-setup 'current-window)
+  (setopt org-agenda-custom-commands-contexts nil)
+  (setopt org-agenda-insert-diary-strategy 'date-tree)
+  (setopt org-agenda-insert-diary-extract-time t)
+  (setopt org-agenda-include-diary t)
+  (setopt org-agenda-follow-indirect t)
+  (setopt org-agenda-dim-blocked-tasks t)
+  (setopt org-agenda-todo-list-sublevels t)
+  (setopt org-agenda-include-deadlines t)
+  (setopt org-deadline-warning-days 7)
+  (setopt org-agenda-skip-scheduled-if-done t)
+  (setopt org-agenda-skip-scheduled-if-deadline-is-shown t)
+  (setopt org-agenda-skip-timestamp-if-deadline-is-shown t)
+  (setopt org-agenda-skip-deadline-prewarning-if-scheduled 1)
+  (setopt org-agenda-time-leading-zero t)
+  (setopt org-agenda-timegrid-use-ampm nil)
 
   ;; org-src
-  (setq org-src-tab-acts-natively t)
-  (setq org-src-window-setup 'current-window)
-  (setq org-src-fontify-natively t)
-  (setq org-src-preserve-indentation t)
-  (setq org-edit-src-content-indentation 0)
+  (setopt org-src-tab-acts-natively t)
+  (setopt org-src-window-setup 'current-window)
+  (setopt org-src-fontify-natively t)
+  (setopt org-src-preserve-indentation t)
+  (setopt org-edit-src-content-indentation 0)
 
   ;; ox
-  (setq org-export-with-toc t)
-  (setq org-export-headline-levels 3)
-  (setq org-export-dispatch-use-expert-ui nil)
+  (setopt org-export-with-toc t)
+  (setopt org-export-headline-levels 3)
+  (setopt org-export-dispatch-use-expert-ui nil)
 
   ;; ox-latex
-  (setq org-latex-pdf-process
-	'("latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
+  (setopt org-latex-pdf-process
+          '("latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
 
   ;; ox-publish
-  (setq org-publish-project-alist
-	'(("blog"
-           :base-directory "~/Documents/OrgFiles/blog/posts/"
-           :base-extension "org"
-           :publishing-directory "/ssh:tmy@mars.bittivirhe.fi:public/"
-           :recursive t
-           :publishing-function org-html-publish-to-html
-           :auto-sitemap t)
-          ("all" :components ("blog")))))
+  (setopt org-publish-project-alist
+          '(("blog"
+             :base-directory "~/Documents/OrgFiles/blog/posts/"
+             :base-extension "org"
+             :publishing-directory "/ssh:tmy@mars.bittivirhe.fi:public/"
+             :recursive t
+             :publishing-function org-html-publish-to-html
+             :auto-sitemap t)
+            ("all" :components ("blog")))))
 
 (with-eval-after-load 'ox-latex
   (add-to-list 'org-latex-classes

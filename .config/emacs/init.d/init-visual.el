@@ -7,23 +7,23 @@
 
 (global-font-lock-mode t)
 
-(setq font-lock-maximum-decoration t)
+(setopt font-lock-maximum-decoration t)
 
-(setq window-combination-resize t)
+(setopt window-combination-resize t)
 
-(setq show-paren-style 'parenthesis)
-(setq show-paren-when-point-in-periphery t)
-(setq show-paren-when-point-inside-paren nil)
+(setopt show-paren-style 'parenthesis)
+(setopt show-paren-when-point-in-periphery t)
+(setopt show-paren-when-point-inside-paren nil)
 (add-hook 'after-init-hook 'show-paren-mode)
 
 (blink-cursor-mode -1)
 
 ;; help
-(setq help-window-select t)
+(setopt help-window-select t)
 
 ;; hide minor mode bindings by default to focus on major ones.
-(setq describe-bindings-outline-rules
-      '((match-regexp . "Key translations\\|Minor Mode Bindings")))
+(setopt describe-bindings-outline-rules
+        '((match-regexp . "Key translations\\|Minor Mode Bindings")))
 
 ;; | Key chord | Description                  |
 ;; |-----------+------------------------------|
@@ -36,7 +36,7 @@
 
 (keymap-global-set "C-c w" 'winner-undo)
 (keymap-global-set "C-c W" 'winner-redo)
-(winner-mode)
+(add-hook 'after-init-hook 'winner-mode)
 
 (defun toggle-delete-other-windows ()
   "Delete other windows in frame if any, or restore previous window config."
@@ -57,23 +57,29 @@
 ;; | { C-M-d/u }  | Move into/out of lists       |
 (add-hook 'after-init-hook 'auto-compression-mode)
 
-(setq kill-region-dwim 'emacs-word)
+(setopt kill-region-dwim 'emacs-word)
 
 (keymap-global-set "M-u" 'upcase-dwim)
 (keymap-global-set "M-l" 'downcase-dwim)
 (keymap-global-set "M-c" 'capitalize-dwim)
 (keymap-global-set "C-h h" nil)
 (keymap-global-set "M-SPC" 'cycle-spacing)
-;(keymap-global-set "C-w" 'my/backward-kill-word-or-region)
 (keymap-global-set "C-c C-j" 'join-line)
 (keymap-global-set "M-z" 'zap-up-to-char)
 (keymap-global-set "C-x M-k" 'kill-buffer-other-window)
 (keymap-global-set "C-x C-z" nil)
-(keymap-global-set "C-z" nil)
 (keymap-global-set "C-x (" 'kmacro-start-macro-or-insert-counter)
 (keymap-global-set "C-x )" 'kmacro-end-or-call-macro)
-(keymap-global-set "C-z s" 'eshell)
-(keymap-global-set "C-z r" 'rgrep)
+
+(let ((map (make-sparse-keymap)))
+  (define-key map (kbd "s") #'eshell)
+  (define-key map (kbd "r") #'rgrep)
+  (define-key map (kbd "m") #'gnus)
+  (keymap-global-set "C-z" map))
+
+;; (keymap-global-set "C-z s" 'eshell)
+;; (keymap-global-set "C-z r" 'rgrep)
+;; (keymap-global-set "C-z m" 'gnus)
 
 (keymap-global-set "M-o" 'other-window)
 (keymap-global-set "M-j" 'duplicate-dwim)
@@ -105,10 +111,10 @@
   (kill-buffer (current-buffer))
   (other-window 1))
 
-(setq case-fold-search t)
-(setq load-prefer-newer t)
-(setq apropos-do-all t)
-(setq ad-redefinition-action 'accept)
+(setopt case-fold-search t)
+(setopt load-prefer-newer t)
+(setopt apropos-do-all t)
+(setopt ad-redefinition-action 'accept)
 
 ;; bump this a bit from default 64kb
 (setq read-process-output-max 524288) ; 512kb
@@ -124,27 +130,30 @@
 
 (setq redisplay-skip-fontification-on-input t)
 (setq bidi-inhibit-bpa t)
-(setq sentence-end-double-space nil)
-(setq sentence-end-without-period nil)
-(setq colon-double-space nil)
 (setq use-hard-newlines nil)
+(setopt sentence-end-double-space nil)
+(setopt sentence-end-without-period nil)
+(setopt colon-double-space nil)
 
-(setq message-log-max 5000)
+(setopt message-log-max 5000)
 
-(setq initial-scratch-message "")
-(setq inhibit-startup-screen t)
-(setq inhibit-startup-echo-area-message t)
+(setopt initial-scratch-message "")
+(setopt inhibit-startup-screen t)
+(setq inhibit-startup-echo-area-message "tmy")
 
-(setq visible-bell t)
-(setq window-min-height 3)
+(setopt visible-bell t)
+(setopt window-min-height 3)
 
-(setq select-active-regions t)
+(setopt select-active-regions t)
 
 ;; disable dialog boxes
-(setq use-file-dialog nil)
-(setq use-dialog-box nil)
+(setopt use-file-dialog nil)
+(setopt use-dialog-box nil)
 
-(add-hook 'help-mode-hook (lambda () (setq truncate-lines t)))
+(defun my/help-mode-hook ()
+  (setq truncate-lines t))
+
+(add-hook 'help-mode-hook #'my/help-mode-hook)
 
 (defvar *my-fixed-font* "Julia Mono")
 (defvar *my-variable-font* "Input Serif")
@@ -172,7 +181,7 @@
 (unless (daemonp)
   (my/set-frame-fonts))
 
-(setq use-short-answers t)
+(setopt use-short-answers t)
 
 ;; Don't prompt if killing buffer with process attached
 (setq kill-buffer-query-functions
@@ -188,28 +197,24 @@
   (put s 'disabled nil))
 
 ;; simple
-(setq set-mark-command-repeat-pop t)
-(setq next-line-add-newlines nil)
-(setq kill-do-not-save-duplicates t)
-(setq backward-delete-char-untabify-method nil)
-(setq yank-pop-change-selection t)
-(setq save-interprogram-paste-before-kill t)
+(setopt set-mark-command-repeat-pop t)
+(setopt next-line-add-newlines nil)
+(setopt kill-do-not-save-duplicates t)
+(setopt backward-delete-char-untabify-method nil)
+(setopt yank-pop-change-selection t)
+(setopt save-interprogram-paste-before-kill t)
 (add-hook 'after-init-hook 'size-indication-mode)
 (add-hook 'after-init-hook 'line-number-mode)
 (add-hook 'after-init-hook 'column-number-mode)
 (add-hook 'text-mode-hook 'auto-fill-mode)
 (add-hook 'before-save-hook 'whitespace-cleanup)
 
-(ensure-packages-present 'easy-kill)
-(define-key global-map [remap kill-ring-save] #'easy-kill)
-(define-key global-map [remap mark-sexp] #'easy-mark)
-
 ;;; theme settings
 
-(setq modus-themes-disable-other-themes t)
+(setopt modus-themes-disable-other-themes t)
 (load-theme 'modus-operandi t)
 
-(setq image-use-external-converter t)
+(setopt image-use-external-converter t)
 
 (provide 'init-visual)
 

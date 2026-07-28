@@ -2,55 +2,16 @@
 ;;;
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2026-07-27 21:53:38 (tmy)>
+;;; Time-stamp: <2026-07-28 23:23:00 (tmy)>
 ;;; URL: http://github.com/zmyrgel/dotfiles
 ;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
 ;;;
 ;;; Commentary:
-;;; - fix warnings on this init:
-;;; -- flymake--handle-report: Can’t find state for flymake-eslint--checker in ‘flymake--state’
-;;; - improve init speed, currently 7s.
-;;; - fix highlight of got diffs in gnus
-;;; - {C-h 4 s} to `help-find-source'
-;;; - `kill-matching-buffers-no-ask'
-;;; - recover-file has = to show diff
-;;; - read-passwd has TAB to toggle password display
-;;; - remote-file-name-inhibit-delete-by-moving-to-trash
-;;; - remote-file-name-inhibit-auto-save
-;;; - 'read-process-output-max' was increased to 65536, init uses 1048576
-;;; - `replace-regexp-as-diff', 'multi-file-replace-regexp-as-diff', 'dired-do-replace-regexp-as-diff'
-;;; - register-use-preview t
-;;; - grep-use-headings t
-;;; - { C-x ESC SEC }
-;;; - indent-rigidly { C-x TAB }, indent-code-rigidly
-;;; (setopt project-vc-extra-root-markers '(".projectile" ".git")) ;; .asd?
-;;; project-specific history: use-package xref-project-history?
-;;; ff-find-other-file / find-sibling-file
-;;; BUG: rcirc has extra whitespace after JOIN entries
-;;; - org set timer { C-c C-x ; }
-;;; M-x copyright-update
-;;; (setq register-use-preview t)
-
-;; (add-hook 'text-mode (setq-local revert-buffer-function (run-tests)))
-;;; - C-a to toggle between bol and back-to-indentation
-;;; - fails when no notwork
-;;; - FIX: kill-this-buffer must be bound to an event with parameters
-;;; - fn how-many to get regexp match count
-;;; - https://writequit.org/articles/working-with-logs-in-emacs.html#filtering-logs
-;;; - add defun to send buffer contents to termbin.com $ cat my_file.log | nc termbin.com 9999
-;;; - https://writequit.org/eos/eos.html
-;;; - see: https://svn.red-bean.com/repos/kfogel/trunk/.emacs
-;;; -- at least pöhinää -> bs generator
-;;; - https://github.com/radian-software/apheleia
-;;; - use one file with outline mode?
-;;; - https://www.reddit.com/r/emacs/comments/1fwqz07/any_tips_about_improving_spell_checking/
-;;; - https://rants.org/
-;;; - unbind save-buffers-kill-terminal
-
-;;; kill-region-dwim 'emacs-word
-;;; setopt for setq == only user settable
 
 ;;; Code:
+
+;;; My configuration file, split into separate files for easier
+;;; management.
 
 (require 'package)
 
@@ -59,27 +20,19 @@
                    (format "http%s://melpa.org/packages/"
                            (if (gnutls-available-p) "s" ""))))
 
-(setq package-archive-priorities
-      '(("gnu" . 2)
-        ("nongnu" . 1)))
+(setopt package-archive-priorities
+        '(("gnu" . 2)
+          ("nongnu" . 1)))
 
-(package-refresh-contents 'async)
-
-(defvar *packages-refreshed* nil)
+(when (or (not (file-exists-p package-user-dir))
+          (time-less-p (* 7 24 3600) ; 1 week
+		       (time-since (file-attribute-modification-time
+				    (file-attributes package-user-dir)))))
+  (package-refresh-contents 'async))
 
 (setq package-review-policy t
       package-review-diff-command '("git" "diff" "--no-index"
                                     "--color=never" "--diff-filter=d"))
-
-;; TODO: check this
-(setq tls-program
-      ;; Defaults:
-      ;; '("gnutls-cli --insecure -p %p %h"
-      ;;   "gnutls-cli --insecure -p %p %h --protocols ssl3"
-      ;;   "openssl s_client -connect %h:%p -no_ssl2 -ign_eof")
-      '(;;"gnutls-cli -p %p %h"
-        "openssl s_client -connect %h:%p -no_ssl2 -no_ssl3 -ign_eof"))
-
 ;; commands:
 ;; package-update, package-update-all
 ;; package-recompile, package-recompile-all
@@ -120,8 +73,7 @@
 
 (defun is-work-laptop-p ()
   "Predicate to check if running on work laptop."
-  (string= (car (split-string (system-name) "\\."))
-           "ws-1127"))
+  (string-prefix-p "ws-1127." (system-name)))
 
 (defun my/load-local-init ()
   "Load the local init file."
@@ -133,26 +85,28 @@
 ;; collection during the initialization.
 (let ((gc-cons-threshold (* 50 1000 1000)))
   (require 'init-general)
-  (require 'init-text)
-  (require 'init-visual)
-  (require 'init-calendar)
   (require 'init-session)
   (require 'init-shell)
   (require 'init-org)
   (require 'init-email)
-  (require 'init-web)
+  (require 'init-openbsd)
   (require 'init-completion)
   (require 'init-files)
-  (require 'init-programming)
-  (require 'init-openbsd)
-  (require 'init-ai)
-  (require 'init-extras)
+  (require 'init-visual)
+  (require 'init-calendar)
+  (require 'init-text) ;; auctex, pdf-tools
+  (require 'init-web) ;; elfeed
+  (require 'init-programming) ;; vc-got, magit, magit-gitflow
+  (require 'init-webdev) ;; web-mode,flymake-eslint, prettier,ts-comint
+  (require 'init-lisp) ;; sly, sly-repl-ansi-color,sly-asdf,sly-macrostep,sly-quicklisp,quack,clojure-mode,cider,geiser,
+  (require 'init-ai) ;; agent-shell
+  (require 'init-extras) ;; marginalia, emms, terraform-doc, terraform-mode, nov,x509-mode,plantuml,vundo,bibliothek, easy-kill, suomalainen-kalenteri, restclient, vcl-mode
 
   ;; Load optional local startup file
   (add-hook 'after-init-hook 'my/load-local-init t)
 
   ;; load custom settings
-  (setq custom-file (locate-user-emacs-file "custom.el"))
+  (setopt custom-file (locate-user-emacs-file "custom.el"))
   (load custom-file 'noerror))
 
 ;;; ------------------------------
@@ -173,7 +127,8 @@
 (require 'server)
 (unless (string-equal "root" (getenv "USER"))
   ;; TODO: Global env here or command specific override?
-  (setenv "EDITOR" (expand-file-name "emacsclient" invocation-directory))
+  ;; XXX: set for specific commands
+  ;;(setenv "EDITOR" (expand-file-name "emacsclient" invocation-directory))
   (let ((run-dir (expand-file-name "run" user-emacs-directory)))
     (unless (file-directory-p run-dir)
       (mkdir run-dir)

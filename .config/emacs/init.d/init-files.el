@@ -6,29 +6,30 @@
 ;;; Code:
 
 ;; ffap
-(setq ffap-machine-p-known 'reject)
+(setopt ffap-machine-p-known 'reject)
 
 ;; Useful key bindings { C-0 w } to copy link
 (add-hook 'dired-mode-hook 'hl-line-mode)
 (add-hook 'dired-mode-hook 'dired-hide-details-mode)
 
-(setq dired-dwim-target t)
-(setq dired-recursive-copies 'always)
-(setq dired-recursive-deletes 'always)
-(setq dired-isearch-filenames t)
-(setq dired-omit-verbose nil)
-(setq dired-omit-lines directory-files-no-dot-files-regexp)
-(setq dired-ls-F-marks-symlinks t)
-(setq dired-omit-files "^#\\|\\.$\\|~$\\|^RCS$\\|,v$")
-(setq dired-guess-shell-alist-user
-      '(("\\.avi$\\|\\.mkv$\\|\\.mov$\\|\\.mpeg$\\|\\.mp4$" "cvlc")))
-(setq dired-guess-shell-gnutar (unless (eq system-type 'berkeley-unix)
-                                 "tar"))
+(setopt dired-dwim-target t)
+(setopt dired-recursive-copies 'always)
+(setopt dired-recursive-deletes 'always)
+(setopt dired-isearch-filenames t)
+(setopt dired-omit-verbose nil)
+(setopt dired-omit-lines directory-files-no-dot-files-regexp)
+(setopt dired-omit-files "^#\\|\\.$\\|~$\\|^RCS$\\|,v$")
 
-(setq dired-isearch-filenames 'dwim)
-(setq dired-create-destination-dirs 'ask)
-(setq dired-vc-rename-file t)
-(setq dired-movement-style 'bounded)
+(setopt dired-ls-F-marks-symlinks t)
+(setopt dired-guess-shell-alist-user
+        '(("\\.avi$\\|\\.mkv$\\|\\.mov$\\|\\.mpeg$\\|\\.mp4$" "cvlc")))
+(setopt dired-guess-shell-gnutar (unless (eq system-type 'berkeley-unix)
+                                   "tar"))
+
+(setopt dired-isearch-filenames 'dwim)
+(setopt dired-create-destination-dirs 'ask)
+(setopt dired-vc-rename-file t)
+(setopt dired-movement-style 'bounded)
 ;; {E} 'dired-do-open'
 
 ;; Assemble a list of files you want to operate on with either find-dired, find-name-dired or find-grep-dired.
@@ -38,32 +39,25 @@
 
 ;; TODO: how to sync these to other dired etc.?
 ;; TODO: add toggle option, default to human readable
-(setq find-ls-option '("-exec ls -ldh {} +" . "-ldh"))
-;;(setq find-ls-option '("-ls" . "-dilsb"))
+(setopt find-ls-option '("-exec ls -ldh {} +" . "-ldh"))
+;;(setopt find-ls-option '("-ls" . "-dilsb"))
 
-(define-key ctl-x-map (kbd "C-j") 'dired-jump)
-(define-key ctl-x-4-map (kbd "C-j") 'dired-jump-other-window)
+(keymap-set ctl-x-map "C-j" 'dired-jump)
+(keymap-set ctl-x-4-map "C-j" 'dired-jump-other-window)
 
 ;; shell-command-guess-functions
 
 (when (executable-find "xwallpaper")
-  (setq wallpaper-command "xwallpaper")
-  (setq wallpaper-command-args '("--maximize" "%f")))
+  (setopt wallpaper-command "xwallpaper")
+  (setopt wallpaper-command-args '("--maximize" "%f")))
 
 ;; TRAMP stuff
 ;; { C-x x @ for tramp-revert-buffer-with-sudo }
-(setq tramp-use-scp-direct-remote-copying t)
-(setq tramp-file-name-with-method
-      (when-let* ((become-cmd (or (executable-find "doas")
-                                  (executable-find "sudo"))))
-        (substring become-cmd -4)))
-
-;; EMMS
-(ensure-packages-present 'emms)
-(require 'emms-setup)
-(emms-all)
-(setq emms-player-list '(emms-player-vlc)
-      emms-info-functions '(emms-info-native))
+(setopt tramp-use-scp-direct-remote-copying t)
+(setopt tramp-file-name-with-method
+        (when-let* ((become-cmd (or (executable-find "doas")
+                                    (executable-find "sudo"))))
+          (substring become-cmd -4)))
 
 (provide 'init-files)
 

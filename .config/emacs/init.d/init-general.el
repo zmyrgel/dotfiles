@@ -19,13 +19,15 @@
 (dolist (p '("~/bin" "~/.local/bin" "~/workspace/bin" "~/opt/bin"))
   (prepend-to-exec-path p))
 
-;; XXX: does not work in 31.1?
 (add-hook 'after-init-hook 'delete-selection-mode)
 
-(setq mode-line-collapse-minor-modes
-      '(abbrev-mode flyspell-mode flyspell-prog-mode eldoc-mode
-                    subword-mode auto-revert-mode whitespace-mode
-                    completion-preview-mode))
+(setopt mode-line-collapse-minor-modes
+        '(abbrev-mode flyspell-mode flyspell-prog-mode eldoc-mode
+                      subword-mode auto-revert-mode whitespace-mode
+                      completion-preview-mode))
+
+(when (native-comp-available-p)
+  (setopt native-comp-async-report-warnings-errors 'silent))
 
 ;; | Key chord | Description                  |
 ;; |-----------+------------------------------|
@@ -38,39 +40,32 @@
 ;; | M-%       | Run `query-replace'          |
 ;; | C-M-%     | `query-replace-regexp'       |
 
-(setq isearch-highlight t)
-(setq isearch-lazy-highlight t)
-(setq isearch-lazy-count t)
-(setq isearch-lax-whitespace t)
+(setopt isearch-lazy-highlight t)
+(setopt isearch-lazy-count t)
+(setopt isearch-lax-whitespace t)
+(setopt search-whitespace-regexp ".*?")
+(setopt lazy-count-prefix-format nil)
+(setopt lazy-count-suffix-format " (%s/%s)")
+(setopt isearch-yank-on-move 'shift)
+(setopt isearch-allow-scroll 'unlimited)
+(setopt query-replace-highlight t)
 (setq isearch-regexp-lax-whitespace nil)
-(setq search-whitespace-regexp ".*?")
-(setq lazy-count-prefix-format nil)
-(setq lazy-count-suffix-format " (%s/%s)")
-(setq isearch-yank-on-move 'shift)
-(setq isearch-allow-scroll 'unlimited)
-(setq query-replace-highlight t)
-
-;; Clipboard stuff
-;; (setq save-interprogram-paste-before-kill t)
-;; (setq yank-pop-change-selection t)
+(setq isearch-highlight t) ;; not documented?
 
 ;; mouse options
-(setq mouse-wheel-scroll-amount
-      '(1
-        ((shift) . 5)
-        ((meta) . 0.5)
-        ((control) . text-scale)))
-(setq mouse-drag-copy-region nil)
-(setq make-pointer-invisible t)
-(setq mouse-yank-at-point t)
-(setq mouse-wheel-progressive-speed t)
-(setq mouse-wheel-follow-mouse t)
-(when (fboundp 'context-menu-mode)
-  (context-menu-mode 1))
+(setopt mouse-wheel-scroll-amount
+        '(1
+          ((shift) . 5)
+          ((meta) . 0.5)
+          ((control) . text-scale)))
+(setopt mouse-drag-copy-region nil)
+(setopt make-pointer-invisible t)
+(setopt mouse-yank-at-point t)
+(setopt mouse-wheel-progressive-speed t)
+(setopt mouse-wheel-follow-mouse t)
+(add-hook 'after-init-hook 'context-menu-mode)
 (add-hook 'after-init-hook 'mouse-wheel-mode)
-
-(when (fboundp 'pixel-scroll-precision-mode)
-  (pixel-scroll-precision-mode 1))
+(add-hook 'after-init-hook 'pixel-scroll-precision-mode)
 
 (add-hook 'before-save-hook 'time-stamp)
 (add-hook 'comint-output-filter-functions 'comint-watch-for-password-prompt)
@@ -78,14 +73,14 @@
 
 (global-so-long-mode 1)
 
-(setq repeat-on-final-keystroke t)
-(setq set-mark-command-repeat-pop t)
-(repeat-mode 1)
+(setopt repeat-on-final-keystroke t)
+(setopt set-mark-command-repeat-pop t)
+(add-hook 'after-init-hook 'repeat-mode)
 
 ;; bump undo limits a bit
-(setq undo-limit (* 13 160000))
-(setq undo-strong-limit (* 13 240000))
-(setq undo-outer-limit (* 13 24000000))
+(setopt undo-limit (* 13 160000))
+(setopt undo-strong-limit (* 13 240000))
+(setopt undo-outer-limit (* 13 24000000))
 
 ;;; ------------------------------
 ;;; Buffer management
@@ -94,24 +89,24 @@
 ;; M-x rename-visited-file
 
 ;; uniquify
-(setq uniquify-buffer-name-style 'post-forward-angle-brackets)
-(setq uniquify-separator ":")
-(setq uniquify-after-kill-buffer-p t)
-(setq uniquify-ignore-buffers-re "^\\*")
+(setopt uniquify-buffer-name-style 'post-forward-angle-brackets)
+(setopt uniquify-separator ":")
+(setopt uniquify-after-kill-buffer-p t)
+(setopt uniquify-ignore-buffers-re "^\\*")
 
 ;; ibuffer
 (keymap-global-set "C-x C-b" 'ibuffer)
-(setq ibuffer-default-sorting-mode 'major-mode)
-(setq ibuffer-expert t)
-(setq ibuffer-shrink-to-minimum-size t)
-(setq ibuffer-human-readable-size t)
+(setopt ibuffer-default-sorting-mode 'major-mode)
+(setopt ibuffer-expert t)
+(setopt ibuffer-human-readable-size t)
+(setopt ibuffer-default-shrink-to-minimum-size t)
 (add-hook 'ibuffer-mode-hook 'ibuffer-auto-mode)
 
 ;; Buffer-menu
-(setq Buffer-menu-group-by '(Buffer-menu-group-by-root))
+(setopt Buffer-menu-group-by '(Buffer-menu-group-by-root))
 
 ;; buffer switching
-(setq switch-to-prev-buffer-skip-regexp nil)
+(setopt switch-to-prev-buffer-skip-regexp nil)
 (define-key ctl-x-x-map "p" #'switch-to-prev-buffer)
 (define-key ctl-x-x-map "n" #'switch-to-next-buffer)
 
@@ -125,23 +120,20 @@
 ;; {C-u 0 C-x e} run macro until bell
 (set-register ?m '(buffer . "*Messages*"))
 
-(setq Man-prefer-synchronous-call t)
-(setq Man-support-remote-systems t)
+(setopt Man-prefer-synchronous-call t)
+(setopt Man-support-remote-systems t)
 
-(setq remember-data-file (expand-file-name "~/Documents/notes")
-      remember-notes-initial-major-mode 'org-mode
-      remember-notes-auto-save-visited-file-name t)
+(setopt remember-data-file (expand-file-name "~/Documents/notes"))
+(setopt remember-notes-initial-major-mode 'org-mode)
 
 ;;; proced
-(setq proced-enable-color-flag t)
-(setq proced-tree-flag t)
-(setq proced-auto-update-flag 'visible)
-(setq proced-auto-update-interval 1)
-(setq proced-descent t)
-(setq proced-filter 'user)
-
-(add-hook 'proced-mode-hook 'proced-toggle-auto-update)
-
+(setopt proced-enable-color-flag t)
+(setopt proced-tree-flag t)
+(setopt proced-auto-update-flag nil)
+(setopt proced-auto-update-interval 5)
+(setopt proced-filter 'user)
+(setopt proced-descend t)
+(setopt proced-show-remote-processes t)
 
 (provide 'init-general)
 

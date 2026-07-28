@@ -1,14 +1,21 @@
 ;;; init-programming.el -*- lexical-binding: t; -*-
 ;;;
 ;;; Commentary:
-;;; - Programming related settings
+;;; - Generic Programming related settings
 
 ;;; Code:
 
-;; Make native compilation silent and prune its cache.
-(when (native-comp-available-p)
-  (setq native-comp-async-report-warnings-errors 'silent)
-  (setq native-compile-prune-cache t))
+(setopt eldoc-help-at-pt t)
+(setopt eldoc-echo-area-use-multiline-p 'truncate-sym-name-if-fit)
+(setopt eldoc-idle-delay 0.1) ;; default 0.5
+(add-hook 'after-init-hook 'global-eldoc-mode)
+
+(defun my-sql-mode-hook ()
+  "Functions to run when entering SQL-MODE."
+  (setq-local truncate-lines t))
+(add-hook 'sql-interactive-mode-hook #'my-sql-mode-hook)
+
+;;; vc and general programming configuration
 
 ;;; treesit
 (when (featurep 'treesit)
@@ -22,107 +29,27 @@
 
 ;;; project
 
-(setq project-vc-ignores '("target/" "bin/" "obj/"))
-(setq project-vc-extra-root-markers '("pom.xml" "*.csproj" "*.asd"))
-(setq project-vc-include-untracked nil)
-(setq project-mode-line t)
-(setq project-file-history-behavior 'relativize)
-(setq project-key-prompt-style t)
+(setopt project-vc-ignores '("target/" "bin/" "obj/"))
+(setopt project-vc-extra-root-markers '("pom.xml" "*.csproj" "*.asd"))
+(setopt project-vc-include-untracked nil)
+(setopt project-mode-line t)
+(setopt project-file-history-behavior 'relativize)
+(setopt project-key-prompt-style t)
 
 (defun project-show-todos ()
   "Function shows all found TODO notes in given project in single buffer."
   (interactive)
   (project-find-regexp "\\(TODO:\\|HACK:\\|XXX:\\)"))
 
-(define-key project-prefix-map (kbd "t") 'project-show-todos)
+(keymap-set project-prefix-map "t" 'project-show-todos)
 
-(setq project-mode-line t)
-(setq project-file-history-behavior 'relativize)
-
-(defun list-npm-package-files ()
-  "List of all package.json files within a project."
-  (seq-filter (lambda (filepath)
-                (string-match "package\.json$" filepath))
-              (project-files (project-current))))
-
-(defun list-api-doc-files ()
-  "List of all package.json files within a project."
-  (seq-filter (lambda (filepath)
-                (string-match "openapi\.yaml$" filepath))
-              (project-files (project-current))))
-
-(defun %parse-package-names (file)
-  "Parse the names of npm packages."
-  (unless (json-available-p)
-    (error "JSON parsing not available"))
-  (let ((packages nil))
-    (with-temp-buffer
-      (insert-file-contents file)
-      (let* ((json-ht (json-parse-buffer))
-             (dev-dependencies (gethash "devDependencies" json-ht))
-             (dependencies (gethash "dependencies" json-ht)))
-        (when dev-dependencies
-          (maphash (lambda (k _v)
-                     (push k packages))
-                   dev-dependencies))
-        (when dependencies
-          (maphash (lambda (k _v)
-                     (push k packages))
-                   dependencies))))
-    (delete-dups packages)))
-
-(defun valid-npm-sem-ver-p (version-string)
-  "Return t if given valid NPM semver string."
-  (and (string-match "[\\^~]?[0-9\\.]+" version-string)
-       t))
-
-(defun %update-package-version (file package-name new-version)
-  "Update the PACKAGE-NAME version in FILE to NEW-VERSION."
-  (with-temp-file file
-    (insert-file-contents file)
-    (when-let* ((package-end (re-search-forward (format "^\s+\"\\%s\": \"\\([~\\.\\^0-9]+\\)\"" package-name) nil t)))
-      (delete-region (search-backward ":") package-end)
-      (insert (format ": \"%s\"" new-version)))))
-
-(defun project-update-npm-package-version ()
-  "Quickly update the npm package versions inside a project."
-  (interactive)
-  (let* ((package-files (list-npm-package-files))
-         (existing-packages (mapcan #'%parse-package-names package-files))
-         (package-name (completing-read "Give package name to update: " existing-packages))
-         (new-version (read-from-minibuffer "Give new package version to set: ")))
-    (unless (valid-npm-sem-ver-p new-version)
-      (error "invalid version string: %s" new-version))
-    (dolist (file package-files)
-      (%update-package-version file package-name new-version))
-    (message "updated package %s to version %s in project package.json files" package-name new-version)))
-
-(defun project-update-npm-project-version ()
-  "Quickly update the npm project version inside a project."
-  (interactive)
-  (let* ((package-files (list-npm-package-files))
-         (new-version (read-from-minibuffer "Give new project version to set: ")))
-    (unless (valid-npm-sem-ver-p new-version)
-      (error "invalid version string: %s" new-version))
-    (dolist (file package-files)
-      (%update-package-version file "version" new-version))
-    (message "updated project version to %s in project package.json files" new-version)))
-
-(defun project-update-project-api-version ()
-  "Quickly update the project version inside API-docs of an project."
-  (interactive)
-  (let* ((files (list-api-doc-files))
-         (new-version (read-from-minibuffer "Give new project version to set: ")))
-    (unless (valid-npm-sem-ver-p new-version)
-      (error "invalid version string: %s" new-version))
-    (dolist (file files)
-      (%update-package-version file "version" new-version))
-    (message "updated project version to %s in project openapi.yaml files" new-version)))
+(setopt project-mode-line t)
+(setopt project-file-history-behavior 'relativize)
 
 ;;; vc
 
-(setq vc-use-incoming-outgoing-prefixes t)
-(setq vc-dir-show-outgoing-count t) ;; default
+(setopt vc-use-incoming-outgoing-prefixes t)
+(setopt vc-dir-show-outgoing-count t) ;; default
 
 ;; (setq vc-async-checkin t) ;; check this
 ;; (setq vc-display-failed-async-commands t)
@@ -138,29 +65,25 @@
 (when (eq system-type 'berkeley-unix)
   (setenv "CVSROOT" "anoncvs.eu.openbsd.org:/cvs"))
 
-(setq vc-suppress-confirm t)
-(setq vc-command-messages t)
-(setq vc-find-revision-no-save t)
-(setq vc-annotate-display-mode 'fullscale)
-(setq add-log-keep-changes-together t)
-(setq vc-display-status 'no-backend)
-(setq vc-annotate-use-short-revision t)
-(setq vc-dir-show-key-binding-hints t) ; 32
+(setopt vc-suppress-confirm t)
+(setopt vc-command-messages t)
+(setopt vc-find-revision-no-save t)
+(setopt vc-annotate-display-mode 'fullscale)
+(setopt add-log-keep-changes-together t)
+(setopt vc-display-status 'no-backend)
+(setopt vc-annotate-use-short-revision t)
+;;(setopt vc-dir-show-key-binding-hints t) ; 32
 
-;; (setq vc-dir-auto-hide-up-to-date 'revert) t nil
-(setq vc-dir-save-some-buffers-on-revert t)
-
-;; allow reverting changes in vc-dir
-(with-eval-after-load 'vc-dir-mode
-  (define-key vc-dir-mode-map (kbd "k") 'vc-revert))
+;; (setopt vc-dir-auto-hide-up-to-date 'revert) t nil
+(setopt vc-dir-save-some-buffers-on-revert t)
 
 ;;; vc-git
-(setq vc-git-show-stash 0) ;; hide stash by default
-(setq vc-git-annotate-switches "-w")
-(setq vc-git-diff-switches '("--patch-with-stat"))
-(setq vc-git-revision-complete-only-branches t)
-(setq vc-git-print-log-follow nil)
-(setq vc-git-shortlog-switches nil)
+(setopt vc-git-show-stash 0) ;; hide stash by default
+(setopt vc-git-annotate-switches "-w")
+(setopt vc-git-diff-switches '("--patch-with-stat"))
+(setopt vc-git-revision-complete-only-branches t)
+(setopt vc-git-print-log-follow nil)
+(setopt vc-git-shortlog-switches nil)
 
 ;;; vc-got
 (let ((vc-got-repo-dir (expand-file-name "~/got/vc-got")))
@@ -187,12 +110,12 @@
 ;; M-x xref-find-references-and-replace
 
 ;;; compile
-(setq compilation-save-buffers-predicate nil)
-(setq compilation-scroll-output 'first-error)
-(setq compilation-ask-about-save nil)
-(setq compilation-always-kill t)
-(setq compilation-window-height 12)
-(setq ansi-color-for-compilation-mode t)
+(setopt compilation-save-buffers-predicate nil)
+(setopt compilation-scroll-output 'first-error)
+(setopt compilation-ask-about-save nil)
+(setopt compilation-always-kill t)
+(setopt compilation-window-height 12)
+(setopt ansi-color-for-compilation-mode t)
 (add-hook 'compilation-filter-hook #'ansi-color-compilation-filter)
 
 ;; Add biome lint support
@@ -204,34 +127,35 @@
 
 ;;; smerge-mode
 ;; or use smerge-ediff to resolve conflicts
-(setq smerge-command-prefix (kbd "C-c v")) ;; XXX: check this
+(setopt smerge-command-prefix (kbd "C-c v")) ;; XXX: check this
 
 ;;; diff
 ;; {C-c RET a} 'diff-apply-buffer'
-(setq diff-advance-after-apply-hunk t)
-(setq diff-default-read-only t)
-(setq diff-font-lock-prettify nil)
-(setq diff-font-lock-syntax 'hunk-also)
-(setq diff-refine 'font-lock) ; 'navigation
-(setq diff-update-on-the-fly t)
-(setq diff-add-log-use-relative-names t)
-(setq diff-refine-nonmodified t)
-(setq diff-ignore-whitespace-switches "-b")
-(setq diff-switches '("-u"))
+(setopt diff-advance-after-apply-hunk t)
+(setopt diff-default-read-only t)
+(setopt diff-font-lock-prettify nil)
+(setopt diff-font-lock-syntax 'hunk-also)
+(setopt diff-refine 'font-lock) ; 'navigation
+(setopt diff-update-on-the-fly t)
+(setopt diff-add-log-use-relative-names t)
+(setopt diff-refine-nonmodified t)
+(setopt diff-ignore-whitespace-switches "-b")
+(setopt diff-switches '("-u"))
 
 ;; 'diff-revert-and-kill-hunk' bound to 'u' and 'C-c M-u'.
 ;; 'v' is now bound to 'vc-next-action' in read-only Diff mode buffers.
 ;; 's' is now bound to 'diff-split-hunk' in read-only Diff mode buffers.
 
 ;;; ediff
-(setq ediff-window-setup-function 'ediff-setup-windows-plain)
-(setq ediff-split-window-function 'split-window-horizontally)
-(setq ediff-diff-options "-w")
-(setq ediff-keep-variants nil)
-(setq ediff-make-buffers-readonly-at-startup nil)
+(setopt ediff-window-setup-function 'ediff-setup-windows-plain)
+(setopt ediff-split-window-function 'split-window-horizontally)
+(setopt ediff-diff-options "-w")
+(setopt ediff-keep-variants nil)
+(setopt ediff-make-buffers-readonly-at-startup nil)
 (add-hook 'ediff-after-quit-hook-internal-hook 'winner-undo)
 
 ;;; prog-mode
+
 (defun my/prog-mode-hook ()
   "Hook to run when entering generic prog-mode."
   (setq-local which-func-unknown "TOP LEVEL")
@@ -245,56 +169,34 @@
 ;; NOTE: enable which-func only on prog-mode instead of globally.
 ;; This is to avoid having it enabled in diff-mode, which causes cpu use
 ;; due to looping in git remote call
-(setq which-func-modes '(prog-mode))
+(setopt which-func-modes '(prog-mode))
 (which-function-mode)
 
-(ensure-packages-present 'magit)
-(setq magit-repository-directories
-      '(("~/git" . 1)
-        ("~/quicklisp/local-projects" . 1)
-        ("~/common-lisp" . 1)))
-(add-to-list 'project-switch-commands '(magit-project-status "Magit" ?m))
-;; Or use C-RET when in magit diff to go to actual file
-(setq magit-diff-visit-prefer-worktree t)
-
-;; use magit recommended key bindings
-(keymap-global-set "C-c g" 'magit-status)
-(keymap-global-set "C-c f" 'magit-file-dispatch)
-(keymap-global-set "C-c F" 'magit-dispatch)
-
-;; magit-gitflow
-(when (is-work-laptop-p)
-  (ensure-packages-present 'magit-gitflow)
-  (require 'magit-gitflow nil t)
-  (add-hook 'magit-mode-hook 'turn-on-magit-gitflow))
-
 (with-eval-after-load 'eglot
-  (setq eglot-autoshutdown t)
-  (setq eglot-extend-to-xref t)
-  (setq eglot-events-buffer-size 0)
-  (setq eglot-events-buffer-config '(:size 0 :format full))
-  (setq eglot-prefer-plaintext t)
+  (setopt eglot-autoshutdown t)
+  (setopt eglot-extend-to-xref t)
+  (setopt eglot-events-buffer-config '(:size 0 :format full))
+  (setopt eglot-prefer-plaintext t)
   (setq jsonrpc-event-hook nil)
   ;; Check these:
-  ;;(setq eglot-report-progress nil)
-  ;;(setq eglot-code-action-indications nil) ;; emacs31
-  (define-key eglot-mode-map (kbd "C-c e h") 'eglot-help-at-point)
-  (define-key eglot-mode-map (kbd "C-c e a") 'eglot-code-actions)
-  (define-key eglot-mode-map (kbd "C-c e o") 'eglot-action-organize-imports)
-  (define-key eglot-mode-map (kbd "C-c e f") 'eglot-format)
-  (define-key eglot-mode-map (kbd "C-c e r") 'eglot-rename))
+  ;;(setopt eglot-report-progress nil)
+  ;;(setopt eglot-code-action-indications nil) ;; emacs31
+  (keymap-set eglot-mode-map "C-c e h" 'eglot-help-at-point)
+  (keymap-set eglot-mode-map "C-c e a" 'eglot-code-actions)
+  (keymap-set eglot-mode-map "C-c e o" 'eglot-action-organize-imports)
+  (keymap-set eglot-mode-map "C-c e f" 'eglot-format)
+  (keymap-set eglot-mode-map "C-c e r" 'eglot-rename))
 
 ;; (add-hook 'eglot-managed-mode-hook
 ;;           (lambda ()
 ;;             (add-hook 'before-save-hook #'eglot-format-buffer nil t)))
 
 ;;; editorconfig
-;;; TODO:
+
+(add-hook 'after-init-hook 'editorconfig-mode)
 
 ;; Java: checkout lombok annotations
 ;; JAVA_TOOL_OPTIONS="-javaagent:<lombok>"
-
-; ;(shell-command "cd ~/git/Salli; mvn dependency:list")
 
 (defun list-lombok-jars ()
   "List the lombok files in current project."
@@ -310,14 +212,8 @@
 
 ;; flymake
 (with-eval-after-load 'flymake
-  (define-key flymake-mode-map (kbd "M-n") 'flymake-goto-next-error)
-  (define-key flymake-mode-map (kbd "M-p") 'flymake-goto-prev-error))
-
-;; (ensure-packages-present 'flymake-eslint)
-;; (setq flymake-eslint-executable-name "eslint")
-;; (setq flymake-eslint-executable-args nil)
-;; (setq flymake-eslint-show-rule-name t)
-;; (setq flymake-eslint-defer-binary-check t)
+  (keymap-set flymake-mode-map "M-n" 'flymake-goto-next-error)
+  (keymap-set flymake-mode-map "M-p" 'flymake-goto-prev-error))
 
 ;;; Go programming
 (setenv "GOPATH" (expand-file-name "workspace" "~"))
@@ -341,122 +237,10 @@
   (add-to-list 'magic-mode-alist m))
 
 (defun my/ruby-ts-mode-hook ()
-  (setq ruby-deep-arglist t)
-  (setq ruby-deep-indent-paren nil)
-  (setq c-tab-always-indent nil))
+  (setopt ruby-deep-arglist t)
+  (setopt ruby-deep-indent-paren nil)
+  (setq-local c-tab-always-indent nil))
 (add-hook 'ruby-mode-hook 'my/ruby-ts-mode-hook)
-
-;;; Lisp programming
-(global-eldoc-mode 1)
-(setq eldoc-help-at-pt t)
-(setq eldoc-echo-area-use-multiline-p 'truncate-sym-name-if-fit)
-(setq eldoc-idle-delay 0.1) ;; default 0.5
-
-;; TODO: disable whitespace-mode in *sly-description* buffer
-(unless (package-installed-p 'sly)
-  (package-vc-install
-   '(sly :vc-backend Git
-         :url "https://github.com/joaotavora/sly.git"
-         :doc "doc/sly.texi")))
-
-(setq sly-lisp-implementations '((sbcl ("sbcl" "--dynamic-space-size" "2048"))
-                                 (ecl ("ecl"))
-                                 (clisp ("clisp" "-ansi"))
-                                 (chicken ("csi"))
-                                 (abcl ("abcl"))))
-(setq sly-default-lisp 'sbcl)
-
-(when-let* ((local-hyperspec-path
-             (seq-some (lambda (p)
-                         (let ((full-path (expand-file-name p)))
-                           (when (file-directory-p full-path)
-                             full-path)))
-                       '("/usr/local/share/doc/clisp-hyperspec/"
-                         "/usr/share/doc/hyperspec/"
-                         "~/src/lisp/HyperSpec/"))))
-  (setq common-lisp-hyperspec-root (concat "file://" local-hyperspec-path))
-  (setq common-lisp-hyperspepac-symbol-table (concat common-lisp-hyperspec-root "Data/Map_Sym.txt")))
-
-;; TODO: is this needed with package-vc-install?
-;; compile and add sly info manual to emacs info-directory alist
-;; (when-let* ((sly-doc-dirs (file-expand-wildcards (concat (locate-user-emacs-file "elpa") "/sly-*/doc"))))
-;;   (let ((sly-doc-dir (car sly-doc-dirs)))
-;;     (when (file-directory-p sly-doc-dir)
-;;       ;; if no Info file found, generate it
-;;       (unless (file-exists-p (concat sly-doc-dir "/sly.info"))
-;;         (let ((default-directory sly-doc-dir))
-;;           (if (eq system-type 'berkeley-unix)
-;;               (async-shell-command "gmakeinfo sly.texi")
-;;             (async-shell-command "make sly.info")))))
-;;       (add-to-list 'Info-directory-list sly-doc-dir)))
-
-;; if we have log4cl dist use it to set global logging
-(when-let* ((log4cl-dirs
-             (mapcar #'expand-file-name
-                     (file-expand-wildcards "~/quicklisp/dists/quicklisp/software/log4cl-*-git"))))
-  (add-to-list 'load-path (concat (car (last log4cl-dirs)) "/elisp"))
-  (require 'log4sly nil t)
-  (global-log4sly-mode 1))
-
-(setq sly-mrepl-prevent-duplicate-history 'move)
-;;(setq sly-command-switch-to-existing-lisp )
-
-(ensure-packages-present 'sly-repl-ansi-color)
-(ensure-packages-present 'sly-asdf)
-(ensure-packages-present 'sly-macrostep)
-(ensure-packages-present 'sly-quicklisp)
-
-(sly-setup '(sly-fancy
-             sly-quicklisp
-             sly-macrostep
-             sly-repl-ansi-color
-             sly-asdf))
-
-(ensure-packages-present 'quack)
-(setq quack-default-program "csi")
-(setq quack-dir (locate-user-emacs-file "quack"))
-(setq quack-fontify-style nil)
-(setq quack-newline-behavior 'indent-newline-indent)
-(setq quack-pretty-lambda-p nil)
-(setq quack-remap-find-file-bindings-p nil)
-(setq quack-run-scheme-always-prompts-p nil)
-(setq quack-run-scheme-prompt-defaults-to-last-p t)
-(setq quack-smart-open-paren-p t)
-(setq quack-switch-to-scheme-method 'other-window)
-
-(ensure-packages-present '(clojure-mode cider))
-
-;; (add-to-list 'major-mode-remap-alist '(clojure-mode--mode . ruby-ts-mode))
-;; (add-to-list 'magic-mode-alist '("\\.clj$" . clojure-mode))
-
-;; (setq cider-lein-parameters "repl :headless :host localhost")
-;; (setq nrepl-hide-special-buffers t)
-
-(ensure-packages-present 'geiser)
-(when (eq system-type 'berkeley-unix)
-  (setq geiser-chicken-binary "chicken-csi")
-  (setq geiser-guile-binary "guile3.0"))
-
-;;;; PHP programming
-
-(defun php-symbol-lookup ()
-    (interactive)
-    ;; Poll user for symbol to look up
-    (let ((url-format "https://www.php.net/manual/en/function.%s.php"))
-      (with-temp-buffer
-        (insert (read-from-minibuffer "Function to lookup: "))
-        (goto-char (point-min))
-        (replace-regexp "_" "-")
-        (eww (format url-format (buffer-string))))))
-
-(with-eval-after-load 'php-ts-mode
-
-  (defun my/php-ts-mode-hook ()
-    (setq php-ts-mode-indent-style 'symfony) ;; was 'psr2
-    (setq indent-tabs-mode nil)
-    (setq php-ts-mode-indent-offset 4))
-
-  (add-hook 'php-ts-mode-hook 'my/php-ts-mode-hook))
 
 ;;;; C programming
 
@@ -475,98 +259,48 @@
   (defun my/c-mode ()
     "My C programming options."
     (c-set-style "bsd")
-    (setq indent-tabs-mode t))
+    (setq-local indent-tabs-mode t))
 
   (defun my/c++-mode ()
     "My C++ programming options."
     (setq fill-column 100)
     (c-set-style "stroustrup")
-    (setq whitespace-line-column 100
-          whitespace-style '(face lines-tail))))
+    (setq-local whitespace-line-column 100
+                whitespace-style '(face lines-tail))))
 
 ;;; Perl
 (add-to-list 'major-mode-remap-alist '(perl-mode . cperl-mode))
 
-(defvar cperl-font-lock)
-(defvar cperl-info-on-command-no-prompt)
-(defvar cperl-clobber-lisp-bindings)
-(defvar cperl-lazy-help-time)
-(defvar cperl-indent-level)
-(defvar cperl-invalid-face)
-(with-eval-after-load 'cperl-mode
-  (defun my/cperl-mode-hook ()
-    "Default CPerl settings."
-    (setq cperl-font-lock t)
-    (setq cperl-info-on-command-no-prompt t)
-    (setq cperl-clobber-lisp-bindings t)
-    (setq cperl-lazy-help-time 5)
-    (setq cperl-indent-level 4)
-    (setq cperl-invalid-face 'default))
-  (add-hook 'cperl-mode-hook 'my/cperl-mode-hook))
+(setopt cperl-font-lock t)
+(setopt cperl-info-on-command-no-prompt t)
+(setopt cperl-clobber-lisp-bindings t)
+(setopt cperl-lazy-help-time 5)
+(setopt cperl-indent-level 4)
+(setopt cperl-invalid-face 'default)
 
-(ensure-packages-present 'web-mode)
-(dolist (m '(("\\.jsp\\'" . web-mode)
-             ("\\.ap[cp]x\\'" . web-mode)
-             ("\\.erb\\'" . web-mode)
-             ("\\.rhtml\\'" . web-mode)
-             ("\\.mustache\\'" . web-mode)
-             ("\\.djhtml\\'" . web-mode)
-             ("\\.jsx\\'" . web-mode)))
-  (add-to-list 'magic-mode-alist m))
+;;; magit
 
-(defun my/web-mode-hook ()
-  "Hooks for Web mode."
-  (setq web-mode-markup-indent-offset 2)
-  (setq web-mode-css-indent-offset 2)
-  (setq web-mode-code-indent-offset 4)
-  (when (and (member (file-name-extension buffer-file-name) '("jsx"))
-             (require 'eglot nil 'noerror))
-    (eglot-ensure)))
+(ensure-packages-present 'magit)
+(setopt magit-repository-directories
+        '(("~/git" . 1)
+          ("~/quicklisp/local-projects" . 1)
+          ("~/common-lisp" . 1)))
+(add-to-list 'project-switch-commands '(magit-project-status "Magit" ?m))
+;; Or use C-RET when in magit diff to go to actual file
+(setopt magit-diff-visit-prefer-worktree t)
 
-(add-hook 'web-mode-hook 'my/web-mode-hook)
-(add-hook 'web-mode-hook 'flymake-eslint-enable)
+;; use magit recommended key bindings
+(keymap-global-set "C-c g" 'magit-status)
+(keymap-global-set "C-c f" 'magit-file-dispatch)
+(keymap-global-set "C-c F" 'magit-dispatch)
 
-(with-eval-after-load 'typescript-ts-mode
-  (add-hook 'typescript-ts-mode-hook 'eglot-ensure)
-  (add-hook 'typescript-ts-mode-hook 'flymake-eslint-enable)
-  (add-hook 'tsx-ts-mode-hook 'eglot-ensure)
-  (add-hook 'tsx-ts-mode-hook 'flymake-eslint-enable)
-  (setq whitespace-line-column 120))
+;;; magit-gitflow
 
-(ensure-packages-present 'prettier)
-(add-hook 'typescript-ts-hook #'prettier-mode)
+(when (is-work-laptop-p)
+  (ensure-packages-present 'magit-gitflow)
+  (require 'magit-gitflow nil t)
+  (add-hook 'magit-mode-hook 'turn-on-magit-gitflow))
 
-(ensure-packages-present 'ts-comint)
-
-;; TODO: use biome!
-(defun my/use-project-eslint ()
-  (let* ((root (locate-dominating-file
-                (or (buffer-file-name) default-directory)
-                "node_modules"))
-         (eslint
-          (and root
-               (expand-file-name "node_modules/.bin/eslint"
-                                 root))))
-    (when (and eslint (file-executable-p eslint))
-      (setq-local flymake-eslint-executable-name eslint))))
-
-(defun my-typescript-hook ()
-  "My shared options for Typescript(-ts)?-mode"
-  (setq-local typescript-ts-indent-offset 4)
-  (local-set-key (kbd "C-x C-e") 'ts-send-last-sexp)
-  (local-set-key (kbd "C-M-x") 'ts-send-last-sexp-and-go)
-  (local-set-key (kbd "C-c b") 'ts-send-buffer)
-  (local-set-key (kbd "C-c C-b") 'ts-send-buffer-and-go)
-  (local-set-key (kbd "C-c l") 'ts-load-file-and-go))
-
-(add-hook 'typescript-ts-mode-hook #'my-typescript-hook)
-
-(ensure-packages-present 'vcl-mode)
-
-(defun my-sql-mode-hook ()
-  "Functions to run when entering SQL-MODE."
-  (setq-local truncate-lines t))
-(add-hook 'sql-interactive-mode-hook #'my-sql-mode-hook)
 
 (provide 'init-programming)
 

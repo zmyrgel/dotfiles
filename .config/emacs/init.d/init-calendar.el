@@ -9,45 +9,43 @@
 (add-hook 'diary-list-entries-hook 'diary-sort-entries)
 (add-hook 'diary-list-entries-hook 'diary-mark-included-diary-files)
 
-(setq diary-display-function 'diary-fancy-display)
-(setq diary-number-of-entries 7)
+(setopt diary-display-function 'diary-fancy-display)
+(setopt diary-number-of-entries 7)
 
 (add-hook 'calendar-today-visible-hook 'calendar-mark-today)
-(setq calendar-date-style 'european)
+(setopt calendar-date-style 'european)
 
-(setq calendar-week-start-day 1)
-(setq calendar-day-name-array
-      ["sunnuntai" "maanantai" "tiistai" "keskiviikko"
-       "torstai" "perjantai" "lauantai"])
-(setq calendar-month-name-array
-      ["tammikuu" "helmikuu" "maaliskuu" "huhtikuu" "toukokuu"
-       "kesäkuu" "heinäkuu" "elokuu" "syyskuu"
-       "lokakuu" "marraskuu" "joulukuu"])
+(setopt calendar-week-start-day 1)
+(setopt calendar-day-name-array
+        ["sunnuntai" "maanantai" "tiistai" "keskiviikko"
+         "torstai" "perjantai" "lauantai"])
+(setopt calendar-month-name-array
+        ["tammikuu" "helmikuu" "maaliskuu" "huhtikuu" "toukokuu"
+         "kesäkuu" "heinäkuu" "elokuu" "syyskuu"
+         "lokakuu" "marraskuu" "joulukuu"])
 
-(setq calendar-mark-holidays-flag t)
-(setq calendar-view-diary-initially-flag t)
-(setq calendar-mark-diary-entries-flag t)
-(setq diary-show-holidays-flag t)
-(setq diary-file "~/Documents/diary")
+(setopt calendar-mark-holidays-flag t)
+(setopt calendar-view-diary-initially-flag t)
+(setopt calendar-mark-diary-entries-flag t)
+(setopt diary-show-holidays-flag t)
+(setopt diary-file "~/Documents/diary")
 
-(setq calendar-time-display-form
-      '(24-hours ":" minutes
-                 (if time-zone " (") time-zone (if time-zone ")")))
-(setq calendar-latitude 60.333847)
-(setq calendar-longitude 25.027310)
+(setopt calendar-time-display-form
+        '(24-hours ":" minutes
+                   (if time-zone " (") time-zone (if time-zone ")")))
+(setopt calendar-latitude 60.333847)
+(setopt calendar-longitude 25.027310)
 
 ;; time utilities
-(setq time-stamp-active t)
-(setq time-stamp-line-limit 10)
-(setq time-stamp-format "%Y-%02m-%02d %02H:%02M:%02S (%l)")
+(setopt time-stamp-active t)
+(setopt time-stamp-line-limit 10)
+(setopt time-stamp-format "%Y-%02m-%02d %02H:%02M:%02S (%l)")
 
 (display-time-mode -1)
-(setq display-time-24hr-format t)
-(setq display-time-day-and-date nil)
-(setq display-time-format nil)
-(setq display-time-use-mail-icon t)
-
-(ensure-packages-present 'suomalainen-kalenteri)
+(setopt display-time-24hr-format t)
+(setopt display-time-day-and-date nil)
+(setopt display-time-format nil)
+(setopt display-time-use-mail-icon t)
 
 (provide 'init-calendar)
 

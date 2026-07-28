@@ -7,68 +7,65 @@
 
 ;;; Code:
 
-(ensure-packages-present '(marginalia))
-
-(setq marginalia-max-relative-age 0)
-(marginalia-mode)
-
 ;; Hide commands in M-x which do not apply to the current mode.
-(setq read-extended-command-predicate #'command-completion-default-include-p)
+(setopt read-extended-command-predicate #'command-completion-default-include-p)
 
 ;; Enable indentation+completion using the TAB key.
 ;; `completion-at-point' is often bound to M-TAB.
-(setq tab-always-indent 'complete)
+(setopt tab-always-indent 'complete)
 
 ;;; minibuffer
-(setq completion-styles '(basic partial-completion flex))
-(setq completion-category-overrides
-      '((file (styles . (basic partial-completion flex)))
-        (project-file (styles . (basic substring partial-completion flex)))
-        (imenu (styles . (basic substring flex)))
-        (kill-ring (styles . (basic substring flex)))))
+(setopt completion-styles '(basic partial-completion flex))
+(setopt completion-category-overrides
+        '((file (styles . (basic partial-completion flex)))
+          (project-file (styles . (basic substring partial-completion flex)))
+          (imenu (styles . (basic substring flex)))
+          (kill-ring (styles . (basic substring flex)))))
 
-(setq completion-auto-deselect t)
-(setq completion-auto-help 'visible)
-(setq completion-auto-select 'second-tab)
-(setq completion-auto-wrap t)
-(setq completion-cycle-threshold nil)
-(setq completion-eager-display 'auto)
-(setq completion-eager-update 'auto)
-(setq completion-flex-nospace nil)
-(setq completion-ignore-case t)
-(setq completion-pcm-complete-word-inserts-delimiters nil)
-(setq completion-pcm-leading-wildcard t)
-(setq completion-pcm-word-delimiters "-_./:| ")
-(setq completion-show-help nil)
+(setopt completion-auto-deselect t)
+(setopt completion-auto-help 'visible)
+(setopt completion-auto-select 'second-tab)
+(setopt completion-auto-wrap t)
+(setopt completion-cycle-threshold nil)
+(setopt completion-eager-display 'auto)
+(setopt completion-eager-update 'auto)
+(setopt completion-flex-nospace nil)
+(setopt completion-ignore-case t)
+(setopt completion-pcm-complete-word-inserts-delimiters nil)
+(setopt completion-pcm-leading-wildcard t)
+(setopt completion-pcm-word-delimiters "-_./:| ")
+(setopt completion-show-help nil)
 
-(setq completions-format 'one-column)
-(setq completions-max-height 20)
-(setq completions-detailed t)
-(setq completions-group t)
-(setq completions-group-sort 'alphabetical)
-(setq completions-sort 'historical)
-(setq completions-header-format #("%s possible completions:
+(setopt completions-format 'one-column)
+(setopt completions-max-height 20)
+(setopt completions-detailed t)
+(setopt completions-group t)
+(setopt completions-group-sort 'alphabetical)
+(setopt completions-sort 'historical)
+(setopt completions-header-format #("%s possible completions:
 " 0 25 (face shadow)))
 
-(setq echo-keystrokes 1)
-(setq suggest-key-bindings t)
-(setq read-answer-short t)
+(setopt echo-keystrokes 1)
+(setopt suggest-key-bindings t)
+(setopt read-answer-short t)
 
-(setq minibuffer-completion-auto-choose t) ;; was nil
-(setq minibuffer-beginning-of-buffer-movement t)
-(setq minibuffer-default-prompt-format " [%s]")
-(setq minibuffer-visible-completions t)
-(setq minibuffer-prompt-properties
-      '(read-only t cursor-intangible t face minibuffer-prompt))
+(setopt minibuffer-completion-auto-choose t) ;; was nil
+(setopt minibuffer-beginning-of-buffer-movement t)
+(setopt minibuffer-default-prompt-format " [%s]")
+(setopt minibuffer-visible-completions t)
+(setopt minibuffer-prompt-properties
+        '(read-only t cursor-intangible t face minibuffer-prompt))
 (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
-(file-name-shadow-mode 1)
-(minibuffer-depth-indicate-mode 1)
-(minibuffer-electric-default-mode 1)
-(minibuffer-regexp-mode 1)
+(add-hook 'after-init-hook 'file-name-shadow-mode)
+(add-hook 'after-init-hook 'minibuffer-depth-indicate-mode)
+(add-hook 'after-init-hook 'minibuffer-electric-default-mode)
+(add-hook 'after-init-hook 'minibuffer-regexp-mode)
 
-  ;; Keep minibuffer lines unwrapped, long lines like on M-y will be truncated
-(add-hook 'minibuffer-setup-hook
-          (lambda () (setq truncate-lines t)))
+;; Keep minibuffer lines unwrapped, long lines like on M-y will be truncated
+(defun my/truncate-lines ()
+  (setq truncate-lines t))
+
+(add-hook 'minibuffer-setup-hook 'my/truncate-lines)
 
 ;; Select completion options with up/down when completing in the
 ;; minibuffer or normal buffer
@@ -79,39 +76,31 @@
 (define-key completion-in-region-mode-map (kbd "C-p") #'minibuffer-previous-completion)
 (define-key completion-in-region-mode-map (kbd "C-n") #'minibuffer-next-completion)
 
-;;; icomplete
-
-;;(icomplete-vertical-mode -1)
-;; Do not show completions buffer when also showing in-buffer options
-;;(advice-add 'completion-at-point :after #'minibuffer-hide-completions)
-;; show only icomplete in-buffer display and not *Completions* buffer
-;;(setq icomplete-in-buffer nil) ;; t
-
 ;;; completion preview
 (global-completion-preview-mode)
-(setq completion-preview-exact-match-only nil)
-(setq completion-preview-minimum-symbol-length 3)
-(setq completion-preview-idle-delay 0.3)
+(setopt completion-preview-exact-match-only nil)
+(setopt completion-preview-minimum-symbol-length 3)
+(setopt completion-preview-idle-delay 0.3)
 (define-key completion-preview-active-mode-map (kbd "M-n") #'completion-preview-next-candidate)
 (define-key completion-preview-active-mode-map (kbd "M-p") #'completion-preview-prev-candidate)
 
 ;;; imenu: M-g i
-(setq imenu-auto-rescan t)
-(setq imenu-max-item-length 100)
-(setq imenu-space-replacement ".")
-(setq imenu-level-separator ":")
+(setopt imenu-auto-rescan t)
+(setopt imenu-max-item-length 100)
+(setopt imenu-space-replacement ".")
+(setopt imenu-level-separator ":")
 
 ;;; hippie-exp
 (define-key global-map [remap dabbrev-expand] 'hippie-expand)
 
-(setq dabbrev-abbrev-skip-leading-regexp "[$*/=']")
-(setq dabbrev-backward-only nil)
-(setq dabbrev-case-distinction 'case-replace)
-(setq dabbrev-case-fold-search 'case-fold-search)
-(setq dabbrev-case-replace 'case-replace)
-(setq dabbrev-check-other-buffers t)
-(setq dabbrev-eliminate-newlines nil)
-(setq dabbrev-upcase-means-case-search t)
+(setopt dabbrev-abbrev-skip-leading-regexp "[$*/=']")
+(setopt dabbrev-backward-only nil)
+(setopt dabbrev-case-distinction 'case-replace)
+(setopt dabbrev-case-fold-search 'case-fold-search)
+(setopt dabbrev-case-replace 'case-replace)
+(setopt dabbrev-check-other-buffers t)
+(setopt dabbrev-eliminate-newlines nil)
+(setopt dabbrev-upcase-means-case-search t)
 
 ;; todo:
 ;; ecomplete: add mail entries?
