@@ -1,10 +1,33 @@
-;;; init-calendar.el -*- lexical-binding: t; -*-
-;;;
+;;; init-calendar.el --- calendar and time related configs -*- lexical-binding: t -*-
+
+;; Copyright (c) 2022-2026 Timo Myyrä <timo.myyra@bittivirhe.fi>
+
+;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
+;; URL: https://github.com/zmyrgel/dotfiles
+;; Version: 0.1.0
+;; Package-Requires: ((emacs "30.1"))
+
+;; This file is NOT part of GNU Emacs.
+
+;; This file is free software: you can redistribute it and/or modify it
+;; under the terms of the GNU General Public License as published by the
+;; Free Software Foundation, either version 3 of the License, or (at
+;; your option) any later version.
+;;
+;; This file is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this file.  If not, see <https://www.gnu.org/licenses/>.
+
 ;;; Commentary:
-;;; - Time keeping related configuration
+;; - Time keeping related configuration
 
 ;;; Code:
 
+;;; diary
 (add-hook 'diary-list-entries-hook 'diary-include-other-diary-files)
 (add-hook 'diary-list-entries-hook 'diary-sort-entries)
 (add-hook 'diary-list-entries-hook 'diary-mark-included-diary-files)
@@ -12,6 +35,7 @@
 (setopt diary-display-function 'diary-fancy-display)
 (setopt diary-number-of-entries 7)
 
+;;; calendar
 (add-hook 'calendar-today-visible-hook 'calendar-mark-today)
 (setopt calendar-date-style 'european)
 
@@ -36,11 +60,12 @@
 (setopt calendar-latitude 60.333847)
 (setopt calendar-longitude 25.027310)
 
-;; time utilities
+;;; time utilities
 (setopt time-stamp-active t)
 (setopt time-stamp-line-limit 10)
 (setopt time-stamp-format "%Y-%02m-%02d %02H:%02M:%02S (%l)")
 
+;;; display-time
 (display-time-mode -1)
 (setopt display-time-24hr-format t)
 (setopt display-time-day-and-date nil)
@@ -49,4 +74,4 @@
 
 (provide 'init-calendar)
 
-;; init-calendar.el ends here
+;;; init-calendar.el ends here

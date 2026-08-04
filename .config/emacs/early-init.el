@@ -1,6 +1,6 @@
 ;;; early-init.el --- Early Init File -*- lexical-binding: t -*-
 
-;; Copyright (c) 2025  Timo Myyrä <timo.myyra@bittivirhe.fi>
+;; Copyright (c) 2025-2026 Timo Myyrä <timo.myyra@bittivirhe.fi>
 
 ;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;; URL: https://github.com/zmyrgel/dotfiles
@@ -61,4 +61,5 @@
 (add-hook 'emacs-startup-hook 'my/restore-overrides t)
 
 (provide 'early-init)
+
 ;;; early-init.el ends here

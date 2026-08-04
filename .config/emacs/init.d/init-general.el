@@ -1,15 +1,32 @@
-;;; init-general.el -*- lexical-binding: t; -*-
-;;;
+;;; init-general.el --- General setup of Emacs -*- lexical-binding: t -*-
+
+;; Copyright (c) 2022-2026 Timo Myyrä <timo.myyra@bittivirhe.fi>
+
+;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
+;; URL: https://github.com/zmyrgel/dotfiles
+;; Version: 0.1.0
+;; Package-Requires: ((emacs "30.1"))
+
+;; This file is NOT part of GNU Emacs.
+
+;; This file is free software: you can redistribute it and/or modify it
+;; under the terms of the GNU General Public License as published by the
+;; Free Software Foundation, either version 3 of the License, or (at
+;; your option) any later version.
+;;
+;; This file is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this file.  If not, see <https://www.gnu.org/licenses/>.
+
 ;;; Commentary:
-;;; - General emacs init settings
+
+;; General emacs configuration
 
 ;;; Code:
-
-(defun prepend-to-exec-path (path)
-  "Add given PATH to beginning of exec-path if it exists."
-  (let ((full-path (expand-file-name path)))
-    (when (file-directory-p full-path)
-      (add-to-list 'exec-path full-path))))
 
 (defun password-lookup (&rest keys)
   "Lookup password from auth-sources filtered by given KEYS."
@@ -17,7 +34,7 @@
     (funcall (plist-get (car result) :secret))))
 
 (dolist (p '("~/bin" "~/.local/bin" "~/workspace/bin" "~/opt/bin"))
-  (prepend-to-exec-path p))
+  (add-to-list 'exec-path (expand-file-name p)))
 
 (add-hook 'after-init-hook 'delete-selection-mode)
 
@@ -28,6 +45,36 @@
 
 (when (native-comp-available-p)
   (setopt native-comp-async-report-warnings-errors 'silent))
+
+;;; global keybindings
+(keymap-global-set "M-u" 'upcase-dwim)
+(keymap-global-set "M-l" 'downcase-dwim)
+(keymap-global-set "M-c" 'capitalize-dwim)
+(keymap-global-set "C-h h" nil)
+(keymap-global-set "M-SPC" 'cycle-spacing)
+(keymap-global-set "C-c C-j" 'join-line)
+(keymap-global-set "M-z" 'zap-up-to-char)
+(keymap-global-set "C-x M-k" 'kill-buffer-other-window)
+(keymap-global-set "C-x C-z" nil)
+(keymap-global-set "C-x (" 'kmacro-start-macro-or-insert-counter)
+(keymap-global-set "C-x )" 'kmacro-end-or-call-macro)
+
+(let ((map (make-sparse-keymap)))
+  (keymap-set map "s" #'eshell)
+  (keymap-set map "r" #'rgrep)
+  (keymap-set map "m" #'gnus)
+  (keymap-global-set "C-z" map))
+
+(keymap-global-set "M-o" 'other-window)
+(keymap-global-set "M-j" 'duplicate-dwim)
+(keymap-global-set "M-g r" 'recentf)
+(keymap-global-set "M-s g" 'grep)
+(keymap-global-set "M-s f" 'find-name-dired)
+
+(keymap-global-set "C-x w t" 'window-layout-transpose)
+(keymap-global-set "C-x w r" 'rotate-windows)
+(keymap-global-set "C-x w f h" 'window-layout-flip-leftright)
+(keymap-global-set "C-x w f v" 'window-layout-flip-topdown)
 
 ;; | Key chord | Description                  |
 ;; |-----------+------------------------------|
@@ -88,13 +135,13 @@
 
 ;; M-x rename-visited-file
 
-;; uniquify
+;;; uniquify
 (setopt uniquify-buffer-name-style 'post-forward-angle-brackets)
 (setopt uniquify-separator ":")
 (setopt uniquify-after-kill-buffer-p t)
 (setopt uniquify-ignore-buffers-re "^\\*")
 
-;; ibuffer
+;;; ibuffer
 (keymap-global-set "C-x C-b" 'ibuffer)
 (setopt ibuffer-default-sorting-mode 'major-mode)
 (setopt ibuffer-expert t)
@@ -102,27 +149,30 @@
 (setopt ibuffer-default-shrink-to-minimum-size t)
 (add-hook 'ibuffer-mode-hook 'ibuffer-auto-mode)
 
-;; Buffer-menu
+;;; Buffer-menu
 (setopt Buffer-menu-group-by '(Buffer-menu-group-by-root))
 
-;; buffer switching
+;;; buffer switching
 (setopt switch-to-prev-buffer-skip-regexp nil)
 (keymap-set ctl-x-x-map "p" #'switch-to-prev-buffer)
 (keymap-set ctl-x-x-map "n" #'switch-to-next-buffer)
 
-;; delete pair
+;;; delete pair
 (setopt delete-pair-blink-delay 0)
 (setopt delete-pair-push-mark t)
 (keymap-global-set "M-s d" #'delete-pair)
 
+;;; registers
 ;; buffers to registers, C-x r j m
 ;; {C-u 99 C-x e} run macro for 99 times
 ;; {C-u 0 C-x e} run macro until bell
 (set-register ?m '(buffer . "*Messages*"))
 
+;;; man pages
 (setopt Man-prefer-synchronous-call t)
 (setopt Man-support-remote-systems t)
 
+;;; remember
 (setopt remember-data-file (expand-file-name "~/Documents/notes"))
 (setopt remember-notes-initial-major-mode 'org-mode)
 
@@ -137,4 +187,4 @@
 
 (provide 'init-general)
 
-;; init-general.el ends here
+;;; init-general.el ends here

@@ -1,14 +1,34 @@
-;;; init-web.el -*- lexical-binding: t; -*-
-;;;
+;;; init-web.el --- Web browsing and Internet service uses -*- lexical-binding: t -*-
+
+;; Copyright (c) 2022-2026 Timo Myyrä <timo.myyra@bittivirhe.fi>
+
+;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
+;; URL: https://github.com/zmyrgel/dotfiles
+;; Version: 0.1.0
+;; Package-Requires: ((emacs "30.1"))
+
+;; This file is NOT part of GNU Emacs.
+
+;; This file is free software: you can redistribute it and/or modify it
+;; under the terms of the GNU General Public License as published by the
+;; Free Software Foundation, either version 3 of the License, or (at
+;; your option) any later version.
+;;
+;; This file is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this file.  If not, see <https://www.gnu.org/licenses/>.
+
 ;;; Commentary:
-;;; - Init web-related things
-;;; - Need for ERC config at all?
 
 ;;; Code:
 
 (setq telnet-program "nc")
 
-;; rcirc
+;;; rcirc
 (with-eval-after-load 'rcirc
   (setopt rcirc-server-alist
           '(("irc.libera.chat"
@@ -35,7 +55,7 @@
   (setopt rcirc-time-format "%Y-%m-%d %H:%M ")
   (setopt rcirc-log-time-format "%Y-%m-%d %H:%M "))
 
-;;  erc
+;;;  erc
 (with-eval-after-load 'erc
   (add-hook 'erc-mode-hook 'erc-services-mode)
   (add-hook 'erc-mode-hook 'erc-autojoin-mode)
@@ -81,17 +101,18 @@
   (setopt erc-truncate-buffer-on-save t)
   (defvar erc-insert-post-hook nil))
 
-;;;
-;;; FTP
-;;;
+;;; ftp
 (setq ange-ftp-netrc-filename "~/.authinfo.gpg")
 
-;;; ------------------------------
-;;; Web Browsing settings
-;;; ------------------------------
-
+;;; browse-url
+(setopt browse-url-new-window-flag nil)
+(setopt browse-url-firefox-new-window-is-tab t)
+(setopt browse-url-browser-function 'eww-browse-url)
+(add-to-list 'browse-url-transform-alist
+             '("www.google.com" . "www.duckduckgo.com"))
 ;;;  eww
-;;; { M-s M-w } eww-search-words
+
+;; { M-s M-w } eww-search-words
 (with-eval-after-load 'eww
   (setopt eww-restore-desktop nil)
   (setopt eww-desktop-remove-duplicates t)
@@ -117,13 +138,11 @@
     (keymap-set m "N" 'eww-next-url)
     (keymap-set m "P" 'eww-previous-url))
 
-  (setopt browse-url-new-window-flag nil)
-  (setopt browse-url-firefox-new-window-is-tab t)
-  (setopt browse-url-browser-function 'eww-browse-url)
   (setopt eww-auto-rename-buffer 'url)
   ;;(setopt shr-use-xwidgets-for-media t) ;; experimental
   )
 
+;;; webjump
 (with-eval-after-load 'webjump
   (setopt webjump-sites
           '(("DuckDuckGo" . [simple-query "www.duckduckgo.com" "www.duckduckgo.com/?q=" ""])
@@ -132,12 +151,9 @@
             ("ChatGPT" . [simple-query "https://chatgpt.com" "https://chatgpt.com/?q=" ""])
             ("Wikipedia" . [simple-query "wikipedia.org" "wikipedia.org/wiki/" ""])
             ("Emacs Wiki" . [simple-query "www.emacswiki.org" "www.emacswiki.org/cgi-bin/wiki/" ""]))))
-
 (keymap-global-set "C-x /" 'webjump)
 
-(add-to-list 'browse-url-transform-alist
-             '("www.google.com" . "www.duckduckgo.com"))
-
+;;; elfeed
 (ensure-packages-present 'elfeed)
 (with-eval-after-load 'elfeed
   (setopt elfeed-use-curl t)
@@ -177,4 +193,4 @@
 
 (provide 'init-web)
 
-;; init-web.el ends here
+;;; init-web.el ends here

@@ -1,21 +1,44 @@
-;;; init-programming.el -*- lexical-binding: t; -*-
-;;;
+;;; init-programming.el --- Generic programming setup -*- lexical-binding: t -*-
+
+;; Copyright (c) 2022-2026 Timo Myyrä <timo.myyra@bittivirhe.fi>
+
+;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
+;; URL: https://github.com/zmyrgel/dotfiles
+;; Version: 0.1.0
+;; Package-Requires: ((emacs "30.1"))
+
+;; This file is NOT part of GNU Emacs.
+
+;; This file is free software: you can redistribute it and/or modify it
+;; under the terms of the GNU General Public License as published by the
+;; Free Software Foundation, either version 3 of the License, or (at
+;; your option) any later version.
+;;
+;; This file is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this file.  If not, see <https://www.gnu.org/licenses/>.
+
 ;;; Commentary:
-;;; - Generic Programming related settings
+
+;; Generic programming utilities
 
 ;;; Code:
 
+;;; eldoc
 (setopt eldoc-help-at-pt t)
 (setopt eldoc-echo-area-use-multiline-p 'truncate-sym-name-if-fit)
 (setopt eldoc-idle-delay 0.1) ;; default 0.5
 (add-hook 'after-init-hook 'global-eldoc-mode)
 
+;;; sql
 (defun my-sql-mode-hook ()
   "Functions to run when entering SQL-MODE."
   (setq-local truncate-lines t))
 (add-hook 'sql-interactive-mode-hook #'my-sql-mode-hook)
-
-;;; vc and general programming configuration
 
 ;;; treesit
 (when (featurep 'treesit)
@@ -172,6 +195,7 @@
 (setopt which-func-modes '(prog-mode))
 (which-function-mode)
 
+;;; eglot :: LSP server
 (with-eval-after-load 'eglot
   (setopt eglot-autoshutdown t)
   (setopt eglot-extend-to-xref t)
@@ -195,6 +219,8 @@
 
 (add-hook 'after-init-hook 'editorconfig-mode)
 
+;;; java
+
 ;; Java: checkout lombok annotations
 ;; JAVA_TOOL_OPTIONS="-javaagent:<lombok>"
 
@@ -210,7 +236,7 @@
     (zap-to-char 1 ":")
     (concat "lombok-" (yank-pop) ".jar")))
 
-;; flymake
+;;; flymake
 (with-eval-after-load 'flymake
   (keymap-set flymake-mode-map "M-n" 'flymake-goto-next-error)
   (keymap-set flymake-mode-map "M-p" 'flymake-goto-prev-error))
@@ -242,7 +268,7 @@
   (setq-local c-tab-always-indent nil))
 (add-hook 'ruby-mode-hook 'my/ruby-ts-mode-hook)
 
-;;;; C programming
+;;; C programming
 
 (with-eval-after-load 'cc-mode
   (let ((m c-mode-map))
@@ -278,6 +304,12 @@
 (setopt cperl-indent-level 4)
 (setopt cperl-invalid-face 'default)
 
+;;; copyright management
+
+(setopt copyright-names-regexp "tmy\\|timo|\\myyra")
+(setopt copyright-year-ranges t)
+(add-hook 'before-save-hook 'copyright-update)
+
 ;;; magit
 
 (ensure-packages-present 'magit)
@@ -296,7 +328,7 @@
 
 ;;; magit-gitflow
 
-(when (is-work-laptop-p)
+(when work-laptop-p
   (ensure-packages-present 'magit-gitflow)
   (require 'magit-gitflow nil t)
   (add-hook 'magit-mode-hook 'turn-on-magit-gitflow))
@@ -304,4 +336,4 @@
 
 (provide 'init-programming)
 
-;; init-programming.el ends here
+;;; init-programming.el ends here

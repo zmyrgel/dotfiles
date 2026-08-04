@@ -1,7 +1,30 @@
-;;; init-webdev.el -*- lexical-binding: t; -*-
-;;;
+;;; init-webdev.el --- Web development related configurations -*- lexical-binding: t -*-
+
+;; Copyright (c) 2022-2026 Timo Myyrä <timo.myyra@bittivirhe.fi>
+
+;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
+;; URL: https://github.com/zmyrgel/dotfiles
+;; Version: 0.1.0
+;; Package-Requires: ((emacs "30.1"))
+
+;; This file is NOT part of GNU Emacs.
+
+;; This file is free software: you can redistribute it and/or modify it
+;; under the terms of the GNU General Public License as published by the
+;; Free Software Foundation, either version 3 of the License, or (at
+;; your option) any later version.
+;;
+;; This file is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this file.  If not, see <https://www.gnu.org/licenses/>.
+
 ;;; Commentary:
-;;; - Web development related programming settings
+
+;;; Code:
 
 ;;; Code:
 
@@ -15,6 +38,7 @@
         (insert (read-from-minibuffer "Function to lookup: "))
         (goto-char (point-min))
         (replace-regexp "_" "-")
+        ;; TODO: toggle eww-readable
         (eww (format url-format (buffer-string))))))
 
 (with-eval-after-load 'php-ts-mode
@@ -26,6 +50,13 @@
 
   (add-hook 'php-ts-mode-hook 'my/php-ts-mode-hook))
 
+
+(unless (package-installed-p 'flymake-jsts)
+  (package-vc-install
+   '(flymake-jsts :vc-backend Git
+                  :url "https://github.com/orzechowskid/flymake-jsts.git")))
+
+;;; web-mode
 (ensure-packages-present 'web-mode)
 (dolist (m '(("\\.jsp\\'" . web-mode)
              ("\\.ap[cp]x\\'" . web-mode)
@@ -47,23 +78,15 @@
     (eglot-ensure)))
 
 (add-hook 'web-mode-hook 'my/web-mode-hook)
-;;(add-hook 'web-mode-hook 'flymake-eslint-enable)
+(add-hook 'web-mode-hook 'flymake-jsts-enable)
 
+;;; typescript
 (with-eval-after-load 'typescript-ts-mode
   (add-hook 'typescript-ts-mode-hook 'eglot-ensure)
-  ;;(add-hook 'typescript-ts-mode-hook 'flymake-eslint-enable)
+  (add-hook 'typescript-ts-mode-hook 'flymake-jsts-enable)
   (add-hook 'tsx-ts-mode-hook 'eglot-ensure)
-  ;;(add-hook 'tsx-ts-mode-hook 'flymake-eslint-enable)
+  (add-hook 'tsx-ts-mode-hook 'flymake-jsts-enable)
   (setq-local whitespace-line-column 120))
-
-;; (ensure-packages-present 'flymake-eslint)
-;; (setopt flymake-eslint-executable-name "eslint")
-;; (setopt flymake-eslint-executable-args nil)
-;; (setopt flymake-eslint-show-rule-name t)
-;; (setopt flymake-eslint-defer-binary-check t)
-
-;; (ensure-packages-present 'prettier)
-;; (add-hook 'typescript-ts-hook #'prettier-mode)
 
 (ensure-packages-present 'ts-comint)
 
@@ -172,4 +195,4 @@
 
 (provide 'init-webdev)
 
-;; init-webdev.el ends here
+;;; init-webdev.el ends here

@@ -1,17 +1,32 @@
-;;; init.el --- Emacs initialization file  -*- lexical-binding: t; -*-
-;;;
-;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
-;;; Created: 2009-05-12 12:35:44 (zmyrgel)>
-;;; Time-stamp: <2026-07-28 23:23:00 (tmy)>
-;;; URL: http://github.com/zmyrgel/dotfiles
-;;; Compatibility: GNU Emacs 28.1 (may work with other versions)
-;;;
+;;; init.el --- Emacs main init file -*- lexical-binding: t -*-
+
+;; Copyright (c) 2009-2026 Timo Myyrä <timo.myyra@bittivirhe.fi>
+
+;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
+;; URL: https://github.com/zmyrgel/dotfiles
+;; Version: 0.1.0
+;; Package-Requires: ((emacs "30.1"))
+
+;; This file is NOT part of GNU Emacs.
+
+;; This file is free software: you can redistribute it and/or modify it
+;; under the terms of the GNU General Public License as published by the
+;; Free Software Foundation, either version 3 of the License, or (at
+;; your option) any later version.
+;;
+;; This file is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this file.  If not, see <https://www.gnu.org/licenses/>.
+
 ;;; Commentary:
+;; My configuration file, split into separate files for easier
+;; management.
 
 ;;; Code:
-
-;;; My configuration file, split into separate files for easier
-;;; management.
 
 (require 'package)
 
@@ -30,16 +45,7 @@
 				    (file-attributes package-user-dir)))))
   (package-refresh-contents 'async))
 
-(setq package-review-policy t
-      package-review-diff-command '("git" "diff" "--no-index"
-                                    "--color=never" "--diff-filter=d"))
-;; commands:
-;; package-update, package-update-all
-;; package-recompile, package-recompile-all
-
-;; (network-lookup-address-info "127.1" 'ipv4 'numeric)
-;; recentf-open command
-;; (setq garbage-collection-messages t)
+(setopt package-review-policy nil)
 
 (defun ensure-packages-present (maybe-packages)
   "Ensures given PACKAGES are installed."
@@ -71,9 +77,8 @@
 (add-to-list 'load-path
              (expand-file-name (locate-user-emacs-file "init.d")) t)
 
-(defun is-work-laptop-p ()
-  "Predicate to check if running on work laptop."
-  (string-prefix-p "ws-1127." (system-name)))
+(defvar work-laptop-p (string-prefix-p "ws-1127." (system-name))
+  "Utility variable to determine if we're running on work laptop or not.")
 
 (defun my/load-local-init ()
   "Load the local init file."
@@ -109,9 +114,8 @@
   (setopt custom-file (locate-user-emacs-file "custom.el"))
   (load custom-file 'noerror))
 
-;;; ------------------------------
-;;; Finalizers
-;;; ------------------------------
+;; Finalizers
+
 (defun my/log-start-gc ()
   "Notify how long the start up took."
   (message "Emacs ready in %s with %d garbage collections."
@@ -123,6 +127,7 @@
 ;; Use a hook so the message doesn't get clobbered by other messages.
 (add-hook 'emacs-startup-hook 'my/log-start-gc)
 
+;;; server
 ;; Ensure we have server running for non-root users.
 (require 'server)
 (unless (string-equal "root" (getenv "USER"))
@@ -133,7 +138,8 @@
     (unless (file-directory-p run-dir)
       (mkdir run-dir)
       (chmod run-dir #o700))
-    (setq server-socket-dir run-dir))
+    (setq server-socket-dir run-dir)
+    (setenv "EMACS_SOCKET_NAME" (concat run-dir "server")))
   (unless (server-running-p)
     (server-start)))
 

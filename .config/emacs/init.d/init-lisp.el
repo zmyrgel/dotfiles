@@ -1,12 +1,34 @@
-;;; init-lisp.el -*- lexical-binding: t; -*-
-;;;
+;;; init-lisp.el --- Lisp related configurations -*- lexical-binding: t -*-
+
+;; Copyright (c) 2026 Timo Myyrä <timo.myyra@bittivirhe.fi>
+
+;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
+;; URL: https://github.com/zmyrgel/dotfiles
+;; Version: 0.1.0
+;; Package-Requires: ((emacs "30.1"))
+
+;; This file is NOT part of GNU Emacs.
+
+;; This file is free software: you can redistribute it and/or modify it
+;; under the terms of the GNU General Public License as published by the
+;; Free Software Foundation, either version 3 of the License, or (at
+;; your option) any later version.
+;;
+;; This file is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this file.  If not, see <https://www.gnu.org/licenses/>.
+
 ;;; Commentary:
+
 ;;; - Lisp Programming related settings
 
 ;;; Code:
 
-;;; Lisp programming
-
+;;; sly
 ;; TODO: disable whitespace-mode in *sly-description* buffer
 (unless (package-installed-p 'sly)
   (package-vc-install
@@ -68,6 +90,7 @@
              sly-repl-ansi-color
              sly-asdf))
 
+;;; clojure
 (ensure-packages-present '(clojure-mode cider))
 
 ;; (add-to-list 'major-mode-remap-alist '(clojure-mode--mode . ruby-ts-mode))
@@ -76,6 +99,7 @@
 ;; (setq cider-lein-parameters "repl :headless :host localhost")
 ;; (setq nrepl-hide-special-buffers t)
 
+;;; geiser
 (ensure-packages-present 'geiser)
 (when (eq system-type 'berkeley-unix)
   (setq geiser-chicken-binary "chicken-csi")
@@ -83,4 +107,4 @@
 
 (provide 'init-lisp)
 
-;; init-lisp.el ends here
+;;; init-lisp.el ends here

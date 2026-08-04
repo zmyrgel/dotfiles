@@ -1,9 +1,37 @@
-;;; init-visual.el -*- lexical-binding: t; -*-
-;;;
+;;; init-visual.el --- Settings related to UI and visual presentation -*- lexical-binding: t -*-
+
+;; Copyright (c) 2022-2026 Timo Myyrä <timo.myyra@bittivirhe.fi>
+
+;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
+;; URL: https://github.com/zmyrgel/dotfiles
+;; Version: 0.1.0
+;; Package-Requires: ((emacs "30.1"))
+
+;; This file is NOT part of GNU Emacs.
+
+;; This file is free software: you can redistribute it and/or modify it
+;; under the terms of the GNU General Public License as published by the
+;; Free Software Foundation, either version 3 of the License, or (at
+;; your option) any later version.
+;;
+;; This file is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this file.  If not, see <https://www.gnu.org/licenses/>.
+
 ;;; Commentary:
-;;; - Init visual settings
 
 ;;; Code:
+
+(defun pulse-line ()
+  "Pulse the current line."
+  (interactive)
+  (pulse-momentary-highlight-one-line))
+
+;;(add-hook 'window-state-change-hook #'pulse-line)
 
 (global-font-lock-mode t)
 
@@ -27,12 +55,12 @@
 
 ;; | Key chord | Description                  |
 ;; |-----------+------------------------------|
-;; | C-x 4 C-f | Find-file other-window       |
-;; | C-x 4 d   | Dired other-window           |
-;; | C-x 4 C-o | Display buffer other-window  |
-;; | C-x 4 b   | Set buffer in other-window   |
-;; | C-x 4 0   | Kill buffer and window       |
-;; | C-x 4 p   | Run project cmd in window    |
+;; | { C-x 4 C-f } | Find-file other-window       |
+;; | { C-x 4 d }   | Dired other-window           |
+;; | { C-x 4 C-o } | Display buffer other-window  |
+;; | { C-x 4 b }   | Set buffer in other-window   |
+;; | { C-x 4 0 }   | Kill buffer and window       |
+;; | { C-x 4 p }   | Run project cmd in window    |
 
 (keymap-global-set "C-c w" 'winner-undo)
 (keymap-global-set "C-c W" 'winner-redo)
@@ -192,7 +220,7 @@
              overwrite-mode))
   (put s 'disabled nil))
 
-;; simple
+;;; simple
 (setopt set-mark-command-repeat-pop t)
 (setopt next-line-add-newlines nil)
 (setopt kill-do-not-save-duplicates t)
@@ -205,6 +233,10 @@
 (add-hook 'text-mode-hook 'auto-fill-mode)
 (add-hook 'before-save-hook 'whitespace-cleanup)
 
+(when (executable-find "xwallpaper")
+  (setopt wallpaper-command "xwallpaper")
+  (setopt wallpaper-command-args '("--maximize" "%f")))
+
 ;;; theme settings
 
 (setopt modus-themes-disable-other-themes t)
@@ -214,4 +246,4 @@
 
 (provide 'init-visual)
 
-;; init-visual.el ends here
+;;; init-visual.el ends here

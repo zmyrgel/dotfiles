@@ -1,12 +1,56 @@
-;;; init-files.el -*- lexical-binding: t; -*-
-;;;
+;;; init-files.el --- File and directory management setup -*- lexical-binding: t -*-
+
+;; Copyright (c) 2022-2026 Timo Myyrä <timo.myyra@bittivirhe.fi>
+
+;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
+;; URL: https://github.com/zmyrgel/dotfiles
+;; Version: 0.1.0
+;; Package-Requires: ((emacs "30.1"))
+
+;; This file is NOT part of GNU Emacs.
+
+;; This file is free software: you can redistribute it and/or modify it
+;; under the terms of the GNU General Public License as published by the
+;; Free Software Foundation, either version 3 of the License, or (at
+;; your option) any later version.
+;;
+;; This file is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this file.  If not, see <https://www.gnu.org/licenses/>.
+
 ;;; Commentary:
+
 ;;; - init file-related settings
 
 ;;; Code:
 
-;; ffap
+;;; TODO: files!
+(add-hook 'after-save-hook #'executable-make-buffer-file-executable-if-script-p)
+(setopt view-read-only t)
+(setopt large-file-warning-threshold 50000000) ;; 50mb
+
+;;; backup: move to files
+(setopt make-backup-files t)
+(setopt backup-directory-alist `((".*" . ,temporary-file-directory)))
+(setopt backup-by-copying t)
+
+;; todo: revert-without-query regexp
+;; todo: small-temporary-file-directory ? use tmpfs ?
+
+(setopt mode-require-final-newline t)
+(setopt require-final-newline t)
+
+;;; ffap
 (setopt ffap-machine-p-known 'reject)
+
+;; { M-x ff-find-other-file }
+;; { M-x find-sibling-file }
+
+;;; dired
 
 ;; Useful key bindings { C-0 w } to copy link
 (add-hook 'dired-mode-hook 'hl-line-mode)
@@ -47,11 +91,7 @@
 
 ;; shell-command-guess-functions
 
-(when (executable-find "xwallpaper")
-  (setopt wallpaper-command "xwallpaper")
-  (setopt wallpaper-command-args '("--maximize" "%f")))
-
-;; TRAMP stuff
+;;; tramp stuff
 ;; { C-x x @ for tramp-revert-buffer-with-sudo }
 (setopt tramp-use-scp-direct-remote-copying t)
 (setopt tramp-file-name-with-method
@@ -61,4 +101,4 @@
 
 (provide 'init-files)
 
-;; init-files.el ends here
+;;; init-files.el ends here

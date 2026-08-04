@@ -1,9 +1,30 @@
-;;; init-completion.el -*- lexical-binding: t; -*-
-;;;
+;;; init-completion.el --- Minibuffer and completions setup -*- lexical-binding: t -*-
+
+;; Copyright (c) 2022-2026 Timo Myyrä <timo.myyra@bittivirhe.fi>
+
+;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
+;; URL: https://github.com/zmyrgel/dotfiles
+;; Version: 0.1.0
+;; Package-Requires: ((emacs "30.1"))
+
+;; This file is NOT part of GNU Emacs.
+
+;; This file is free software: you can redistribute it and/or modify it
+;; under the terms of the GNU General Public License as published by the
+;; Free Software Foundation, either version 3 of the License, or (at
+;; your option) any later version.
+;;
+;; This file is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this file.  If not, see <https://www.gnu.org/licenses/>.
+
 ;;; Commentary:
-;;; - Completion related configuration
-;;; - finish corfu, consult?
-;;; - hippie-expand use?
+
+;; Completions related configuration
 
 ;;; Code:
 
@@ -15,12 +36,13 @@
 (setopt tab-always-indent 'complete)
 
 ;;; minibuffer
-(setopt completion-styles '(basic partial-completion flex))
-(setopt completion-category-overrides
-        '((file (styles . (basic partial-completion flex)))
-          (project-file (styles . (basic substring partial-completion flex)))
-          (imenu (styles . (basic substring flex)))
-          (kill-ring (styles . (basic substring flex)))))
+(setopt completion-styles '(partial-completion flex initials))
+;; (setopt completion-styles '(basic partial-completion flex)) ;; partial-completion flex initials
+;; (setopt completion-category-overrides
+;;         '((file (styles . (basic partial-completion flex)))
+;;           (project-file (styles . (basic substring partial-completion flex)))
+;;           (imenu (styles . (basic substring flex)))
+;;           (kill-ring (styles . (basic substring flex)))))
 
 (setopt completion-auto-deselect t)
 (setopt completion-auto-help 'visible)
@@ -48,14 +70,18 @@
 (setopt echo-keystrokes 1)
 (setopt suggest-key-bindings t)
 (setopt read-answer-short t)
+(setopt enable-recursive-minibuffers t)
+(setopt read-buffer-completion-ignore-case t)
+(setopt read-file-name-completion-ignore-case t)
 
-(setopt minibuffer-completion-auto-choose t) ;; was nil
+(setopt minibuffer-completion-auto-choose t)
 (setopt minibuffer-beginning-of-buffer-movement t)
 (setopt minibuffer-default-prompt-format " [%s]")
 (setopt minibuffer-visible-completions t)
 (setopt minibuffer-prompt-properties
-        '(read-only t cursor-intangible t face minibuffer-prompt))
-(add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+        '(read-only t intangible t cursor-intangible t face minibuffer-prompt))
+(add-hook 'minibuffer-setup-hook 'cursor-intangible-mode)
+
 (add-hook 'after-init-hook 'file-name-shadow-mode)
 (add-hook 'after-init-hook 'minibuffer-depth-indicate-mode)
 (add-hook 'after-init-hook 'minibuffer-electric-default-mode)
@@ -93,6 +119,7 @@
 ;;; hippie-exp
 (define-key global-map [remap dabbrev-expand] 'hippie-expand)
 
+;;; dabbrev
 (setopt dabbrev-abbrev-skip-leading-regexp "[$*/=']")
 (setopt dabbrev-backward-only nil)
 (setopt dabbrev-case-distinction 'case-replace)
@@ -101,9 +128,6 @@
 (setopt dabbrev-check-other-buffers t)
 (setopt dabbrev-eliminate-newlines nil)
 (setopt dabbrev-upcase-means-case-search t)
-
-;; todo:
-;; ecomplete: add mail entries?
 
 (provide 'init-completion)
 

@@ -1,17 +1,40 @@
-;;; init-text.el -*- lexical-binding: t; -*-
-;;;
+;;; init-text.el --- Generic text management -*- lexical-binding: t -*-
+
+;; Copyright (c) 2022-2026 Timo Myyrä <timo.myyra@bittivirhe.fi>
+
+;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
+;; URL: https://github.com/zmyrgel/dotfiles
+;; Version: 0.1.0
+;; Package-Requires: ((emacs "30.1"))
+
+;; This file is NOT part of GNU Emacs.
+
+;; This file is free software: you can redistribute it and/or modify it
+;; under the terms of the GNU General Public License as published by the
+;; Free Software Foundation, either version 3 of the License, or (at
+;; your option) any later version.
+;;
+;; This file is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this file.  If not, see <https://www.gnu.org/licenses/>.
+
 ;;; Commentary:
-;;; - Text-related settings
+
+;; Generic text management utilities
 
 ;;; Code:
 
-;; whitespace mode
+;;; whitespace mode
 (setopt whitespace-line-column 80)
 (setopt whitespace-style '(face lines-tail trailing))
 (setopt whitespace-global-modes '(not agent-shell-mode magit-status-mode magit-diff-mode))
 (global-whitespace-mode)
 
-;; grep
+;;; grep
 (setopt grep-find-use-xargs 'exec-plus)
 
 ;; find-dired results with human readable sizes
@@ -43,16 +66,16 @@
 
 ;; | {C-x r t} string-rectangle
 
-;; electric
+;;; electric
 (setopt electric-pair-skip-whitespace 'chomp)
 (add-hook 'after-init-hook 'electric-pair-mode)
 (add-hook 'after-init-hook 'electric-indent-mode)
 
-;; use print helper
+;;; use print helper
 (when (executable-find "gtklp")
   (setopt lpr-command "gtklp"))
 
-;; spelling
+;;; flyspell
 (setopt flyspell-issue-message-flag nil)
 (setopt flyspell-issue-welcome-flag nil)
 (setopt ispell-program-name
@@ -68,8 +91,10 @@
 (setopt doc-view-mupdf-use-svg t)
 (setopt doc-view-resolution 120)
 
+;;; yaml
 (add-to-list 'magic-mode-alist '("---" . yaml-ts-mode))
 
+;;; xml
 ;; Any file start with xml will be treat as nxml-mode
 (add-to-list 'magic-mode-alist '("<\\?xml" . nxml-mode))
 (dolist (p '("\\.plist\\'"
@@ -111,17 +136,11 @@
        (setcdr pair 'nxml-mode)))
  auto-mode-alist)
 
-(defun pulse-line ()
-  "Pulse the current line."
-  (interactive)
-  (pulse-momentary-highlight-one-line))
-
-;;(add-hook 'window-state-change-hook #'pulse-line)
-
-;;; CONF
+;;; conf
 (add-to-list 'auto-mode-alist '("\\.env\\'" . conf-mode))
 
 ;;; tex
+
 ;; | Key chord    | Description     |
 ;; |--------------+-----------------|
 ;; | { C-c [ }    | add cite        |
@@ -133,9 +152,13 @@
 
 (add-to-list 'major-mode-remap-alist '(TeX-mode . latex-mode))
 
+(defun my/set-tex-parser ()
+  "Set the ispell-parser to use TeX."
+  (setq ispell-parser 'tex))
+
 (add-hook 'latex-mode-hook 'auto-fill-mode)
 (add-hook 'latex-mode-hook 'reftex-mode)
-(add-hook 'tex-mode-hook (lambda () (setq ispell-parser 'tex)))
+(add-hook 'tex-mode-hook 'my/set-tex-parser)
 
 ;; init
 ;; these two do not match custom type
@@ -143,7 +166,7 @@
 ;;         '(((output-dvi has-no-display-manager) "dvi2tty")
 ;;           ((output-dvi style-pstricks) "dvips and gv")
 ;;           (output-dvi "xdvi")
-;;           (output-pdf "pdf-tools")oooo
+;;           (output-pdf "pdf-tools")
 
 (setopt TeX-command-extra-options "-shell-escape -8bit")
 (setopt TeX-auto-save t)
@@ -154,7 +177,7 @@
 (setopt TeX-newline-function 'reindent-then-newline-and-indent)
 (add-hook 'TeX-after-compilation-finished-functions 'TeX-revert-document-buffer)
 
-;; doc-view / doc-view-presentation
+;;; doc-view / doc-view-presentation
 (ensure-packages-present 'pdf-tools)
 (require 'pdf-tools nil t)
 (add-to-list 'magic-mode-alist '("%PDF" . pdf-view-mode))
@@ -164,13 +187,15 @@
 (add-hook 'pdf-view-mode 'pdf-outline-minor-mode)
 (add-hook 'pdf-view-mode 'pdf-history-minor-mode)
 
+;;; pdf-tools
 (setopt pdf-view-display-size 'fit-page)
 (pdf-tools-install :no-query :skip-deps :no-error)
 
+;;; bibliothek
 (ensure-packages-present 'bibliothek)
 (setopt bibliothek-path '("~/Documents"))
 (setopt bibliothek-recursive t)
 
 (provide 'init-text)
 
-;; init-text.el ends here
+;;; init-text.el ends here

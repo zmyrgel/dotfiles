@@ -1,7 +1,30 @@
-;;; init-shell.el -*- lexical-binding: t; -*-
-;;;
+;;; init-shell.el --- Shell management -*- lexical-binding: t -*-
+
+;; Copyright (c) 2022-2026 Timo Myyrä <timo.myyra@bittivirhe.fi>
+
+;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
+;; URL: https://github.com/zmyrgel/dotfiles
+;; Version: 0.1.0
+;; Package-Requires: ((emacs "30.1"))
+
+;; This file is NOT part of GNU Emacs.
+
+;; This file is free software: you can redistribute it and/or modify it
+;; under the terms of the GNU General Public License as published by the
+;; Free Software Foundation, either version 3 of the License, or (at
+;; your option) any later version.
+;;
+;; This file is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this file.  If not, see <https://www.gnu.org/licenses/>.
+
 ;;; Commentary:
-;;; - Shell related settings
+
+;; Generic shell utilities
 
 ;;; Code:
 
@@ -23,6 +46,7 @@
 
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
 
+;;; comint
 (setopt comint-scroll-to-bottom-on-input t)
 (setopt comint-scroll-to-bottom-on-output t)
 (setopt comint-scroll-show-maximum-output t)
@@ -37,6 +61,7 @@
             (define-key comint-mode-map [remap kill-whole-line]
                         'comint-kill-whole-line)))
 
+;;; eshell
 (defun eshell-here ()
   "Opens up a new shell in the directory associated with the
     current buffer's file. The eshell is renamed to match that
@@ -90,4 +115,4 @@
 
 (provide 'init-shell)
 
-;; init-shell.el ends here
+;;; init-shell.el ends here
