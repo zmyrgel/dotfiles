@@ -68,18 +68,6 @@
              sly-repl-ansi-color
              sly-asdf))
 
-(ensure-packages-present 'quack)
-(setq quack-default-program "csi")
-(setq quack-dir (locate-user-emacs-file "quack"))
-(setq quack-fontify-style nil)
-(setq quack-newline-behavior 'indent-newline-indent)
-(setq quack-pretty-lambda-p nil)
-(setq quack-remap-find-file-bindings-p nil)
-(setq quack-run-scheme-always-prompts-p nil)
-(setq quack-run-scheme-prompt-defaults-to-last-p t)
-(setq quack-smart-open-paren-p t)
-(setq quack-switch-to-scheme-method 'other-window)
-
 (ensure-packages-present '(clojure-mode cider))
 
 ;; (add-to-list 'major-mode-remap-alist '(clojure-mode--mode . ruby-ts-mode))
