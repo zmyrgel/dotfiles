@@ -39,7 +39,9 @@
         (goto-char (point-min))
         (replace-regexp "_" "-")
         ;; TODO: toggle eww-readable
-        (eww (format url-format (buffer-string))))))
+        (eww (format url-format (buffer-string))
+             t
+             (get-buffer-create "*PHP Symbol lookup*")))))
 
 (with-eval-after-load 'php-ts-mode
 
@@ -83,24 +85,41 @@
 ;;; typescript
 (with-eval-after-load 'typescript-ts-mode
   (add-hook 'typescript-ts-mode-hook 'eglot-ensure)
-  (add-hook 'typescript-ts-mode-hook 'flymake-jsts-enable)
   (add-hook 'tsx-ts-mode-hook 'eglot-ensure)
-  (add-hook 'tsx-ts-mode-hook 'flymake-jsts-enable)
   (setq-local whitespace-line-column 120))
+
+(unless (package-installed-p 'flymake-jsts)
+  (package-vc-install
+   '(flymake-jsts :vc-backend Git
+                  :url "https://github.com/orzechowskid/flymake-jsts.git")))
+
+;; TODO: project-specific really, use .dir-locals.el to set these?
+(add-hook 'typescript-ts-mode-hook 'flymake-jsts-biome-enable)
+(add-hook 'tsx-ts-mode-hook 'flymake-jsts-biome-enable)
+
+;; eglot setup: add rass to use multiple LSP
+;; https://github.com/joaotavora/rassumfrassum
+;; tsc7 has native go build: https://github.com/microsoft/typescript-go
+;; check its LSP
 
 (ensure-packages-present 'ts-comint)
 
-;; TODO: use biome!
-(defun my/use-project-eslint ()
-  (let* ((root (locate-dominating-file
-                (or (buffer-file-name) default-directory)
-                "node_modules"))
-         (eslint
-          (and root
-               (expand-file-name "node_modules/.bin/eslint"
-                                 root))))
-    (when (and eslint (file-executable-p eslint))
-      (setq-local flymake-eslint-executable-name eslint))))
+(defun my/project-jsts-p (project)
+  "Predicate to check if this is JS/TS project. Simply checks if there
+exists package.json file at root."
+  (file-exists-p
+   (expand-file-name "package.json" (project-root project))))
+
+;; for project buffer, add (project-root (current-buffer))
+(defun my/set-project-npm-exec-path ()
+  "Add project node_modules/.bin directory for `exec-path'."
+  (when (my/project-jsts-p (project-current))
+    (setq-local exec-path (cons
+                           (expand-file-name "node_modules/.bin"
+                                             (project-root (project-current)))
+                           exec-path))))
+
+(add-hook 'find-file-hook 'my/set-project-npm-exec-path)
 
 (defun my-typescript-hook ()
   "My shared options for Typescript(-ts)?-mode"

@@ -93,12 +93,6 @@
 ;;; clojure
 (ensure-packages-present '(clojure-mode cider))
 
-;; (add-to-list 'major-mode-remap-alist '(clojure-mode--mode . ruby-ts-mode))
-;; (add-to-list 'magic-mode-alist '("\\.clj$" . clojure-mode))
-
-;; (setq cider-lein-parameters "repl :headless :host localhost")
-;; (setq nrepl-hide-special-buffers t)
-
 ;;; geiser
 (ensure-packages-present 'geiser)
 (when (eq system-type 'berkeley-unix)

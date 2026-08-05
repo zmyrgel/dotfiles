@@ -84,7 +84,7 @@
 ;; TODO: how to sync these to other dired etc.?
 ;; TODO: add toggle option, default to human readable
 (setopt find-ls-option '("-exec ls -ldh {} +" . "-ldh"))
-;;(setopt find-ls-option '("-ls" . "-dilsb"))
+;;(setopt find-ls-option '("-ls" . "-dgils"))
 
 (keymap-set ctl-x-map "C-j" 'dired-jump)
 (keymap-set ctl-x-4-map "C-j" 'dired-jump-other-window)

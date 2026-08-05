@@ -32,9 +32,9 @@
   (horizontal-scroll-bar-mode -1))
 
 ;; Better Window Management handling
-(setq frame-resize-pixelwise t
-      frame-inhibit-implied-resize t
-      frame-title-format '("Emacs"))
+(setopt frame-resize-pixelwise t)
+(setopt frame-inhibit-implied-resize t)
+(setopt frame-title-format '(multiple-frames "%b" ("" "Emacs - %b")))
 
 (setq inhibit-compacting-font-caches t)
 
@@ -48,15 +48,15 @@
 (defvar orig--file-name-handler-alist file-name-handler-alist)
 (defvar orig--vc-handled-backends vc-handled-backends)
 
-(setq gc-cons-threshold most-positive-fixnum
-      file-name-handler-alist nil
-      vc-handled-backends nil)
+(setopt gc-cons-threshold most-positive-fixnum)
+(setopt vc-handled-backends nil)
+(setq file-name-handler-alist nil)
 
 (defun my/restore-overrides ()
   "Restore temporarily overwritten variables."
-  (setq gc-cons-threshold orig--gc-cons-threshold
-        file-name-handler-alist orig--file-name-handler-alist
-        vc-handled-backends orig--vc-handled-backends))
+  (setq file-name-handler-alist orig--file-name-handler-alist)
+  (setopt gc-cons-threshold orig--gc-cons-threshold)
+  (setopt vc-handled-backends orig--vc-handled-backends))
 
 (add-hook 'emacs-startup-hook 'my/restore-overrides t)
 

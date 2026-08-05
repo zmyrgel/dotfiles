@@ -54,12 +54,9 @@
 (setopt comint-input-ignoredups t)
 (setopt comint-completion-addsuffix t)
 (setopt comint-prompt-read-only t)
-(add-hook 'comint-mode-hook
-          (lambda ()
-            (define-key comint-mode-map [remap kill-region]
-                        'comint-kill-region)
-            (define-key comint-mode-map [remap kill-whole-line]
-                        'comint-kill-whole-line)))
+
+(keymap-substitute comint-mode-map 'kill-region 'comint-kill-region)
+(keymap-substitute comint-mode-map 'kill-whole-line 'comint-kill-whole-line)
 
 ;;; eshell
 (defun eshell-here ()

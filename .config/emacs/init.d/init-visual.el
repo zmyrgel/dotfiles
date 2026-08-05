@@ -163,7 +163,7 @@
 
 (setopt initial-scratch-message "")
 (setopt inhibit-startup-screen t)
-(setq inhibit-startup-echo-area-message "tmy")
+(setopt inhibit-startup-echo-area-message user-login-name)
 
 (setopt visible-bell t)
 (setopt window-min-height 3)
@@ -174,12 +174,12 @@
 (setopt use-file-dialog nil)
 (setopt use-dialog-box nil)
 
-(defun my/help-mode-hook ()
-  (setq truncate-lines t))
+(defun my/truncate-lines-hook ()
+  (setq-local trruncate-lines t))
 
-(add-hook 'help-mode-hook #'my/help-mode-hook)
+(add-hook 'help-mode-hook #'my/truncate-lines-hook)
 
-(defvar *my-fixed-font* "Julia Mono")
+(defvar *my-fixed-font* "Input Mono")
 (defvar *my-variable-font* "Input Serif")
 
 (defun my/adjust-font-for-screen (frame)

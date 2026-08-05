@@ -118,7 +118,7 @@
 (add-hook 'comint-output-filter-functions 'comint-watch-for-password-prompt)
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
 
-(global-so-long-mode 1)
+(add-hook 'after-init-hook 'global-so-long-mode)
 
 (setopt repeat-on-final-keystroke t)
 (setopt set-mark-command-repeat-pop t)
@@ -154,13 +154,13 @@
 
 ;;; buffer switching
 (setopt switch-to-prev-buffer-skip-regexp nil)
-(keymap-set ctl-x-x-map "p" #'switch-to-prev-buffer)
-(keymap-set ctl-x-x-map "n" #'switch-to-next-buffer)
+(keymap-set ctl-x-x-map "p" 'switch-to-prev-buffer)
+(keymap-set ctl-x-x-map "n" 'switch-to-next-buffer)
 
 ;;; delete pair
 (setopt delete-pair-blink-delay 0)
 (setopt delete-pair-push-mark t)
-(keymap-global-set "M-s d" #'delete-pair)
+(keymap-global-set "M-s d" 'delete-pair)
 
 ;;; registers
 ;; buffers to registers, C-x r j m

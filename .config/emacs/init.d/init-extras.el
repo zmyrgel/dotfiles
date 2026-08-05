@@ -31,7 +31,7 @@
 ;;; Marginalia :: enhanche command etc. output with extra info
 (ensure-packages-present '(marginalia))
 (setopt marginalia-max-relative-age 0)
-(marginalia-mode)
+(add-hook 'after-init-hook 'marginalia-mode)
 
 ;;; EMMS :: multimedia playback
 (ensure-packages-present 'emms)
@@ -51,7 +51,7 @@
     (when-let* ((font (font-spec :name "ETBembo Roman")))
       (face-remap-add-relative 'variable-pitch :family "ETBembo Roman"
                                :height 1.0))
-    (set (make-local-variable 'show-trailing-whitespace) nil))
+    (setq-local show-trailing-whitespace nil))
   (add-hook 'nov-mode-hook 'my-nov-setup-hook))
 
 ;;; x509 :: certificates
@@ -70,8 +70,8 @@
 
 ;;; easy-kill
 (ensure-packages-present 'easy-kill)
-(define-key global-map [remap kill-ring-save] #'easy-kill)
-(define-key global-map [remap mark-sexp] #'easy-mark)
+(keymap-substitute global-map 'kill-ring-save 'easy-kill)
+(keymap-substitute global-map 'mark-sexp 'easy-mark)
 
 ;;; suomalainen-kalenteri :: add finnish holidays
 (ensure-packages-present 'suomalainen-kalenteri)

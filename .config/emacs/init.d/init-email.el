@@ -70,7 +70,9 @@
                     (nnimap-address "imap.fastmail.com")
                     (nnir-search-engine imap)
                     (nnimap-stream tls)
-                    (nnmail-expiry-target "nnimap+home:Trash"))))
+                    (nnimap-expunge 'on-exit)
+                    (nnmail-expiry-target "nnimap+home:Trash")
+                    (nnimap-streaming t))))
 
   (setopt gnus-posting-styles
           '((".*"

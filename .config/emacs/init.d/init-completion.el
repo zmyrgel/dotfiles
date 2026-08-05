@@ -95,20 +95,20 @@
 
 ;; Select completion options with up/down when completing in the
 ;; minibuffer or normal buffer
-(keymap-set minibuffer-local-map "C-p" #'minibuffer-previous-completion)
-(keymap-set minibuffer-local-map "C-n" #'minibuffer-next-completion)
+(keymap-set minibuffer-local-map "C-p" 'minibuffer-previous-completion)
+(keymap-set minibuffer-local-map "C-n" 'minibuffer-next-completion)
 
 ;; Up/down when competing in a normal buffer
-(keymap-set completion-in-region-mode-map "C-p" #'minibuffer-previous-completion)
-(keymap-set completion-in-region-mode-map "C-n" #'minibuffer-next-completion)
+(keymap-set completion-in-region-mode-map "C-p" 'minibuffer-previous-completion)
+(keymap-set completion-in-region-mode-map "C-n" 'minibuffer-next-completion)
 
 ;;; completion preview
 (global-completion-preview-mode)
 (setopt completion-preview-exact-match-only nil)
 (setopt completion-preview-minimum-symbol-length 3)
 (setopt completion-preview-idle-delay 0.3)
-(keymap-set completion-preview-active-mode-map "M-n" #'completion-preview-next-candidate)
-(keymap-set completion-preview-active-mode-map "M-p" #'completion-preview-prev-candidate)
+(keymap-set completion-preview-active-mode-map "M-n" 'completion-preview-next-candidate)
+(keymap-set completion-preview-active-mode-map "M-p" 'completion-preview-prev-candidate)
 
 ;;; imenu: M-g i
 (setopt imenu-auto-rescan t)
@@ -117,7 +117,7 @@
 (setopt imenu-level-separator ":")
 
 ;;; hippie-exp
-(define-key global-map [remap dabbrev-expand] 'hippie-expand)
+(keymap-substitute global-map 'dabbrev-expand 'hippie-expand)
 
 ;;; dabbrev
 (setopt dabbrev-abbrev-skip-leading-regexp "[$*/=']")
