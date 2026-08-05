@@ -55,8 +55,9 @@
 (setopt comint-completion-addsuffix t)
 (setopt comint-prompt-read-only t)
 
-(keymap-substitute comint-mode-map 'kill-region 'comint-kill-region)
-(keymap-substitute comint-mode-map 'kill-whole-line 'comint-kill-whole-line)
+(with-eval-after-load 'comint-mode 
+  (keymap-substitute comint-mode-map 'kill-region 'comint-kill-region)
+  (keymap-substitute comint-mode-map 'kill-whole-line 'comint-kill-whole-line))
 
 ;;; eshell
 (defun eshell-here ()
