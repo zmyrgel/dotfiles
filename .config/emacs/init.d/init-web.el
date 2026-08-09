@@ -153,44 +153,6 @@
             ("Emacs Wiki" . [simple-query "www.emacswiki.org" "www.emacswiki.org/cgi-bin/wiki/" ""]))))
 (keymap-global-set "C-x /" 'webjump)
 
-;;; elfeed
-(ensure-packages-present 'elfeed)
-(with-eval-after-load 'elfeed
-  (setopt elfeed-use-curl t)
-  (setopt elfeed-curl-max-connections 10)
-  (setopt elfeed-db-directory (locate-user-emacs-file "elfeed/"))
-  (setopt elfeed-enclosure-default-dir "~/Downloads/")
-  (setopt elfeed-search-filter "@1-months-ago +unread")
-  (setopt elfeed-sort-order 'descending)
-  (setopt elfeed-search-clipboard-type 'CLIPBOARD)
-  (setopt elfeed-search-title-max-width 100)
-  (setopt elfeed-search-title-min-width 30)
-  (setopt elfeed-search-trailing-width 25)
-  (setopt elfeed-show-truncate-long-urls t)
-  (setopt elfeed-show-unique-buffers t)
-
-  (setopt elfeed-feeds
-          '("http://nullprogram.com/feed/"
-            "http://planet.emacsen.org/atom.xml"
-            "https://news.ycombinator.com/rss"
-            "http://www.tedunangst.com/flak/rss"
-            "https://undeadly.org/cgi?action=rss"
-            "https://www.phoronix.com/rss.php"
-            "http://planetsysadmin.com/atom.xml"
-            ("http://oremacs.com/atom.xml" emacs)
-            ("http://emacsblog.org/feed/" emacs)
-            ("http://endlessparentheses.com/atom.xml" emacs)
-            ("https://www.masteringemacs.org/feed" emacs)
-            "https://scripter.co/posts/atom.xml"
-            ("https://oneofus.la/have-emacs-will-hack/feed.xml" emacs)
-            ("https://updates.orgmode.org/feed/changes" emacs org)
-            ("https://www.reddit.com/r/emacs.rss" emacs reddit)
-            ("https://www.reddit.com/r/orgmode.rss" reddit emacs org)
-            ("https://xkcd.com/atom.xml" xkcd)
-            ("https://planet.lisp.org/rss20.xml" lisp)
-            "https://lobste.rs/t/emacs.lisp.security.ask.ai.openbsd.programming.rss")))
-
-
 (provide 'init-web)
 
 ;;; init-web.el ends here
