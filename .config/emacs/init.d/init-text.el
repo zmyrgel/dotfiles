@@ -160,7 +160,6 @@
 (add-hook 'latex-mode-hook 'reftex-mode)
 (add-hook 'tex-mode-hook 'my/set-tex-parser)
 
-;; init
 ;; these two do not match custom type
 ;; (setopt TeX-view-program-selection
 ;;         '(((output-dvi has-no-display-manager) "dvi2tty")

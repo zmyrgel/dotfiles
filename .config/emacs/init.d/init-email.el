@@ -28,7 +28,21 @@
 
 ;;; Code:
 
+;;; emacs
 (setopt user-full-name "Timo Myyrä")
+
+;;; simple
+(setopt mail-user-agent 'gnus-user-agent)
+(setopt compose-mail-user-agent-warnings nil)
+
+;;; message
+(setopt message-send-mail-function 'smtpmail-send-it)
+(setopt message-mail-user-agent nil)
+(setopt message-citation-line-function 'message-insert-formatted-citation-line)
+(setopt message-confirm-send nil)
+(setopt message-kill-buffer-on-exit t)
+(setopt message-wide-reply-confirm-recipients t)
+(add-hook 'message-setup-hook 'message-sort-headers)
 
 ;;; smtpmail
 (unless work-laptop-p
@@ -38,72 +52,77 @@
   (setopt smtpmail-smtp-service        465)
   (setopt smtpmail-stream-type         'ssl))
 
-(setopt message-send-mail-function 'smtpmail-send-it)
+;;; sendmail
 (setopt send-mail-function 'smtpmail-send-it)
 
 ;;; mml
 (setopt mml-attach-file-at-the-end t)
 
-;;; message
+;;; gnus
 (with-eval-after-load 'gnus
-  (setopt mail-user-agent 'gnus-user-agent)
-  (setopt message-mail-user-agent nil)
-  (setopt compose-mail-user-agent-warnings nil)
-  (setopt message-citation-line-function 'message-insert-formatted-citation-line)
-  (setopt message-confirm-send nil)
-  (setopt message-kill-buffer-on-exit t)
-  (setopt message-wide-reply-confirm-recipients t)
-  (add-hook 'message-setup-hook 'message-sort-headers)
-
   (add-hook 'gnus-started-hook
             (lambda ()
-              (add-to-list 'mm-body-charset-encoding-alist '(utf-8 . base64))))
+              (add-to-list 'mm-body-charset-encoding-alist '(utf-8 . base64)))))
 
-  (setopt gnus-gcc-mark-as-read t)
-  (setopt gnus-always-read-dribble-file t)
-  (setopt mm-inline-large-images 'resize)
-  (setopt mm-discouraged-alternatives '("text/html" "text/richtext"))
-  (setopt mm-text-html-renderer 'shr)
-  (setopt gnus-select-method '(nntp "news.gmane.io"))
-  (setopt gnus-secondary-select-methods
-          '((nnimap "home"
-                    (nnimap-address "imap.fastmail.com")
-                    (nnir-search-engine imap)
-                    (nnimap-stream tls)
-                    (nnimap-expunge 'on-exit)
-                    (nnmail-expiry-target "nnimap+home:Trash")
-                    (nnimap-streaming t))))
+  ;;; gnus-msg
+(setopt gnus-gcc-mark-as-read t)
 
-  (setopt gnus-posting-styles
-          '((".*"
-             (address "Timo Myyrä <timo.myyra@bittivirhe.fi>")
-             (gcc "nnimap+home:Sent"))))
+  ;;; gnus-start
+(setopt gnus-always-read-dribble-file t)
 
-  (setopt gnus-visible-headers
-          '("^From:" "^Subject:" "^To:"
-            "^Cc:" "^Newsgroups:" "^Date:"
-            "Followup-To:" "Reply-To:" "^Organization:" "^X-Newsreader:"
-            "^X-Mailer:"))
-  (setopt gnus-sorted-header-list gnus-visible-headers)
+  ;;; mm-decode
+(setopt mm-inline-large-images 'resize)
+(setopt mm-discouraged-alternatives '("text/html" "text/richtext"))
+(setopt mm-text-html-renderer 'shr)
 
-  (setopt gnus-auto-expirable-newsgroups
-          "nnimap\\+home:\\(ABCL\\|CHICKEN\\|OpenBSD\\|Postgresql-general\\|SBCL\\)")
+  ;;; gnus
+(setopt gnus-select-method '(nntp "news.gmane.io"))
+(setopt gnus-secondary-select-methods
+        '((nnimap "home"
+                  (nnimap-address "imap.fastmail.com")
+                  (nnir-search-engine imap)
+                  (nnimap-stream tls)
+                  (nnimap-expunge 'on-exit)
+                  (nnmail-expiry-target "nnimap+home:Trash")
+                  (nnimap-streaming t))))
 
-  ;;; gnus-async
-  (setopt gnus-asynchronous t)
-  (setopt gnus-use-article-prefetch t)
+(setopt gnus-auto-expirable-newsgroups
+        "nnimap\\+home:\\(ABCL\\|CHICKEN\\|OpenBSD\\|Postgresql-general\\|SBCL\\)")
 
-  ;;; nnmail
-  (setopt nnmail-expiry-wait 7)
+;; gnus-msg
+(setopt gnus-posting-styles
+        '((".*"
+           (address "Timo Myyrä <timo.myyra@bittivirhe.fi>")
+           (gcc "nnimap+home:Sent"))))
 
-  ;;; gnus-agent
-  (setopt gnus-agent-expire-days 7)
+;; gnus-art
+(setopt gnus-visible-headers
+        '("^From:" "^Subject:" "^To:"
+          "^Cc:" "^Newsgroups:" "^Date:"
+          "Followup-To:" "Reply-To:" "^Organization:" "^X-Newsreader:"
+          "^X-Mailer:"))
+(setopt gnus-sorted-header-list gnus-visible-headers)
+(setopt gnus-inhibit-images t)
 
-  ;;; do not load images by default
-  (setopt gnus-inhibit-images t)
+;;; gnus-async
+(setopt gnus-asynchronous t)
+(setopt gnus-use-article-prefetch t)
 
-  ;;; gnus-dired
-  (add-hook 'dired-mode-hook 'turn-on-gnus-dired-mode))
+;;; nnmail
+(setopt nnmail-expiry-wait 7)
+
+;;; gnus-agent
+(setopt gnus-agent-expire-days 7)
+
+;;; gnus-dired
+;; {C-c C-m C-a} gnus-dired-attach
+;; {C-c C-m C-l} gnus-dired-find-file-mailcap
+(add-hook 'dired-mode-hook 'turn-on-gnus-dired-mode)
+
+;; Cloud sync:: to do, epg needs some work
+;; {~ RET} / {~ ~}
+
+;; https://josefsson.org/inline-openpgp-considered-harmful.html
 
 (provide 'init-email)
 

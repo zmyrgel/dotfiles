@@ -28,7 +28,6 @@
 
 ;;; Code:
 
-;;; TODO: files!
 (add-hook 'after-save-hook #'executable-make-buffer-file-executable-if-script-p)
 (setopt view-read-only t)
 (setopt large-file-warning-threshold 50000000) ;; 50mb
