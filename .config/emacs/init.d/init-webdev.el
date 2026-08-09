@@ -31,27 +31,25 @@
 ;;; PHP programming
 
 (defun php-symbol-lookup ()
-    (interactive)
-    ;; Poll user for symbol to look up
-    (let ((url-format "https://www.php.net/manual/en/function.%s.php"))
-      (with-temp-buffer
-        (insert (read-from-minibuffer "Function to lookup: "))
-        (goto-char (point-min))
-        (replace-regexp "_" "-")
-        ;; TODO: toggle eww-readable
-        (eww (format url-format (buffer-string))
-             t
-             (get-buffer-create "*PHP Symbol lookup*")))))
+  (interactive)
+  ;; Poll user for symbol to look up
+  (let ((url-format "https://www.php.net/manual/en/function.%s.php"))
+    (with-temp-buffer
+      (insert (read-from-minibuffer "Function to lookup: "))
+      (goto-char (point-min))
+      (replace-regexp "_" "-")
+      ;; TODO: toggle eww-readable
+      (eww (format url-format (buffer-string))
+           t
+           (get-buffer-create "*PHP Symbol lookup*")))))
 
 (with-eval-after-load 'php-ts-mode
-
   (defun my/php-ts-mode-hook ()
     (setopt php-ts-mode-indent-style 'symfony) ;; was 'psr2
     (setq-local indent-tabs-mode nil)
     (setopt php-ts-indent-offset 4))
 
   (add-hook 'php-ts-mode-hook 'my/php-ts-mode-hook))
-
 
 (unless (package-installed-p 'flymake-jsts)
   (package-vc-install
@@ -107,8 +105,9 @@
 (defun my/project-jsts-p (project)
   "Predicate to check if this is JS/TS project. Simply checks if there
 exists package.json file at root."
+  (when project
   (file-exists-p
-   (expand-file-name "package.json" (project-root project))))
+   (expand-file-name "package.json" (project-root project)))))
 
 ;; for project buffer, add (project-root (current-buffer))
 (defun my/set-project-npm-exec-path ()
