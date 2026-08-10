@@ -60,9 +60,9 @@
 (keymap-global-set "C-x )" 'kmacro-end-or-call-macro)
 
 (let ((map (make-sparse-keymap)))
-  (keymap-set map "s" #'eshell)
-  (keymap-set map "r" #'rgrep)
-  (keymap-set map "m" #'gnus)
+  (keymap-set map "s" 'eshell)
+  (keymap-set map "r" 'rgrep)
+  (keymap-set map "m" 'gnus)
   (keymap-global-set "C-z" map))
 
 (keymap-global-set "M-o" 'other-window)
@@ -173,7 +173,7 @@
 (setopt Man-support-remote-systems t)
 
 ;;; remember
-(setopt remember-data-file (expand-file-name "~/Documents/notes"))
+(setopt remember-data-file (expand-file-name "~/Documents/notes/general.org"))
 (setopt remember-notes-initial-major-mode 'org-mode)
 
 ;;; proced

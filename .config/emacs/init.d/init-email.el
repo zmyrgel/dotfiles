@@ -60,6 +60,16 @@
 
 ;;; gnus
 (with-eval-after-load 'gnus
+  (add-to-list
+   'gnus-newsgroup-variables
+   '(mm-discouraged-alternatives
+     . '("text/html" "image/.*")))
+
+  ;; Display html in rss groups
+  (add-to-list
+   'gnus-parameters
+   '("\\`nnrss:" (mm-discouraged-alternatives nil)))
+
   (add-hook 'gnus-started-hook
             (lambda ()
               (add-to-list 'mm-body-charset-encoding-alist '(utf-8 . base64)))))

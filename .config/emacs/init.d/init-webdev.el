@@ -26,8 +26,6 @@
 
 ;;; Code:
 
-;;; Code:
-
 ;;; PHP programming
 
 (defun php-symbol-lookup ()
@@ -109,7 +107,6 @@ exists package.json file at root."
   (file-exists-p
    (expand-file-name "package.json" (project-root project)))))
 
-;; for project buffer, add (project-root (current-buffer))
 (defun my/set-project-npm-exec-path ()
   "Add project node_modules/.bin directory for `exec-path'."
   (when (my/project-jsts-p (project-current))

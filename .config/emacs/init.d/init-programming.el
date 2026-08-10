@@ -305,8 +305,7 @@
 (setopt cperl-invalid-face 'default)
 
 ;;; copyright management
-
-(setopt copyright-names-regexp "tmy\\|timo|\\myyra")
+(setopt copyright-names-regexp "tmy\\|[Tt]imo[ \\.][Mm]yyr[aä]")
 (setopt copyright-year-ranges t)
 (add-hook 'before-save-hook 'copyright-update)
 
