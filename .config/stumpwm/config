@@ -4,9 +4,9 @@
 ;;; Author: Timo Myyrä <timo.myyra@bittivirhe.fi>
 ;;;
 ;;; Created:
-;;; Time-stamp: <2024-09-15 08:14:05 (tmy)>
+;;; Time-stamp: <2026-08-10 22:07:52 (tmy)>
 ;;; URL: https://github.com/zmyrgel/dotfiles/
-;;; Copyright (C) 2012 Timo Myyrä
+;;; Copyright (C) 2012, 2026 Timo Myyrä
 ;;;
 ;;; ----------------------------------------------------------------------------
 ;;;  - Fix Webjump functionality
@@ -34,7 +34,7 @@
   (when (probe-file quicklisp-init)
     (load quicklisp-init)))
 
-(ql:quickload '(slynk quri))
+(ql:quickload '(slynk quri cl-ppcre))
 
 (defcommand start-slynk () ()
   (setf stumpwm:*top-level-error-action* :break)
@@ -43,28 +43,20 @@
 ;; for stumptray
 ;; (ql:quickload 'xembed)
 
-;; for swm-ssh
-(ql:quickload :cl-ppcre)
-
-;; for ttf-fonts
-(ql:quickload 'clx-truetype)
-
 ;; ---------------------------------------
 ;; Define global configurations
 
-(defvar *font* "-*-terminus-medium-r-normal--16-*-*-*-*-*-iso10646-1"
+(defvar *font*
+  (let ((terminus (first (list-fonts "-*-terminus-medium-r-normal--16-*")))
+        (spleen (first (list-fonts "-*-spleen-medium-r-normal--16-*"))))
+    (or spleen terminus))
   "Font to use for displaying StumWM UI elements.")
-
-;; Update module directory path
-(let ((module-dir (merge-pathnames ".config/stumpwm/modules/"
-                                   (user-homedir-pathname))))
-  (when (probe-file module-dir)
-    (set-module-dir module-dir)))
 
 (defvar *wallpaper-path* (merge-pathnames "wallpapers/"
                                           (user-homedir-pathname)))
 (defvar *wallpaper-extensions* '("png" "jpg" "jpeg"))
 
+;; TODO: use xrandr to poll the needed info
 (defvar *local-display*
   (let ((host (uiop:hostname)))
     (cond ((string= host "asteroid.bittivirhe.fi")
@@ -84,10 +76,6 @@
 
 (defvar *xterm* "xterm"
   "X terminal program to use.")
-
-;; (defvar *data-dir* (merge-pathnames ))?
-;; log everything to ~/.stumpwm.d/stumpwm.log
-;; (redirect-all-output (merge-pathnames *data-dir* "stumpwm.log"))
 
 ;; ---------------------------------------
 ;; Misc options
@@ -268,29 +256,18 @@ mode-line"
 (with-module "urgentwindows"
   (define-key *root-map* (kbd "u") "raise-urgent"))
 
-;;(xft:cache-fonts)
-;; (clx-truetype:get-font-families)
-(with-module "ttf-fonts"
-  ;; "Default font to use in StumpWM UI."
-  (setf *font*
-        (make-instance 'xft:font :family "InputMono Medium" :subfamily "Regular" :size 6 :antialias t))
-  (set-font *font*))
-
-;;#-openbsd
-;;(with-module "swm-ssh"
-;;  (setq swm-ssh:*swm-ssh-default-term* *xterm*)
-;;  (define-key *root-map* (kbd "C-a") "swm-ssh-menu"))
+(defun list-fonts (&optional fname)
+  "List available bitmap font names, optionally filtered by FNAME."
+  (uiop:run-program (if fname
+                        (list "xlsfonts" "-fn" fname)
+                        (list "xlsfonts"))
+                    :output :lines))
 
 ;;#-openbsd
 ;;(with-module "clipboard-history"
 ;;  (define-key *root-map* (kbd "C-y") "show-clipboard-history")
 ;;  ;; start the polling timer process
 ;;  (clipboard-history:start-clipboard-manager))
-
-;; (with-module "kbd-layouts"
-;;   (setf kbd-layouts:*caps-lock-behavior* :ctrl)
-;;   (keyboard-layout-list "us" "dvorak -variant phonetic")
-;;   )
 
 ;;(with-module "stumpwm-themes"
 ;;  (stumpwm-themes:define-theme "Modus Vivendi"
@@ -329,7 +306,7 @@ mode-line"
 
 (defcommand remmina () ()
   "run or raise the Remmina remote connection manager."
-  (run-or-raise "steam" '(:class "Steam")))
+  (run-or-raise "remmina" '(:class "Remmina")))
 
 ;; TODO: check why using thread here
 ;; (defcommand firefox () ()
@@ -381,9 +358,9 @@ mode-line"
 ;;(register-altgr-as-modifier)
 
 ;; Browse somewhere
-(define-key *root-map* (kbd "C-b") (format nil "colon1 exec ~a  https://www." *browser*))
-;; Ssh somewhere
-(define-key *root-map* (kbd "C-s") "colon1 exec xterm -e ssh ")
+(define-key *root-map* (kbd "C-b") (format nil "colon exec ~a  https://www." *browser*))
+;; ssh somewhere
+(define-key *root-map* (kbd "C-s") "colon exec xterm -e ssh ")
 
 ;; paste
 (define-key *root-map* (kbd "y") "paste-x-selection")
@@ -426,13 +403,12 @@ mode-line"
     (define-key m (kbd "C-r") "restart-computer")
     m))
 
-;; TODO: check how xmodmap module works
-;; (defvar *keyboard-layout-keymap*
-;;   (let ((m (make-sparse-keymap)))
-;;     (define-key m (kbd "d") "exec setxkbmap dvorak")
-;;     (define-key m (kbd "u") "exec setxkbmap us")
-;;     m))
-;;(define-key *root-map* (kbd "k") '*keyboard-layout-keymap*)
+(defvar *keyboard-layout-keymap*
+  (let ((m (make-sparse-keymap)))
+    (define-key m (kbd "d") "exec setxkbmap dvorak")
+    (define-key m (kbd "u") "exec setxkbmap us")
+    m))
+(define-key *root-map* (kbd "k") '*keyboard-layout-keymap*)
 
 (define-remapped-keys
     '(("(Firefox|Chrome)"
@@ -455,22 +431,6 @@ mode-line"
 (define-key *root-map* (kbd "C-q") "send-raw-key")
 
 (define-key *root-map* (kbd "B") "mode-line")
-
-;; s-[0-9] moves to a numbered group.
-;; (loop for i from 1 to 9
-;;    do (define-key *top-map* (kbd (format nil "s-~A" i))
-;; 	(format nil "gselect ~A" i)))
-
-;; Query addresses
-;; (defvar *query-map* nil
-;;   "The keymap with net queries (e.g. IMDB)")
-
-;; (setf *query-map*
-;;       (let ((m (make-sparse-keymap)))
-;;         (define-key m (kbd "i") "imdb")
-;;         (define-key m (kbd "g") "google")
-;;         (define-key m (kbd "w") "wikipedia")
-;;         m))
 
 ;; easy group change
 (define-key *top-map* (kbd "s-,") "gprev")
