@@ -46,6 +46,13 @@
 ;; ---------------------------------------
 ;; Define global configurations
 
+(defun list-fonts (&optional fname)
+  "List available bitmap font names, optionally filtered by FNAME."
+  (uiop:run-program (if fname
+                        (list "xlsfonts" "-fn" fname)
+                        (list "xlsfonts"))
+                    :output :lines))
+
 (defvar *font*
   (let ((terminus (first (list-fonts "-*-terminus-medium-r-normal--16-*")))
         (spleen (first (list-fonts "-*-spleen-medium-r-normal--16-*"))))
@@ -255,13 +262,6 @@ mode-line"
 
 (with-module "urgentwindows"
   (define-key *root-map* (kbd "u") "raise-urgent"))
-
-(defun list-fonts (&optional fname)
-  "List available bitmap font names, optionally filtered by FNAME."
-  (uiop:run-program (if fname
-                        (list "xlsfonts" "-fn" fname)
-                        (list "xlsfonts"))
-                    :output :lines))
 
 ;;#-openbsd
 ;;(with-module "clipboard-history"
