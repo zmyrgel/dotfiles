@@ -142,7 +142,7 @@ mode-line"
 (setf *mode-line-position* :top)
 (setf *mode-line-border-width* 0)
 
-(setf *screen-mode-line-format* "{%g} | %W")
+(setf *screen-mode-line-format* "%g | %W")
 (setf *mode-line-timeout* 60) ;; default 60
 
 ;; ---------------------------------------
