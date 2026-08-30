@@ -155,6 +155,13 @@
 ;;; conf
 (add-to-list 'auto-mode-alist '("\\.env\\'" . conf-mode))
 
+;;; markdown
+(autoload 'markdown-ts-mode "markdown-ts-mode" nil t)
+(dolist (re '("\\.md\\'" "\\.mdx\\'" "\\.markdown\\'"))
+  (add-to-list 'auto-mode-alist (cons re 'markdown-ts-mode)))
+(with-eval-after-load 'markdown-ts-mode
+  (require 'markdown-ts-mode-x))
+
 ;;; tex
 
 ;; | Key chord    | Description     |
