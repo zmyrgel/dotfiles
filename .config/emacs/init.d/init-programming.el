@@ -95,7 +95,8 @@
 (setopt add-log-keep-changes-together t)
 (setopt vc-display-status 'no-backend)
 (setopt vc-annotate-use-short-revision t)
-;;(setopt vc-dir-show-key-binding-hints t) ; 32
+(when (>= emacs-major-version 32)
+  (setopt vc-dir-show-key-binding-hints t))
 
 ;; (setopt vc-dir-auto-hide-up-to-date 'revert) t nil
 (setopt vc-dir-save-some-buffers-on-revert t)
@@ -196,15 +197,20 @@
 (which-function-mode)
 
 ;;; eglot :: LSP server
+;; Set eglot-workspace-configuration to ignore project-specific crud,
+;; such as node_modules
 (with-eval-after-load 'eglot
   (setopt eglot-autoshutdown t)
+  (setopt eglot-sync-connect nil)
   (setopt eglot-extend-to-xref t)
-  (setopt eglot-events-buffer-config '(:size 0 :format full))
+  (setopt eglot-events-buffer-config '(:size 0 :format lisp))
   (setopt eglot-prefer-plaintext t)
-  (setq jsonrpc-event-hook nil)
+  (setopt eglot-max-file-watches 5000)
+  (setopt eglot-report-progress nil)
+  (setopt eglot-code-action-indications nil)
+  ;;(add-to-list 'eglot-ignored-server-capabilities :documentOnTypeFormattingProvider)
+
   ;; Check these:
-  ;;(setopt eglot-report-progress nil)
-  ;;(setopt eglot-code-action-indications nil) ;; emacs31
   (keymap-set eglot-mode-map "C-c e h" 'eglot-help-at-point)
   (keymap-set eglot-mode-map "C-c e a" 'eglot-code-actions)
   (keymap-set eglot-mode-map "C-c e o" 'eglot-action-organize-imports)
