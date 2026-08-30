@@ -99,13 +99,13 @@
   (require 'init-files)
   (require 'init-visual)
   (require 'init-calendar)
+  (require 'init-web)
   (require 'init-text) ;; auctex, pdf-tools
-  (require 'init-web) ;; elfeed
   (require 'init-programming) ;; vc-got, magit, magit-gitflow
-  (require 'init-webdev) ;; web-mode,flymake-eslint, prettier,ts-comint
-  (require 'init-lisp) ;; sly, sly-repl-ansi-color,sly-asdf,sly-macrostep,sly-quicklisp,quack,clojure-mode,cider,geiser,
+  (require 'init-webdev) ;; web-mode, flymake-eslint, prettier, ts-comint
+  (require 'init-lisp) ;; sly, sly-repl-ansi-color, sly-asdf, sly-macrostep, sly-quicklisp, quack, clojure-mode, cider, geiser,
   (require 'init-ai) ;; agent-shell
-  (require 'init-extras) ;; marginalia, emms, terraform-doc, terraform-mode, nov,x509-mode,plantuml,vundo,bibliothek, easy-kill, suomalainen-kalenteri, restclient, vcl-mode
+  (require 'init-extras) ;; marginalia, emms, terraform-doc, terraform-mode, nov,x509-mode, plantuml,bibliothek, suomalainen-kalenteri, restclient, vcl-mode
 
   ;; Load optional local startup file
   (add-hook 'after-init-hook 'my/load-local-init t)
