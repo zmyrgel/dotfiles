@@ -36,27 +36,27 @@
 (setopt tab-always-indent 'complete)
 
 ;;; minibuffer
-(setopt completion-styles '(partial-completion flex initials))
-;; (setopt completion-styles '(basic partial-completion flex)) ;; partial-completion flex initials
-;; (setopt completion-category-overrides
-;;         '((file (styles . (basic partial-completion flex)))
-;;           (project-file (styles . (basic substring partial-completion flex)))
-;;           (imenu (styles . (basic substring flex)))
-;;           (kill-ring (styles . (basic substring flex)))))
+(setopt completion-styles '(basic substring partial-completion flex)) ;; partial-completion flex initials
+(setopt completion-category-overrides
+        '((file (styles . (basic partial-completion flex)))
+          (project-file (styles . (basic substring partial-completion flex)))
+          (imenu (styles . (basic substring flex)))
+          (kill-ring (styles . (basic substring flex)))))
 
 (setopt completion-auto-deselect t)
-(setopt completion-auto-help 'visible)
-(setopt completion-auto-select 'second-tab)
+(setopt completion-auto-help t)
+(setopt completion-auto-select nil)
 (setopt completion-auto-wrap t)
 (setopt completion-cycle-threshold nil)
-(setopt completion-eager-display 'auto)
-(setopt completion-eager-update 'auto)
+(setopt completion-eager-display nil)
+(setopt completion-eager-update t)
 (setopt completion-flex-nospace nil)
 (setopt completion-ignore-case t)
 (setopt completion-pcm-complete-word-inserts-delimiters nil)
 (setopt completion-pcm-leading-wildcard t)
 (setopt completion-pcm-word-delimiters "-_./:| ")
 (setopt completion-show-help nil)
+(setopt completion-show-inline-help nil)
 
 (setopt completions-format 'one-column)
 (setopt completions-max-height 20)
@@ -98,9 +98,9 @@
 (keymap-set minibuffer-local-map "C-p" 'minibuffer-previous-completion)
 (keymap-set minibuffer-local-map "C-n" 'minibuffer-next-completion)
 
-;; Up/down when competing in a normal buffer
-(keymap-set completion-in-region-mode-map "C-p" 'minibuffer-previous-completion)
-(keymap-set completion-in-region-mode-map "C-n" 'minibuffer-next-completion)
+(keymap-set completion-in-region-mode-map "M-p" 'minibuffer-previous-completion)
+(keymap-set completion-in-region-mode-map "M-n" 'minibuffer-next-completion)
+(keymap-set completion-in-region-mode-map "M-i" 'minibuffer-choose-completion)
 
 ;;; completion preview
 (global-completion-preview-mode)
@@ -109,6 +109,9 @@
 (setopt completion-preview-idle-delay 0.3)
 (keymap-set completion-preview-active-mode-map "M-n" 'completion-preview-next-candidate)
 (keymap-set completion-preview-active-mode-map "M-p" 'completion-preview-prev-candidate)
+(keymap-set completion-preview-active-mode-map "M-i" 'completion-preview-insert-word)
+(keymap-set completion-preview-active-mode-map "TAB" 'completion-preview-complete)
+(keymap-set completion-preview-active-mode-map "M-RET" 'completion-preview-insert) ;; better binding?
 
 ;;; imenu: M-g i
 (setopt imenu-auto-rescan t)
