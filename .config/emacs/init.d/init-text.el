@@ -34,6 +34,29 @@
 (setopt whitespace-global-modes '(not agent-shell-mode magit-status-mode magit-diff-mode))
 (global-whitespace-mode)
 
+;; | Key chord | Description                  |
+;; |-----------+------------------------------|
+;; | C-s C-w   | Search char or word at point |
+;; | M-s .     | Similar, but broader match   |
+;; | M-s o     | Run `occur' on regexp        |
+;; | M-s h r   | Highlight regexp             |
+;; | M-s h u   | Undo the highlight           |
+;; | C-s M-r   | Toggle regexp search         |
+;; | M-%       | Run `query-replace'          |
+;; | C-M-%     | `query-replace-regexp'       |
+
+(setopt isearch-lazy-highlight t)
+(setopt isearch-lazy-count t)
+(setopt isearch-lax-whitespace t)
+(setopt search-whitespace-regexp ".*?")
+(setopt lazy-count-prefix-format nil)
+(setopt lazy-count-suffix-format " (%s/%s)")
+(setopt isearch-yank-on-move 'shift)
+(setopt isearch-allow-scroll 'unlimited)
+(setopt query-replace-highlight t)
+(setq isearch-regexp-lax-whitespace nil)
+(setq isearch-highlight t) ;; not documented?
+
 ;;; grep
 (setopt grep-find-use-xargs 'exec-plus)
 
@@ -46,18 +69,10 @@
 ;; rg stuff for evaluation
 (when (and nil (executable-find "rg"))
   (setopt xref-search-program 'ripgrep)
-  (grep-apply-setting
-   'grep-find-template
-   "find <D> <X> -type f <F> -exec rg <C> --no-heading -H  <R> /dev/null {} +")
-  (grep-apply-setting
-   'grep-template
-   "rg --no-heading -H -uu -g <F> <R> <D>")
-  (grep-apply-setting
-   'grep-find-command
-   '("rg -n -H --no-heading -e '' $(git rev-parse --show-toplevel || pwd)" . 27))
-  (grep-apply-setting
-   'grep-command
-   "rg -nS --no-heading "))
+  (setopt grep-find-template "find <D> <X> -type f <F> -exec rg <C> --no-heading -H  <R> /dev/null {} +")
+  (setopt grep-template "rg --no-heading -H -uu -g <F> <R> <D>")
+  (setopt grep-find-command '("rg -n -H --no-heading -e '' $(git rev-parse --show-toplevel || pwd)" . 27))
+  (setopt grep-command "rg -nS --no-heading "))
 
 ;; TODO: This needed?
 ;; (add-to-list 'grep-find-ignored-directories "node_modules")

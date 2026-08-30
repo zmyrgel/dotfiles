@@ -90,29 +90,6 @@
 (keymap-global-set "C-x w f h" 'window-layout-flip-leftright)
 (keymap-global-set "C-x w f v" 'window-layout-flip-topdown)
 
-;; | Key chord | Description                  |
-;; |-----------+------------------------------|
-;; | C-s C-w   | Search char or word at point |
-;; | M-s .     | Similar, but broader match   |
-;; | M-s o     | Run `occur' on regexp        |
-;; | M-s h r   | Highlight regexp             |
-;; | M-s h u   | Undo the highlight           |
-;; | C-s M-r   | Toggle regexp search         |
-;; | M-%       | Run `query-replace'          |
-;; | C-M-%     | `query-replace-regexp'       |
-
-(setopt isearch-lazy-highlight t)
-(setopt isearch-lazy-count t)
-(setopt isearch-lax-whitespace t)
-(setopt search-whitespace-regexp ".*?")
-(setopt lazy-count-prefix-format nil)
-(setopt lazy-count-suffix-format " (%s/%s)")
-(setopt isearch-yank-on-move 'shift)
-(setopt isearch-allow-scroll 'unlimited)
-(setopt query-replace-highlight t)
-(setq isearch-regexp-lax-whitespace nil)
-(setq isearch-highlight t) ;; not documented?
-
 ;; mouse options
 (setopt mouse-wheel-scroll-amount
         '(1
