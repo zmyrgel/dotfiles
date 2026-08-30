@@ -29,6 +29,7 @@
 (setq telnet-program "nc")
 
 ;;; rcirc
+;; {C-c C-SPC} to switch to urgent buffer
 (with-eval-after-load 'rcirc
   (setopt rcirc-server-alist
           '(("irc.libera.chat"
