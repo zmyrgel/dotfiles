@@ -65,14 +65,6 @@
               (concat (getenv "HOME") "/java/plantuml-*.jar"))))
 (add-to-list 'auto-mode-alist '("\\.puml\\'" . plantuml-mode))
 
-;;; vundo :: visual undo
-(ensure-packages-present 'vundo)
-
-;;; easy-kill
-(ensure-packages-present 'easy-kill)
-(keymap-substitute global-map 'kill-ring-save 'easy-kill)
-(keymap-substitute global-map 'mark-sexp 'easy-mark)
-
 ;;; suomalainen-kalenteri :: add finnish holidays
 (ensure-packages-present 'suomalainen-kalenteri)
 
@@ -92,7 +84,8 @@
 (ensure-packages-present 'hyperbole)
 (add-hook 'after-init-hook 'hyperbole-mode)
 
-(keymap-global-set "C-c h" 'hkey-either)
+(keymap-global-set "M-'" 'hkey-either)
+(setopt hsys-org-enable-smart-keys t)
 
 (provide 'init-extras)
 
