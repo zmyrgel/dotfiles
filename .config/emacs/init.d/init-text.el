@@ -101,6 +101,7 @@
 (setopt ispell-dictionary "american")
 (setopt flyspell-check-changes t)
 (add-hook 'text-mode-hook 'flyspell-mode)
+(add-hook 'org-mode-hook 'flyspell-mode)
 
 ;;; doc-view - replace with emacs-reader?
 (setopt doc-view-mupdf-use-svg t)
