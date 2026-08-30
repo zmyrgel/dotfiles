@@ -65,6 +65,8 @@
 (setopt time-stamp-line-limit 10)
 (setopt time-stamp-format "%Y-%02m-%02d %02H:%02M:%02S (%l)")
 
+(add-hook 'before-save-hook 'time-stamp)
+
 ;;; display-time
 (display-time-mode -1)
 (setopt display-time-24hr-format t)

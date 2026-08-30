@@ -105,10 +105,6 @@
 (add-hook 'after-init-hook 'mouse-wheel-mode)
 (add-hook 'after-init-hook 'pixel-scroll-precision-mode)
 
-(add-hook 'before-save-hook 'time-stamp)
-(add-hook 'comint-output-filter-functions 'comint-watch-for-password-prompt)
-(add-hook 'doc-view-mode-hook 'auto-revert-mode)
-
 (add-hook 'after-init-hook 'global-so-long-mode)
 
 (setopt repeat-on-final-keystroke t)

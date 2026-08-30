@@ -102,9 +102,10 @@
 (setopt flyspell-check-changes t)
 (add-hook 'text-mode-hook 'flyspell-mode)
 
-;;; doc-view
+;;; doc-view - replace with emacs-reader?
 (setopt doc-view-mupdf-use-svg t)
 (setopt doc-view-resolution 120)
+(add-hook 'doc-view-mode-hook 'auto-revert-mode)
 
 ;;; yaml
 (add-to-list 'magic-mode-alist '("---" . yaml-ts-mode))
@@ -191,17 +192,16 @@
 (setopt TeX-newline-function 'reindent-then-newline-and-indent)
 (add-hook 'TeX-after-compilation-finished-functions 'TeX-revert-document-buffer)
 
-;;; doc-view / doc-view-presentation
+;;; pdf-tools
 (ensure-packages-present 'pdf-tools)
 (require 'pdf-tools nil t)
 (add-to-list 'magic-mode-alist '("%PDF" . pdf-view-mode))
 (add-to-list 'auto-mode-alist '("\\.pdf\\'" . pdf-view-mode))
-(add-hook 'pdf-view-mode 'pdf-links-minor-mode)
-(add-hook 'pdf-view-mode 'pdf-isearch-minor-mode)
-(add-hook 'pdf-view-mode 'pdf-outline-minor-mode)
-(add-hook 'pdf-view-mode 'pdf-history-minor-mode)
+(add-hook 'pdf-view-mode-hook 'pdf-links-minor-mode)
+(add-hook 'pdf-view-mode-hook 'pdf-isearch-minor-mode)
+(add-hook 'pdf-view-mode-hook 'pdf-outline-minor-mode)
+(add-hook 'pdf-view-mode-hook 'pdf-history-minor-mode)
 
-;;; pdf-tools
 (setopt pdf-view-display-size 'fit-page)
 (pdf-tools-install :no-query :skip-deps :no-error)
 
