@@ -48,16 +48,18 @@
 
 ;;; comint
 (setopt comint-scroll-to-bottom-on-input t)
-(setopt comint-scroll-to-bottom-on-output t)
+(setopt comint-scroll-to-bottom-on-output nil)
 (setopt comint-scroll-show-maximum-output t)
 (setopt comint-completion-autolist t)
 (setopt comint-input-ignoredups t)
 (setopt comint-completion-addsuffix t)
 (setopt comint-prompt-read-only t)
 
-(with-eval-after-load 'comint-mode 
+(with-eval-after-load 'comint-mode
   (keymap-substitute comint-mode-map 'kill-region 'comint-kill-region)
   (keymap-substitute comint-mode-map 'kill-whole-line 'comint-kill-whole-line))
+
+(add-hook 'comint-output-filter-functions 'comint-watch-for-password-prompt)
 
 ;;; eshell
 (defun eshell-here ()
