@@ -102,7 +102,7 @@
 
 (setq redisplay-skip-fontification-on-input t)
 (setq bidi-inhibit-bpa t)
-(setq use-hard-newlines nil)
+
 (setopt sentence-end-double-space nil)
 (setopt sentence-end-without-period nil)
 (setopt colon-double-space nil)
@@ -122,10 +122,7 @@
 (setopt use-file-dialog nil)
 (setopt use-dialog-box nil)
 
-(defun my/truncate-lines-hook ()
-  (setq-local trruncate-lines t))
-
-(add-hook 'help-mode-hook #'my/truncate-lines-hook)
+(add-hook 'help-mode-hook 'toggle-truncate-lines)
 
 (defvar *my-fixed-font* "Input Mono")
 (defvar *my-variable-font* "Input Serif")
