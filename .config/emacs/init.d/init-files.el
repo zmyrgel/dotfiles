@@ -55,24 +55,38 @@
 (add-hook 'dired-mode-hook 'hl-line-mode)
 (add-hook 'dired-mode-hook 'dired-hide-details-mode)
 
+(setopt dired-create-destination-dirs 'ask)
+(setopt dired-clean-confirm-killing-deleted-buffers nil)
 (setopt dired-dwim-target t)
-(setopt dired-recursive-copies 'always)
-(setopt dired-recursive-deletes 'always)
+(setopt dired-isearch-filenames 'dwim)
 (setopt dired-isearch-filenames t)
-(setopt dired-omit-verbose nil)
-(setopt dired-omit-lines directory-files-no-dot-files-regexp)
-(setopt dired-omit-files "^#\\|\\.$\\|~$\\|^RCS$\\|,v$")
-
 (setopt dired-ls-F-marks-symlinks t)
+(setopt dired-movement-style 'bounded)
+(setopt dired-omit-files "^#\\|\\.$\\|~$\\|^RCS$\\|,v$")
+(setopt dired-omit-lines directory-files-no-dot-files-regexp)
+(setopt dired-omit-verbose nil)
+(setopt dired-recursive-copies 'always)
+(setopt dired-recursive-deletes 'top)
+(setopt dired-vc-rename-file t)
+(setopt dired-free-space 'first)
+(setopt dired-auto-revert-buffer 'dired-directory-changed-p)
+(setopt dired-do-revert-buffer t)
+(setopt dired-mouse-drag-files nil)
+
+(defvar my/generic-open-cmd (cond ((memq system-type '(cygwin windows-nt ms-dos))
+                                   "start")
+                                  ((eq system-type 'darwin)
+                                   "open")
+                                  ((memq system-type '(gnu gnu/linux gnu/kfreebsd
+                                                           berkeley-unix))
+                                   "xdg-open"))
+  "Generic command to run applications.")
+
 (setopt dired-guess-shell-alist-user
-        '(("\\.avi$\\|\\.mkv$\\|\\.mov$\\|\\.mpeg$\\|\\.mp4$" "cvlc")))
+        `(("\\.avi$\\|\\.mkv$\\|\\.mov$\\|\\.mpeg$\\|\\.mp4$" ,my/generic-open-cmd)))
 (setopt dired-guess-shell-gnutar (unless (eq system-type 'berkeley-unix)
                                    "tar"))
 
-(setopt dired-isearch-filenames 'dwim)
-(setopt dired-create-destination-dirs 'ask)
-(setopt dired-vc-rename-file t)
-(setopt dired-movement-style 'bounded)
 ;; {E} 'dired-do-open'
 
 ;; Assemble a list of files you want to operate on with either find-dired, find-name-dired or find-grep-dired.
