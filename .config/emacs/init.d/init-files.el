@@ -32,10 +32,18 @@
 (setopt view-read-only t)
 (setopt large-file-warning-threshold 50000000) ;; 50mb
 
-;;; backup: move to files
+;;; backup
 (setopt make-backup-files t)
-(setopt backup-directory-alist `((".*" . ,temporary-file-directory)))
 (setopt backup-by-copying t)
+;;(setopt backup-directory-alist `((".*" . ,temporary-file-directory)))
+(let ((backup-dir (expand-file-name "backup" user-emacs-directory)))
+  (make-directory backup-dir t)
+  (setopt backup-directory-alist
+          `((".*" . ,backup-dir)))
+  (setopt auto-save-file-name-transforms
+          `((".*" ,backup-dir t))))
+
+(setopt delete-old-versions t)
 
 ;; todo: revert-without-query regexp
 ;; todo: small-temporary-file-directory ? use tmpfs ?
@@ -61,7 +69,7 @@
 (setopt dired-isearch-filenames 'dwim)
 (setopt dired-isearch-filenames t)
 (setopt dired-ls-F-marks-symlinks t)
-(setopt dired-movement-style 'bounded)
+(setopt dired-movement-style 'bounded-files)
 (setopt dired-omit-files "^#\\|\\.$\\|~$\\|^RCS$\\|,v$")
 (setopt dired-omit-lines directory-files-no-dot-files-regexp)
 (setopt dired-omit-verbose nil)
@@ -73,13 +81,14 @@
 (setopt dired-do-revert-buffer t)
 (setopt dired-mouse-drag-files nil)
 
-(defvar my/generic-open-cmd (cond ((memq system-type '(cygwin windows-nt ms-dos))
-                                   "start")
-                                  ((eq system-type 'darwin)
-                                   "open")
-                                  ((memq system-type '(gnu gnu/linux gnu/kfreebsd
-                                                           berkeley-unix))
-                                   "xdg-open"))
+(defvar my/generic-open-cmd
+  (cond ((memq system-type '(cygwin windows-nt ms-dos))
+         "start")
+        ((eq system-type 'darwin)
+         "open")
+        ((memq system-type '(gnu gnu/linux gnu/kfreebsd
+                                 berkeley-unix))
+         "xdg-open"))
   "Generic command to run applications.")
 
 (setopt dired-guess-shell-alist-user
