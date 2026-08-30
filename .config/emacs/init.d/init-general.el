@@ -46,6 +46,20 @@
 (when (native-comp-available-p)
   (setopt native-comp-async-report-warnings-errors 'silent))
 
+(add-hook 'after-init-hook 'auto-compression-mode)
+
+(defun my/backward-kill-word-or-region ()
+  "Kill region or word based on selection."
+  (interactive)
+  (call-interactively (if (region-active-p)
+                          'kill-region
+                        'backward-kill-word)))
+
+(defun emacs-reload-configuration ()
+  "Reload emacs configuration."
+  (interactive)
+  (load-file (locate-user-emacs-file "init.el")))
+
 ;;; global keybindings
 (keymap-global-set "M-u" 'upcase-dwim)
 (keymap-global-set "M-l" 'downcase-dwim)
@@ -124,16 +138,56 @@
 (setopt set-mark-command-repeat-pop t)
 (add-hook 'after-init-hook 'repeat-mode)
 
+;; enabled disabled features
+(dolist (s '(narrow-to-region
+             upcase-region
+             downcase-region
+             dired-find-alternative-file
+             overwrite-mode))
+  (put s 'disabled nil))
+
+;;; general - c source
+(setopt use-short-answers t)
+(setopt case-fold-search t)
+(setopt load-prefer-newer t)
+;; bump this a bit from default 64kb
+(setq read-process-output-max 524288) ; 512kb
+
 ;; bump undo limits a bit
 (setopt undo-limit (* 13 160000))
 (setopt undo-strong-limit (* 13 240000))
 (setopt undo-outer-limit (* 13 24000000))
 
+;; Don't prompt if killing buffer with process attached
+(setq kill-buffer-query-functions
+      (remq 'process-kill-buffer-query-function
+            kill-buffer-query-functions))
+
+;;; simple
+(setopt kill-region-dwim 'emacs-word)
+(setopt set-mark-command-repeat-pop t)
+(setopt next-line-add-newlines nil)
+(setopt kill-do-not-save-duplicates t)
+(setopt backward-delete-char-untabify-method nil)
+(setopt yank-pop-change-selection t)
+(setopt save-interprogram-paste-before-kill t)
+(add-hook 'after-init-hook 'size-indication-mode)
+(add-hook 'after-init-hook 'line-number-mode)
+(add-hook 'after-init-hook 'column-number-mode)
+(add-hook 'text-mode-hook 'auto-fill-mode)
+(add-hook 'before-save-hook 'whitespace-cleanup)
+
+;;; advice
+(setopt ad-redefinition-action 'accept)
+
+;;; apropos
+(setopt apropos-do-all t)
+
 ;;; ------------------------------
 ;;; Buffer management
 ;;; ------------------------------
 
-;; M-x rename-visited-file
+;; {M-x rename-visited-file}
 
 ;;; uniquify
 (setopt uniquify-buffer-name-style 'post-forward-angle-brackets)

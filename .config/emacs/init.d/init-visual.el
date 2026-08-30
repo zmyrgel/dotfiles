@@ -83,50 +83,6 @@
 ;; | { M-- M-l }  | Change case of preceding word|
 ;; | { C-M-f/b }  | Move by sexp                 |
 ;; | { C-M-d/u }  | Move into/out of lists       |
-(add-hook 'after-init-hook 'auto-compression-mode)
-
-(setopt kill-region-dwim 'emacs-word)
-
-(keymap-global-set "M-u" 'upcase-dwim)
-(keymap-global-set "M-l" 'downcase-dwim)
-(keymap-global-set "M-c" 'capitalize-dwim)
-(keymap-global-set "C-h h" nil)
-(keymap-global-set "M-SPC" 'cycle-spacing)
-(keymap-global-set "C-c C-j" 'join-line)
-(keymap-global-set "M-z" 'zap-up-to-char)
-(keymap-global-set "C-x M-k" 'kill-buffer-other-window)
-(keymap-global-set "C-x C-z" nil)
-(keymap-global-set "C-x (" 'kmacro-start-macro-or-insert-counter)
-(keymap-global-set "C-x )" 'kmacro-end-or-call-macro)
-
-(let ((map (make-sparse-keymap)))
-  (keymap-set map "s" #'eshell)
-  (keymap-set map "r" #'rgrep)
-  (keymap-set map "m" #'gnus)
-  (keymap-global-set "C-z" map))
-
-(keymap-global-set "M-o" 'other-window)
-(keymap-global-set "M-j" 'duplicate-dwim)
-(keymap-global-set "M-g r" 'recentf)
-(keymap-global-set "M-s g" 'grep)
-(keymap-global-set "M-s f" 'find-name-dired)
-
-(keymap-global-set "C-x w t" 'window-layout-transpose)
-(keymap-global-set "C-x w r" 'rotate-windows)
-(keymap-global-set "C-x w f h" 'window-layout-flip-leftright)
-(keymap-global-set "C-x w f v" 'window-layout-flip-topdown)
-
-(defun my/backward-kill-word-or-region ()
-  "Kill region or word based on selection."
-  (interactive)
-  (call-interactively (if (region-active-p)
-                          'kill-region
-                        'backward-kill-word)))
-
-(defun emacs-reload-configuration ()
-  "Reload emacs configuration."
-  (interactive)
-  (load-file (locate-user-emacs-file "init.el")))
 
 (defun kill-buffer-other-window ()
   "Kill buffer in the other window."
@@ -134,14 +90,6 @@
   (other-window 1)
   (kill-buffer (current-buffer))
   (other-window 1))
-
-(setopt case-fold-search t)
-(setopt load-prefer-newer t)
-(setopt apropos-do-all t)
-(setopt ad-redefinition-action 'accept)
-
-;; bump this a bit from default 64kb
-(setq read-process-output-max 524288) ; 512kb
 
 (setq-default show-trailing-whitespace nil)
 (setq-default require-final-newline t)
@@ -204,34 +152,6 @@
 
 (unless (daemonp)
   (my/set-frame-fonts))
-
-(setopt use-short-answers t)
-
-;; Don't prompt if killing buffer with process attached
-(setq kill-buffer-query-functions
-      (remq 'process-kill-buffer-query-function
-            kill-buffer-query-functions))
-
-;; enabled disabled features
-(dolist (s '(narrow-to-region
-             upcase-region
-             downcase-region
-             dired-find-alternative-file
-             overwrite-mode))
-  (put s 'disabled nil))
-
-;;; simple
-(setopt set-mark-command-repeat-pop t)
-(setopt next-line-add-newlines nil)
-(setopt kill-do-not-save-duplicates t)
-(setopt backward-delete-char-untabify-method nil)
-(setopt yank-pop-change-selection t)
-(setopt save-interprogram-paste-before-kill t)
-(add-hook 'after-init-hook 'size-indication-mode)
-(add-hook 'after-init-hook 'line-number-mode)
-(add-hook 'after-init-hook 'column-number-mode)
-(add-hook 'text-mode-hook 'auto-fill-mode)
-(add-hook 'before-save-hook 'whitespace-cleanup)
 
 (when (executable-find "xwallpaper")
   (setopt wallpaper-command "xwallpaper")
