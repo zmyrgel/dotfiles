@@ -42,24 +42,6 @@
 (add-to-list 'initial-frame-alist '(fullscreen . maximized))
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
-;; Temporarily increase the gc threshold and remove time-consuming file
-;; handlers for the startup.
-(defvar orig--gc-cons-threshold gc-cons-threshold)
-(defvar orig--file-name-handler-alist file-name-handler-alist)
-(defvar orig--vc-handled-backends vc-handled-backends)
-
-(setopt gc-cons-threshold most-positive-fixnum)
-(setopt vc-handled-backends nil)
-(setq file-name-handler-alist nil)
-
-(defun my/restore-overrides ()
-  "Restore temporarily overwritten variables."
-  (setq file-name-handler-alist orig--file-name-handler-alist)
-  (setopt gc-cons-threshold orig--gc-cons-threshold)
-  (setopt vc-handled-backends orig--vc-handled-backends))
-
-(add-hook 'emacs-startup-hook 'my/restore-overrides t)
-
 (provide 'early-init)
 
 ;;; early-init.el ends here
