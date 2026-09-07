@@ -124,30 +124,29 @@
 
 (add-hook 'help-mode-hook 'toggle-truncate-lines)
 
-(defvar *my-fixed-font* "Input Mono")
-(defvar *my-variable-font* "Input Serif")
-
 (defun my/adjust-font-for-screen (frame)
   "Adjusts the font height based on the screen resolution."
-  (if (> (x-display-pixel-width) 1600)
-      (set-face-attribute 'default frame :height 130)
-    (set-face-attribute 'default frame :height 110)))
-
-(add-hook 'after-make-frame-functions 'my/adjust-font-for-screen)
+  (let ((dpi (/ (* (x-display-pixel-width) 25.4)
+                (x-display-mm-width))))
+    (set-face-attribute 'default frame :height (if (> dpi 100) 130 110))))
 
 (defun my/set-frame-fonts ()
   "My hook to setup frame fonts, useful for daemon mode."
-  ;; Set Default font if present
-  (when (find-font (font-spec :name *my-fixed-font*))
-    (set-face-attribute 'default nil :family *my-fixed-font*)
-    (set-face-attribute 'fixed-pitch nil :family *my-fixed-font*)
-    (set-face-attribute 'tooltip nil :family *my-fixed-font*))
-  (when (find-font (font-spec :name *my-variable-font*))
-    (set-face-attribute 'variable-pitch nil :family *my-variable-font*)))
+  (let ((my/fixed-font "Input Mono")
+        (my/variable-font "Input Serif"))
+    ;; Set Default font if present
+    (when (find-font (font-spec :family my/fixed-font))
+      (set-face-attribute 'default nil :family my/fixed-font)
+      (set-face-attribute 'fixed-pitch nil :family my/fixed-font)
+      (set-face-attribute 'tooltip nil :family my/fixed-font))
+    (when (find-font (font-spec :family my/variable-font))
+      (set-face-attribute 'variable-pitch nil :family my/variable-font))))
 
+(add-hook 'after-make-frame-functions 'my/adjust-font-for-screen)
 (add-hook 'server-after-make-frame-hook #'my/set-frame-fonts)
 
 (unless (daemonp)
+  (my/adjust-font-for-screen nil)
   (my/set-frame-fonts))
 
 (when (executable-find "xwallpaper")
