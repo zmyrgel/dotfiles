@@ -108,7 +108,6 @@
 (add-hook 'after-init-hook 'global-so-long-mode)
 
 (setopt repeat-on-final-keystroke t)
-(setopt set-mark-command-repeat-pop t)
 (add-hook 'after-init-hook 'repeat-mode)
 
 ;; enabled disabled features
