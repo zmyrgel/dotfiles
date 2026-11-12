@@ -102,7 +102,7 @@ then
 fi
 
 # Start WM
-if test $(hostname) = "asteroid.bittivirhe.fi"
+if test $(hostname) = "moon.bittivirhe.fi"
 then
 	exec ssh-agent stumpwm 2> ~/.xerrors
 else
