@@ -158,8 +158,8 @@
 (setopt diff-advance-after-apply-hunk t)
 (setopt diff-default-read-only t)
 (setopt diff-font-lock-prettify nil)
-(setopt diff-font-lock-syntax 'hunk-also)
-(setopt diff-refine 'font-lock) ; 'navigation
+(setopt diff-font-lock-syntax nil)
+(setopt diff-refine 'navigation)
 (setopt diff-update-on-the-fly t)
 (setopt diff-add-log-use-relative-names t)
 (setopt diff-refine-nonmodified t)
